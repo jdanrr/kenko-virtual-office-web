@@ -3,8 +3,6 @@
 Guía mínima para replicar el estilo visual de `kenko-web` en otro repositorio
 (p. ej. la página de acceso / login).
 
-Fuente de verdad: `src/styles/global.css`.
-
 ## 1. Paleta base
 
 | Token        | Hex     | Uso principal                                              |
@@ -25,14 +23,14 @@ Texto sobre colores sólidos:
 
 ### Variante "Nosotros" (solo secciones institucionales)
 
-| Token            | Hex     |
+| Token | Hex |
 | ---------------- | ------- |
-| `about-primary`  | `#466883` |
-| `about-secondary`| `#dbbc78` |
-| `about-accent`   | `#6386cd` |
-| `on-about-primary`   | `#f9fafb` |
+| `about-primary` | `#466883` |
+| `about-secondary` | `#dbbc78` |
+| `about-accent` | `#6386cd` |
+| `on-about-primary` | `#f9fafb` |
 | `on-about-secondary` | `#18181b` |
-| `on-about-accent`    | `#f9fafb` |
+| `on-about-accent` | `#f9fafb` |
 
 > Para la página de acceso usa solo la paleta base. La variante `about-*`
 > es para páginas institucionales.
@@ -120,13 +118,13 @@ a los `.woff2` de `brand-kit/fuentes/` con `font-weight: 100 900`.
 
 | Archivo                  | Uso en `kenko-web`                          |
 | ------------------------ | ------------------------------------------- |
-| `kenko_limpio.svg`       | Logo principal (navbar, footer)              |
+| `kenko-logo.svg`       | Logo principal (navbar, footer)              |
 | `favicon.svg` / `favicon.ico` | Favicon del sitio                        |
 | `logo-supersalud.svg`    | Logo Supersalud (footer legal)               |
 | `min-salud-logo.png`     | Logo Ministerio de Salud (footer legal)      |
 | `vigilado-supersalud.png`| Sello "Vigilado Supersalud" (footer legal)  |
 
-> `kenko_limpio.svg` es el logo en uso actual. No se incluye `kenko.svg`
+> `kenko-logo.svg` es el logo en uso actual. No se incluye `kenko.svg`
 > (6.8 MB trazado, en desuso) ni `logo-kenko.svg` (trazado antiguo).
 
 ## 5. Ejemplo rápido (login)
