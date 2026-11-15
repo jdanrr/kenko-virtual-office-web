@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+/* Fuentes locales de la marca (variables, peso 100 900) */
+@font-face {
+  font-family: "Figtree";
+  src: url("../fonts/figtree-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("../fonts/figtree-latin-wght-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Manrope";
+  src: url("../fonts/manrope-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tema Kenko (Tailwind v4): paleta base de colores-base.md + alias kenko-* del ejemplo */
+@theme {
+  --font-display: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #f9fafb;
+  --color-content: #18181b;
+
+  --color-primary: #21496a;
+  --color-secondary: #ffb51b;
+  --color-accent: #1e5bd7;
+
+  --color-on-primary: #f9fafb;
+  --color-on-secondary: #18181b;
+  --color-on-accent: #f9fafb;
+
+  --color-kenko-primary: #21496a;
+  --color-kenko-secondary: #ffb51b;
+  --color-kenko-accent: #1e5bd7;
+  --color-kenko-bg: #f9fafb;
+  --color-kenko-dark: #18181b;
+}
+
+/* Base: fondo, texto y tipografía de cuerpo */
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-content);
+    font-family: var(--font-body);
+  }
+}
