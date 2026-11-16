@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/thin/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/bold/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/fill/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/thin/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/bold/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/fill/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/thin/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/bold/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/fill/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css" rel="stylesheet" type="text/css"/></head><body class="min-h-screen flex flex-col antialiased"><svg aria-hidden="true" class="inline-defs-container" style="position:absolute;width:0;height:0;overflow:hidden"></svg>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portal del Paciente - Kenko EPS</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Phosphor Icons for medical and dashboard UI -->
+<script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/thin/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/bold/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/fill/style.css" rel="stylesheet" type="text/css"/><link href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css" rel="stylesheet" type="text/css"/>
+<!-- Tailwind Configuration for Kenko Corporate Identity -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            kenko: {
+              primary: '#21496a',     // Azul marino institucional Kenko
+              secondary: '#ffb51b',   // Amarillo cálido dorado Kenko
+              accent: '#1e5bd7',      // Azul vibrante
+              bg: '#F9FAFB',          // Gris neutro fondo
+              dark: '#18181B'         // Grafito oscuro texto
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scroll-and-layout">
+    body {
+      background-color: #F9FAFB;
+      color: #18181B;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<!-- BEGIN: TopHeader -->
+<header class="w-full bg-white border-b border-amber-200/80 sticky top-0 z-50 shadow-sm" data-purpose="patient-portal-header">
+<!-- Highlight banner bar derived from the wireframe's yellow top strip -->
+<div class="bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border-b border-amber-300/70 px-4 py-2 sm:px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+<!-- Left: Brand / Logo Area -->
+<div class="flex items-center gap-3">
+<div class="bg-white p-1 rounded-lg shadow-sm border border-amber-300/60 flex items-center justify-center">
+<img alt="Logo Kenko EPS" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb57iztCyvzdgsOzCysAVACmN9NY70wOJglcguOvTEIRyXPIggcvcZM7QqZ2I2dArvIYrKiPD0ZaTSHM3G5q5E0mPzNUSu2lNqlODYMz4x0X_yQ34RNXwMKjfKqivAgSHkNmpNo_PcHr-IqxEivQRED1jSiquLyqdqBFO8cmG5YfGQMjN4h8SAwUK8G6wWn6GXagUy1AOawpghXeZsVMW_dPwqCjlzbM6794GEyyNgtpN2J0ambw7MnrLm5E4ZOR-xiQQ"/>
+</div>
+</div>
+<!-- Center: Welcome Greeting (Wireframe: ¡Bienvenida Tatiana Rivero!) -->
+<div class="text-center">
+<h1 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+<span>¡Bienvenida Tatiana Rivero!</span>
+<span class="text-amber-600 text-base">✨</span>
+</h1>
+</div>
+<!-- Right: Patient Profile & Quick Actions (Wireframe 'P' bubble) -->
+<div class="flex items-center gap-3"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-kenko-primary text-white font-bold flex items-center justify-center shadow-sm border-2 border-amber-300">TR</div><div class="hidden sm:flex flex-col text-right"><span class="text-xs font-bold text-slate-900 leading-tight">Tatiana R.</span><span class="text-[10px] text-slate-500 font-mono">CC 1.020.485.***</span></div></div></div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6" data-purpose="dashboard-body">
+<!-- BEGIN: ThreeColumnGrid -->
+<!-- Matching wireframe top grid: Notificaciones & Certificado (Col 1), Citas (Col 2), Mapa (Col 3) -->
+<section aria-label="Tablero Principal del Afiliado" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"><div class="lg:col-span-6 flex flex-col h-full" style="grid-column: span 7 / span 7;"><div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-amber-300 relative flex flex-col h-full overflow-hidden"><div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400"></div><div class="flex items-center justify-between mb-4 pt-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shadow-xs"><i class="ph ph-calendar-plus text-xl"></i></div><div><h2 class="text-xl font-bold text-slate-900 tracking-tight">Citas Médicas</h2><p class="text-xs text-slate-500">Consulta, confirmación y programación directa de citas</p></div></div><span class="text-xs font-semibold text-amber-900 bg-amber-100/90 border border-amber-300 px-3 py-1 rounded-full">Portal en Línea</span></div><div class="my-auto py-10 px-6 flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-xl border border-slate-200"><div class="w-16 h-16 rounded-2xl bg-amber-100/90 text-amber-600 flex items-center justify-center mb-4 shadow-sm border border-amber-200/80"><i class="ph ph-calendar-plus text-3xl"></i></div><h3 class="text-base font-bold text-slate-900 mb-2">No tienes citas programadas</h3><p class="text-xs text-slate-500 max-w-md leading-relaxed">Actualmente no cuentas con citas médicas asignadas o pendientes de confirmación. Puedes agendar una nueva consulta con tu médico de cabecera o especialista cuando lo requieras.</p></div><div class="flex-1 flex flex-col justify-between"><div class="pt-4 mt-auto"><a class="w-full py-3 px-4 bg-kenko-secondary hover:bg-amber-400 text-slate-900 font-bold text-xs md:text-sm rounded-xl transition duration-150 shadow-md flex items-center justify-center gap-2 block text-center" href="#agendar-cita"><i class="ph ph-calendar-plus font-bold text-base"></i><span>Agendar Nueva Cita Médica</span><i class="ph ph-arrow-right text-sm"></i></a></div></div></div></div><div class="lg:col-span-6 flex flex-col gap-6" style="grid-column: span 5 / span 5;"><div class="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col"><div class="relative w-full h-44 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center group mb-4"><svg class="absolute inset-0 w-full h-full opacity-65 object-cover" xmlns="http://www.w3.org/2000/svg"><defs><pattern height="40" id="grid-pattern" patternunits="userSpaceOnUse" width="40"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#cbd5e1" stroke-width="1.2"></path><circle cx="20" cy="20" fill="#94a3b8" r="1.5"></circle></pattern></defs><rect fill="#f8fafc" height="100%" width="100%"></rect><rect fill="url(#grid-pattern)" height="100%" width="100%"></rect><path d="M-20 60 Q 120 40, 240 100 T 450 80" fill="none" stroke="#cbd5e1" stroke-width="14"></path><path d="M-20 60 Q 120 40, 240 100 T 450 80" fill="none" stroke="#ffffff" stroke-width="9"></path><path d="M 170 -10 L 190 200" fill="none" stroke="#cbd5e1" stroke-width="10"></path><path d="M 170 -10 L 190 200" fill="none" stroke="#ffffff" stroke-width="6"></path></svg><div class="relative z-10 flex flex-col items-center animate-bounce duration-1000"><div class="bg-kenko-primary text-white p-2 rounded-full shadow-lg border-2 border-white flex items-center justify-center"><i class="ph ph-hospital text-xl text-amber-300"></i></div><div class="bg-slate-900/90 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-md mt-1 border border-white/20 whitespace-nowrap">Sede Chicó Kenko</div></div><div class="absolute bottom-2 right-2 bg-white/95 px-2 py-1 rounded-md text-[10px] font-bold text-slate-700 shadow-sm border border-slate-200 flex items-center gap-1"><i class="ph ph-compass text-rose-500"></i> Bogotá D.C.</div></div><div class="space-y-2 flex-1 text-xs"><div class="flex items-start gap-2.5"><i class="ph ph-map-pin text-kenko-primary text-base mt-0.5 flex-shrink-0"></i><div><p class="font-bold text-slate-800">Sede Principal Chicó - Bogotá</p><p class="text-slate-600">Cra. 11 # 94-05, Chapinero Norte</p></div></div><div class="flex items-center gap-2.5 text-slate-600"><i class="ph ph-clock text-slate-400 text-base flex-shrink-0"></i><span>Lunes a Viernes: 6:00 AM - 8:00 PM | Sáb: 7:00 AM - 1:00 PM</span></div><div class="flex items-center gap-2.5 text-slate-600"><i class="ph ph-phone-call text-slate-400 text-base flex-shrink-0"></i><span>Línea directa citas: (601) 745-9000 Ext. 102</span></div></div><div class="grid grid-cols-2 gap-2 mt-4 pt-2 border-t border-slate-100"><button class="w-full py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition" type="button"><i class="ph ph-navigation-arrow text-sm"></i> Cómo llegar</button><button class="w-full py-2 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition border border-rose-200" type="button"><i class="ph ph-first-aid text-sm"></i> Urgencias Kenko</button></div></div><div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100"><div class="grid grid-cols-1 gap-3 pt-1"><div class="p-3.5 bg-slate-50/80 hover:bg-emerald-50/40 rounded-xl border border-slate-200 transition flex flex-col justify-between"><div class="flex items-start justify-between gap-2 mb-2"><div><span class="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-100/90 px-1.5 py-0.5 rounded">POST /certificates</span><h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1">Certificado Afiliación</h3><p class="text-[11px] text-slate-500">PDF o entrega directa por correo registrado</p></div><div class="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs flex-shrink-0"><i class="ph ph-file-pdf text-lg"></i></div></div><div class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"><div class="flex justify-between"><span class="text-slate-400 font-mono">ID:</span><span class="font-mono font-bold text-slate-800">CERT-2026-88412</span></div><div class="flex justify-between"><span class="text-slate-400">Emisión:</span><span class="font-medium text-slate-700">15/03/2026</span></div><div class="flex justify-between"><span class="text-slate-400">Afiliado:</span><span class="font-semibold text-emerald-700">01/02/2021</span></div></div><div class="flex items-center gap-2"><button class="flex-1 py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs" type="button"><i class="ph ph-download-simple text-sm"></i> Descargar PDF</button><button class="py-2 px-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold flex items-center justify-center transition" title="Enviar por correo" type="button"><i class="ph ph-arrow-right text-sm"></i></button></div></div><div class="p-3.5 bg-slate-50/80 hover:bg-blue-50/40 rounded-xl border border-slate-200 transition flex flex-col justify-between"><div class="flex items-start justify-between gap-2 mb-2"><div><span class="text-[10px] font-mono text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded">POST /medical-history</span><h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1">Historial Médico</h3><p class="text-[11px] text-slate-500">Consolidado general clínico</p></div><div class="w-8 h-8 rounded-lg bg-kenko-primary text-white flex items-center justify-center shadow-xs flex-shrink-0"><i class="ph ph-file-text text-lg"></i></div></div><div class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"><div class="flex justify-between"><span class="text-slate-400">Registros:</span><span class="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded">3 registros</span></div><div class="flex justify-between"><span class="text-slate-400">Actualizado:</span><span class="font-medium text-slate-700">14/03/2026</span></div></div><div class="flex items-center gap-2"><button class="w-full py-2 px-2.5 bg-kenko-primary hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs" type="button"><i class="ph ph-download-simple text-sm"></i> Descargar Historial</button></div></div></div></div></div></section>
+<!-- END: ThreeColumnGrid -->
+<!-- ============================================== -->
+<!-- BEGIN: Autorizaciones (Full Width Lower Section) -->
+<!-- Wireframe: Green bottom block with 3 columns -->
+<!-- ============================================== -->
+<section class="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100" data-purpose="authorizations-section"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 mb-4"><div><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center"><i class="ph ph-shield-check text-xl"></i></div><h2 class="text-xl font-bold text-slate-900 tracking-tight">Autorizaciones Médicas</h2><span class="text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">GET /authorizations</span></div><p class="text-xs text-slate-500 mt-0.5">Consulta, descarga de PDF y notificación de órdenes autorizadas</p></div><div class="flex items-center gap-3"><button class="text-xs font-semibold text-kenko-primary hover:text-kenko-accent flex items-center gap-1 transition" type="button">Ver historial completo <i class="ph ph-arrow-right text-xs"></i></button></div></div><div class="flex flex-wrap items-center justify-between gap-3 mb-5"><div class="flex items-center gap-1.5"><span class="text-xs text-slate-500 font-medium mr-1">Filtro por estado:</span><button class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-900 text-white shadow-xs transition" type="button">Todos</button><button class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" type="button">En proceso</button><button class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" type="button">Aprobada</button><button class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition" type="button">Rechazada</button></div><span class="text-xs text-slate-400">3 autorizaciones registradas</span></div><div class="grid grid-cols-1 md:grid-cols-3 gap-5"><article class="bg-emerald-50/40 border-2 border-emerald-300/80 rounded-xl p-4 flex flex-col justify-between hover:shadow-md transition"><div><div class="flex items-center justify-between mb-2.5"><span class="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-xs"><i class="ph ph-check-circle-bold"></i> Aprobada</span><span class="text-[11px] text-slate-500 font-medium">12 Mar 2026</span></div><div class="flex items-center gap-1.5 mb-1"><span class="text-[10px] font-mono text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-semibold">BLOOD_TEST</span></div><h3 class="text-sm font-bold text-slate-900 leading-snug">Examen de sangre</h3><p class="text-xs text-slate-600 mt-0.5">Cuadro hemático, perfil lipídico y glicemia</p><div class="mt-3 pt-2.5 border-t border-emerald-200/60 text-xs space-y-1 text-slate-600"><div class="flex justify-between"><span class="text-slate-500">Código:</span><span class="font-mono font-bold text-slate-800">AUT-92841</span></div><div class="flex justify-between"><span class="text-slate-500">Médico:</span><span class="font-medium text-slate-800">Dra. Valentina Restrepo (Medicina General)</span></div><div class="flex justify-between"><span class="text-slate-500">Vigencia hasta:</span><span class="font-semibold text-emerald-800">12 May 2026</span></div></div></div><div class="mt-4 pt-3 flex items-center gap-2"><button class="flex-1 py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5" title="GET /authorizations/AUT-92841/pdf" type="button"><i class="ph ph-download-simple text-sm font-bold"></i> Descargar PDF</button></div></article><article class="bg-amber-50/40 border-2 border-amber-300 rounded-xl p-4 flex flex-col justify-between hover:shadow-md transition"><div><div class="flex items-center justify-between mb-2.5"><span class="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide bg-amber-500 text-slate-900 px-2.5 py-0.5 rounded-full shadow-xs"><i class="ph ph-hourglass-medium font-bold"></i> En proceso</span><span class="text-[11px] text-slate-500 font-medium">14 Mar 2026</span></div><div class="flex items-center gap-1.5 mb-1"><span class="text-[10px] font-mono text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded font-semibold">XRAY</span></div><h3 class="text-sm font-bold text-slate-900 leading-snug">Radiografía de Tórax</h3><p class="text-xs text-slate-600 mt-0.5">Proyección PA y lateral estándar</p><div class="mt-3 pt-2.5 border-t border-amber-200 text-xs space-y-1 text-slate-600"><div class="flex justify-between"><span class="text-slate-500">Código:</span><span class="font-mono font-bold text-slate-800">AUT-93104</span></div><div class="flex justify-between"><span class="text-slate-500">Médico:</span><span class="font-medium text-slate-800">Dr. Carlos Mendoza (Neumología)</span></div><div class="flex justify-between"><span class="text-slate-500">Tiempo estimado:</span><span class="font-semibold text-amber-800">24 a 48 horas hábiles</span></div></div></div><div class="mt-4 pt-3 flex items-center gap-2"><button class="flex-1 py-2 px-2.5 bg-white hover:bg-amber-100/60 text-slate-800 border border-amber-300 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5" title="GET /authorizations/AUT-93104/pdf" type="button"><i class="ph ph-download-simple text-sm font-bold text-amber-700"></i> Descargar PDF</button></div></article><article class="bg-rose-50/40 border-2 border-rose-300 rounded-xl p-4 flex flex-col justify-between hover:shadow-md transition"><div><div class="flex items-center justify-between mb-2.5"><span class="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wide bg-rose-600 text-white px-2.5 py-0.5 rounded-full shadow-xs"><i class="ph ph-x-circle-bold"></i> Rechazada</span><span class="text-[11px] text-slate-500 font-medium">08 Mar 2026</span></div><div class="flex items-center gap-1.5 mb-1"><span class="text-[10px] font-mono text-rose-800 bg-rose-100 px-1.5 py-0.5 rounded font-semibold">DENTAL_CLEANING</span></div><h3 class="text-sm font-bold text-slate-900 leading-snug">Limpieza dental</h3><p class="text-xs text-rose-700 font-medium mt-0.5">Motivo: Falta de documentación (<span class="font-mono text-[10px]">MISSING_DOCUMENTATION</span>)</p><div class="mt-3 pt-2.5 border-t border-rose-200 text-xs space-y-1 text-slate-600"><div class="flex justify-between"><span class="text-slate-500">Código:</span><span class="font-mono font-bold text-slate-800">AUT-91520</span></div><div class="flex justify-between"><span class="text-slate-500">Médico:</span><span class="font-medium text-slate-800">Dr. Andrés Silva (Odontología)</span></div><div class="flex justify-between"><span class="text-slate-500">Acción sugerida:</span><span class="font-semibold text-rose-800">Adjuntar historia clínica previa</span></div></div></div><div class="mt-4 pt-3 flex items-center gap-2"><button class="w-full py-2 px-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5" title="Descargar soporte PDF" type="button"><i class="ph ph-download-simple text-sm font-bold"></i> Soporte</button></div></article></div></section>
+<!-- END: Autorizaciones -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="mt-auto bg-slate-900 text-slate-300 py-6 border-t border-slate-800" data-purpose="portal-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+<!-- Brand Copyright -->
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-amber-400 font-bold text-xs">
+          K
+        </div>
+<div>
+<p class="font-medium text-white">© 2026 Kenko EPS S.A.S. - Todos los derechos reservados.</p>
+<p class="text-slate-400 text-[11px]">Vigilado por la Superintendencia Nacional de Salud de Colombia</p>
+</div>
+</div>
+<!-- Emergency & Support Lines -->
+<div class="flex flex-wrap items-center gap-4 sm:gap-6 text-slate-300 font-medium">
+<div class="flex items-center gap-1.5 text-amber-400">
+<i class="ph ph-phone-call text-base"></i>
+<span>Línea Gratuita Nacional: <strong>01 8000 954 321</strong></span>
+</div>
+<div class="flex items-center gap-1.5 text-emerald-400">
+<i class="ph ph-first-aid text-base"></i>
+<span>Urgencias Médicas: <strong>123 / #745</strong></span>
+</div>
+<a class="hover:text-white underline underline-offset-4 transition" href="#soporte">
+          Soporte Técnico Portal
+        </a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+</body></html>
