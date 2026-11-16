@@ -180,15 +180,11 @@ describe("useAuthStore", () => {
     expect(store.lastFailure?.message).toBe("Tu sesión terminó. Vuelve a entrar.");
   });
 
-  it("renueva sola antes de vencer el access token", async () => {
+  it("no renueva por temporizador (solo reactiva ante 401 + arranque)", async () => {
     vi.useFakeTimers();
     const fetch = vi
       .fn()
       .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
-      .mockResolvedValueOnce({
-        data: { userId: "u1", firstName: "María", email: "m@x.co" },
-      })
-      .mockResolvedValueOnce({ data: { accessToken: "jwt2", expiresIn: 900 } })
       .mockResolvedValueOnce({
         data: { userId: "u1", firstName: "María", email: "m@x.co" },
       });
@@ -198,15 +194,81 @@ describe("useAuthStore", () => {
     await store.logIn({ ...valid });
     expect(store.accessToken).toBe("jwt");
 
-    // Renueva 60 s antes de los 900 s.
-    await vi.advanceTimersByTimeAsync(840_000);
+    // Pasa el vencimiento completo: no debe haber refresh automático.
+    await vi.advanceTimersByTimeAsync(900_000);
 
-    expect(fetch).toHaveBeenCalledTimes(4);
-    expect(fetch.mock.calls[2]?.[0]).toBe("/api/auth/refresh");
-    expect(store.accessToken).toBe("jwt2");
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(store.accessToken).toBe("jwt");
     expect(store.isAuthenticated).toBe(true);
 
     store.logOut();
     vi.useRealTimers();
+  });
+
+  it("restoreSession marca bootstrapped aunque haya sesión o falle", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u1", firstName: "María", email: "m@x.co" },
+      })
+      .mockRejectedValueOnce(
+        fail(401, {
+          error: { code: "UNAUTHORIZED", message: "x", correlationId: "r" },
+        }),
+      );
+    vi.stubGlobal("$fetch", fetch);
+
+    const store = useAuthStore();
+    expect(store.bootstrapped).toBe(false);
+    await store.restoreSession();
+    expect(store.bootstrapped).toBe(true);
+    expect(store.isAuthenticated).toBe(true);
+
+    const other = useAuthStore();
+    await other.restoreSession();
+    expect(other.bootstrapped).toBe(true);
+  });
+
+  it("restoreSession sin cookie falla en silencio pero marca bootstrapped", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(401, {
+          error: { code: "UNAUTHORIZED", message: "x", correlationId: "r" },
+        }),
+      ),
+    );
+    const store = useAuthStore();
+    await store.restoreSession();
+    expect(store.status).toBe("anonymous");
+    expect(store.lastFailure).toBeNull();
+    expect(store.bootstrapped).toBe(true);
+  });
+
+  it("logOutEverywhere avisa al servidor, limpia y redirige al login", async () => {
+    const navigateToMock = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("navigateTo", navigateToMock);
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u1", firstName: "María", email: "m@x.co" },
+      })
+      .mockResolvedValueOnce({ data: {} });
+    vi.stubGlobal("$fetch", fetch);
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    expect(store.isAuthenticated).toBe(true);
+
+    await store.logOutEverywhere();
+
+    expect(fetch).toHaveBeenNthCalledWith(3, "/api/auth/logout", {
+      method: "POST",
+    });
+    expect(store.status).toBe("anonymous");
+    expect(store.accessToken).toBeNull();
+    expect(navigateToMock).toHaveBeenCalledWith("/iniciar-sesion");
   });
 });

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 
-import { AuthError, fetchMe, login, refreshSession } from "./api";
+import { getQueryClient } from "../../core/query/client";
+import { AuthError, fetchMe, login, logoutSession, refreshSession } from "./api";
 import type { LoginFormValues } from "./schemas";
 import type { AuthUser } from "./types";
 import type { AuthFailure, LoginResult } from "./api";
@@ -25,7 +26,8 @@ const RETRY_AFTER_NETWORK_ERROR_MS = 60_000;
 
 /** Timer fuera del estado: no debe serializarse ni viajar al cliente. */
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
-let restoring = false;
+/** Promesa compartida del bootstrap: las llamadas concurrentes la esperan. */
+let restoringPromise: Promise<void> | null = null;
 
 interface AuthState {
   status: AuthStatus;
@@ -34,6 +36,8 @@ interface AuthState {
   lastFailure: AuthFailure | null;
   lastLoginAt: number | null;
   expiresAt: number | null;
+  /** `true` cuando el arranque terminó (haya sesión o no). Lo usa el guarda. */
+  bootstrapped: boolean;
 }
 
 function clearRefreshTimer(): void {
@@ -51,6 +55,7 @@ export const useAuthStore = defineStore("auth", {
     lastFailure: null,
     lastLoginAt: null,
     expiresAt: null,
+    bootstrapped: false,
   }),
   getters: {
     isAuthenticated: (state): boolean =>
@@ -75,17 +80,26 @@ export const useAuthStore = defineStore("auth", {
      * Refresh silencioso al abrir la app (p. ej. tras recargar): si la cookie
      * httpOnly sigue vigente, la sesión se recupera sin pedir credenciales.
      * Un fallo aquí NO es un error visible (no hay sesión que mostrar).
+     * Las llamadas concurrentes esperan la misma promesa.
      */
     async restoreSession(): Promise<void> {
-      if (restoring || this.status !== "anonymous") return;
-      restoring = true;
-      try {
-        await this.applySession(await refreshSession());
-      } catch {
-        this.clearSession();
-      } finally {
-        restoring = false;
+      if (restoringPromise) return restoringPromise;
+      if (this.status !== "anonymous") {
+        this.bootstrapped = true;
+        return;
       }
+      restoringPromise = (async () => {
+        try {
+          await this.applySession(await refreshSession());
+        } catch {
+          this.clearSession();
+        } finally {
+          this.bootstrapped = true;
+        }
+      })().finally(() => {
+        restoringPromise = null;
+      });
+      return restoringPromise;
     },
     /** Renovación en segundo plano (§3.3). No muestra pantalla propia. */
     async refreshNow(): Promise<void> {
@@ -108,6 +122,17 @@ export const useAuthStore = defineStore("auth", {
      */
     logOut(): void {
       this.clearSession();
+    },
+    /**
+     * Cierre completo (§3.4): avisa al servidor (revoca TODAS las sesiones),
+     * limpia el estado, vacía la caché de TanStack Query y redirige al login.
+     * Nunca lanza: `logoutSession` es idempotente por contrato.
+     */
+    async logOutEverywhere(): Promise<void> {
+      await logoutSession();
+      this.clearSession();
+      getQueryClient().clear();
+      await navigateTo("/iniciar-sesion");
     },
     async applySession(result: LoginResult): Promise<void> {
       const user = await fetchMe(result.accessToken);
@@ -135,14 +160,11 @@ export const useAuthStore = defineStore("auth", {
       );
       this.scheduleRefreshMs(delayMs);
     },
-    scheduleRefreshMs(delayMs: number): void {
+    scheduleRefreshMs(_delayMs: number): void {
+      // Desactivado por decisión del equipo: la renovación es reactiva
+      // (ante 401 con un único refresh en vuelo) más el arranque.
+      // Se conserva el método para no romper la API del store.
       clearRefreshTimer();
-      if (typeof window === "undefined") return;
-      refreshTimer = setTimeout(() => {
-        refreshTimer = null;
-        void this.refreshNow();
-      }, delayMs);
-      (refreshTimer as unknown as { unref?: () => void }).unref?.();
     },
     toFailure(error: unknown): AuthFailure {
       return error instanceof AuthError

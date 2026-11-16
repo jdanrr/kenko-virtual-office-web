@@ -18,6 +18,7 @@
     "@pinia/colada": ">=1.4.9",
     "@pinia/colada-nuxt": "1.2.1",
     "@pinia/nuxt": "1.0.3",
+    "@tanstack/vue-query": "^5.107.1",
     "nuxt": "4.6.4",
     "nuxt-auth-utils": "0.6.2",
     "pinia": "4.1.0",

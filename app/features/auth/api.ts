@@ -248,3 +248,17 @@ export async function refreshSession(): Promise<LoginResult> {
     throw toAuthError(error, "session");
   }
 }
+
+/**
+ * `POST /api/auth/logout` (§3.4). Revoca todas las sesiones en el servidor.
+ * Idempotente: nunca lanza; ante un fallo de red la UI limpia igual.
+ */
+export async function logoutSession(): Promise<void> {
+  try {
+    await clientFetch()<unknown>("/api/auth/logout", {
+      method: "POST",
+    });
+  } catch {
+    // Intencionalmente silencioso: el estado local se limpia siempre.
+  }
+}
