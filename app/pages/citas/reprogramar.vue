@@ -1,5 +1,332 @@
-<!DOCTYPE html>
+<script setup lang="ts">
+// Vista /citas/reprogramar?oldId= — igual a agendar + recuadro con la cita actual.
+// Reprogramar es UNA sola llamada: POST /api/citas/:oldId/reprogramar { newAppointmentId }.
+import { computed, onMounted, ref, watch } from "vue";
+import AppointmentFilters from "~/features/appointments/components/AppointmentFilters.vue";
+import AvailableAppointmentCard from "~/features/appointments/components/AvailableAppointmentCard.vue";
+import CancelAppointmentModal from "~/features/appointments/components/CancelAppointmentModal.vue";
+import MyAppointmentsPanel from "~/features/appointments/components/MyAppointmentsPanel.vue";
+import {
+  cancelAppointment,
+  fetchAvailable,
+  fetchMedicalCenters,
+  fetchMyAppointments,
+  fetchPhysicians,
+  filtersToQuery,
+  getStoredToken,
+  rescheduleAppointment,
+  setStoredToken,
+  toUserMessage,
+} from "~/features/appointments/api";
+import type {
+  Appointment,
+  AppointmentFilters as Filters,
+  CatalogMedicalCenter,
+  CatalogPhysician,
+} from "~/features/appointments/types";
+import { appointmentTitle, formatAppointmentDate, matchesDayPart } from "~/features/appointments/types";
 
-<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700&amp;family=Manrope:wght@400;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#ffffff", "on-tertiary": "#ffffff", "on-secondary-container": "#6a4800", "surface-variant": "#e4e1e6", "on-tertiary-container": "#d7ae6b", "on-secondary-fixed-variant": "#604100", "on-primary-container": "#92b8de", "secondary-fixed-dim": "#ffba39", "primary-fixed-dim": "#a5caf1", "on-tertiary-fixed-variant": "#5e4106", "on-secondary-fixed": "#281900", "primary": "#013252", "surface-container-high": "#eae7eb", "on-secondary": "#ffffff", "on-background": "#1b1b1e", "primary-container": "#21496a", "outline-variant": "#c2c7ce", "surface-bright": "#fbf8fc", "tertiary": "#422c00", "inverse-primary": "#a5caf1", "on-surface-variant": "#42474e", "tertiary-fixed-dim": "#ebc07b", "surface": "#fbf8fc", "background": "#fbf8fc", "secondary": "#7e5700", "on-primary-fixed": "#001d33", "error": "#ba1a1a", "secondary-container": "#fdb318", "on-surface": "#1b1b1e", "primary-fixed": "#cee5ff", "on-primary-fixed-variant": "#224a6b", "surface-tint": "#3c6184", "inverse-on-surface": "#f3f0f4", "surface-container-highest": "#e4e1e6", "tertiary-fixed": "#ffdeac", "tertiary-container": "#5e4106", "secondary-fixed": "#ffdead", "on-tertiary-fixed": "#281900", "surface-container-low": "#f6f2f7", "on-error": "#ffffff", "surface-dim": "#dcd9dd", "surface-container": "#f0edf1", "inverse-surface": "#303033", "outline": "#72777e", "surface-container-lowest": "#ffffff", "error-container": "#ffdad6", "on-error-container": "#93000a" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin-desktop": "64px", "margin-mobile": "16px", "gutter": "24px", "sm": "12px", "lg": "48px", "md": "24px", "base": "8px", "xs": "4px", "xl": "80px" }, "fontFamily": { "body-lg": [ "Manrope" ], "headline-lg-mobile": [ "Figtree" ], "display-lg": [ "Figtree" ], "headline-md": [ "Figtree" ], "caption": [ "Manrope" ], "body-md": [ "Manrope" ], "label-md": [ "Manrope" ], "headline-lg": [ "Figtree" ] }, "fontSize": { "body-lg": [ "18px", { "lineHeight": "28px", "fontWeight": "400" } ], "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "fontWeight": "700" } ], "display-lg": [ "48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-md": [ "24px", { "lineHeight": "32px", "fontWeight": "600" } ], "caption": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "body-md": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "label-md": [ "14px", { "lineHeight": "20px", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "fontWeight": "700" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface"><div><header class="sticky top-0 w-full h-16 bg-surface-container-lowest border-b border-surface-container z-40 flex items-center justify-between px-gutter shadow-sm"><div class="flex items-center gap-md"><div class="flex items-center gap-xs"><div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-secondary-container text-[22px]">health_and_safety</span></div><div class="flex flex-col"><span class="font-headline-md text-primary leading-tight tracking-tight text-[18px]">Kenko EPS</span><span class="font-caption text-secondary font-semibold uppercase tracking-wider text-[9px]">Portal Paciente</span></div></div><div class="h-6 w-px bg-outline-variant hidden sm:block"></div><a class="inline-flex items-center gap-xs px-sm py-1.5 rounded-lg text-primary font-label-md font-bold hover:bg-surface-container transition-colors" data-path="citas-panel" href="#"><span class="material-symbols-outlined text-[18px]">arrow_back</span><span>Volver a Mis Citas (Home)</span></a></div><div class="flex items-center gap-base"><div class="text-right hidden sm:block"><span class="block font-label-md text-on-surface leading-tight font-bold">Carlos Eduardo Gómez</span><span class="block font-caption text-on-surface-variant font-mono text-[11px]">CC 1.020.849.201</span></div><button aria-label="Alertas y Notificaciones" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors relative border border-surface-container" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span></button><div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold"><span class="material-symbols-outlined text-[20px]">person</span></div></div></header><main class="w-full bg-surface-container min-h-screen py-md px-gutter"><div class="max-w-7xl mx-auto flex flex-col pb-xl" id="main-view-container"><div class="flex flex-col md:flex-row md:items-end justify-between gap-sm mb-md"><div><div class="flex items-center gap-xs text-secondary mb-xs"><span class="material-symbols-outlined text-[18px]">event_available</span><span class="font-caption font-bold uppercase tracking-wider">Disponibilidad Oficial · Red Kenko EPS</span></div><h1 class="font-headline-lg text-primary tracking-tight text-[28px]">Reagendar Cita Médica</h1><p class="font-body-md text-on-surface-variant">Selecciona una nueva fecha o sede para tu atención de salud. Tu turno actual quedará disponible para otro afiliado al confirmar el cambio.</p></div><div class="flex items-center gap-xs bg-surface-container-lowest px-md py-2 rounded-xl shadow-sm border border-outline-variant"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-caption font-semibold text-on-surface">Disponibilidad en vivo</span></div></div><div class="bg-primary-container text-on-primary rounded-xl p-md shadow-md border-2 border-secondary-container mb-md relative overflow-hidden"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-xs pb-sm border-b border-primary mb-md"><div class="flex items-center gap-xs"><span class="material-symbols-outlined text-secondary-container text-[20px]">sync_alt</span><span class="font-caption font-bold uppercase tracking-wider text-secondary-container text-[12px]">Estás reagendando esta cita previa</span></div><span class="font-mono font-bold text-[12px] bg-primary text-secondary-fixed px-2.5 py-0.5 rounded-full border border-secondary-container">Identificador único: APT-8492026-KEN</span></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md"><div class="flex flex-col gap-0.5"><span class="font-caption text-on-primary-container font-semibold text-[11px] uppercase">Especialidad</span><span class="font-label-md font-bold text-[15px] flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-secondary-container">dentistry</span> Odontología General</span></div><div class="flex flex-col gap-0.5"><span class="font-caption text-on-primary-container font-semibold text-[11px] uppercase">Profesional Asignado</span><span class="font-label-md font-bold text-[15px] flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-secondary-container">person</span> Dr. Andrés Silva</span><span class="font-caption text-on-primary-container text-[11px]">Reg. Médico 94102-Bogotá</span></div><div class="flex flex-col gap-0.5"><span class="font-caption text-on-primary-container font-semibold text-[11px] uppercase">Centro Médico &amp; Sede</span><span class="font-label-md font-bold text-[15px] flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-secondary-container">domain</span> Sede Chicó Kenko</span><span class="font-caption text-on-primary-container text-[11px]">Cra. 11 # 94-05 · Cons. 301</span></div><div class="flex flex-col gap-0.5"><span class="font-caption text-on-primary-container font-semibold text-[11px] uppercase">Fecha y Horario Original</span><span class="font-label-md font-bold text-[15px] text-secondary-container flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Jue, 18 Sep 2026</span><span class="font-caption text-on-primary text-[11px] font-semibold">10:00 AM - 10:45 AM (45 min)</span></div></div><div class="mt-md pt-xs border-t border-primary flex items-start gap-xs text-on-primary-container"><span class="material-symbols-outlined text-secondary-container text-[18px] shrink-0">info</span><p class="font-caption text-[11px] leading-relaxed"><strong class="text-on-primary">Regla del sistema:</strong> La nueva cita debe ser de la misma especialidad (Odontología General) y agendarse dentro del periodo reglamentario de 90 días naturales posteriores a tu fecha original.</p></div></div><section class="bg-surface-container-lowest rounded-xl p-md shadow-md border-2 border-primary-fixed mb-md relative overflow-hidden"><div class="absolute top-0 left-0 right-0 h-1.5 bg-primary"></div><div class="flex items-center justify-between pb-sm mb-base border-b border-surface-container"><div class="flex items-center gap-xs text-primary font-headline-md text-[18px]"><span class="material-symbols-outlined text-secondary-container text-[22px]">tune</span><span class="font-headline-md font-bold">Parámetros de Búsqueda</span></div><span class="font-caption text-on-surface-variant">Máxima anticipación: 90 días naturales</span></div><form class="flex flex-col gap-md" id="filter-form" onsubmit="event.preventDefault();"><div class="grid grid-cols-1 md:grid-cols-3 gap-md"><div class="flex flex-col gap-xs"><label class="font-label-md text-on-surface font-semibold" for="filter-type">Especialidad / Servicio <span class="text-[11px] font-mono text-secondary ml-1">🔒 Misma especialidad</span></label><div class="relative"><select class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface font-body-md rounded-lg px-sm py-2 appearance-none shadow-sm text-[14px] focus:outline-none focus:border-primary" id="filter-type"><option selected="" value="ODONTOLOGIA">Odontología General (Bloqueado por regla)</option></select><span class="material-symbols-outlined absolute right-2.5 top-2.5 text-on-surface-variant text-[20px] pointer-events-none">expand_more</span></div></div><div class="flex flex-col gap-xs"><label class="font-label-md text-on-surface font-semibold" for="filter-center">Centro Médico / Sede</label><div class="relative"><select class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface font-body-md rounded-lg px-sm py-2 appearance-none shadow-sm text-[14px] focus:outline-none focus:border-primary" id="filter-center"><option selected="" value="all">Todas las sedes de Kenko EPS (Bogotá D.C.)</option><option value="chico">Sede Chicó Kenko (Cra. 11 # 94-05)</option><option value="calle100">Sede Kenko Calle 100 (Cl. 100 # 19-61)</option><option value="pepe-sierra">Sede Kenko Pepe Sierra (Cl. 116 # 15-28)</option></select><span class="material-symbols-outlined absolute right-2.5 top-2.5 text-on-surface-variant text-[20px] pointer-events-none">expand_more</span></div></div><div class="flex flex-col gap-xs"><label class="font-label-md text-on-surface font-semibold" for="filter-physician">Profesional de la Salud</label><div class="relative"><select class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface font-body-md rounded-lg px-sm py-2 appearance-none shadow-sm text-[14px] focus:outline-none focus:border-primary" id="filter-physician"><option selected="" value="all">Cualquier odontólogo disponible</option><option value="dra-andrea">Dra. Andrea Morales (Odontología)</option><option value="dr-felipe">Dr. Felipe Vargas (Odontología)</option><option value="dr-andres">Dr. Andrés Silva (Odontología)</option></select><span class="material-symbols-outlined absolute right-2.5 top-2.5 text-on-surface-variant text-[20px] pointer-events-none">expand_more</span></div></div></div><div class="grid grid-cols-1 md:grid-cols-12 gap-md items-end pt-xs"><div class="md:col-span-6 flex flex-col gap-xs"><div class="flex items-center justify-between"><label class="font-label-md text-on-surface font-semibold">Rango de Fechas</label><div class="flex items-center gap-xs"><button class="px-2 py-0.5 rounded font-caption text-[11px] bg-surface-container-high hover:bg-surface-variant text-on-surface font-semibold border border-outline-variant" type="button">Hoy</button><button class="px-2 py-0.5 rounded font-caption text-[11px] bg-surface-container-high hover:bg-surface-variant text-on-surface font-semibold border border-outline-variant" type="button">Mañana</button><button class="px-2 py-0.5 rounded font-caption text-[11px] bg-surface-container-high hover:bg-surface-variant text-on-surface font-semibold border border-outline-variant" type="button">Esta Semana</button><button class="px-2 py-0.5 rounded font-caption text-[11px] bg-surface-container-high hover:bg-surface-variant text-on-surface font-semibold border border-outline-variant" type="button">Este Mes</button></div></div><div class="grid grid-cols-2 gap-xs"><input class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface text-[13px] font-body-md rounded-lg px-xs py-2 shadow-sm focus:outline-none focus:border-primary" id="date-from" type="date" value=""/><input class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface text-[13px] font-body-md rounded-lg px-xs py-2 shadow-sm focus:outline-none focus:border-primary" id="date-to" type="date" value=""/></div></div><div class="md:col-span-6 flex flex-col gap-xs"><label class="font-label-md text-on-surface font-semibold">Buscador rápido</label><div class="relative"><span class="material-symbols-outlined absolute left-2.5 top-2.5 text-primary text-[18px]">search</span><input class="w-full bg-surface-container-lowest border-2 border-outline-variant text-on-surface text-[13px] font-body-md rounded-lg pl-9 pr-sm py-2 shadow-sm focus:outline-none focus:border-primary" placeholder="Buscar por nombre de médico o centro médico..." type="text"/></div></div></div><div class="flex flex-col lg:flex-row lg:items-center justify-between gap-base pt-sm border-t border-surface-container"><div class="flex items-center gap-xs flex-wrap"><span class="font-caption text-on-surface-variant font-semibold mr-1">Jornada:</span><button class="time-filter-btn px-sm py-1 rounded-full font-label-md text-[12px] bg-primary text-on-primary font-bold shadow-sm" type="button">Todas</button><button class="time-filter-btn px-sm py-1 rounded-full font-label-md text-[12px] bg-surface-container-high text-on-surface hover:bg-surface-variant border border-outline-variant" type="button">Mañana (&lt;12:00)</button><button class="time-filter-btn px-sm py-1 rounded-full font-label-md text-[12px] bg-surface-container-high text-on-surface hover:bg-surface-variant border border-outline-variant" type="button">Tarde (12:00-18:00)</button><button class="time-filter-btn px-sm py-1 rounded-full font-label-md text-[12px] bg-surface-container-high text-on-surface hover:bg-surface-variant border border-outline-variant" type="button">Noche (&gt;18:00)</button></div><div class="flex items-center gap-sm"><button class="px-md py-2 rounded-lg font-label-md text-primary bg-surface-container-high hover:bg-surface-variant transition-colors flex items-center gap-xs border border-outline-variant font-semibold" type="button"><span class="material-symbols-outlined text-[18px]">restart_alt</span><span>Limpiar Filtros</span></button><button class="px-md py-2 rounded-lg font-label-md text-on-secondary-fixed font-bold bg-secondary-container hover:bg-secondary-fixed-dim transition-colors flex items-center gap-xs shadow-md" type="submit"><span class="material-symbols-outlined text-[18px]">search</span><span>Buscar Turnos</span></button></div></div><div class="flex items-center gap-xs flex-wrap pt-xs"><span class="font-caption text-on-surface-variant">Filtros activos:</span><span class="inline-flex items-center gap-1 font-caption bg-primary-fixed text-on-primary-fixed px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-outline-variant">Especialidad: Odontología General (Fija) <span class="material-symbols-outlined text-[14px] text-outline">lock</span></span></div></form></section><div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start"><div class="lg:col-span-8 flex flex-col gap-md"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-xs px-xs"><div class="flex items-center gap-xs"><span class="material-symbols-outlined text-primary text-[20px]">schedule</span><span class="font-label-md font-bold text-primary">Turnos disponibles para reagendar</span></div><span class="font-caption text-on-surface-variant">Sin búsqueda activa</span></div><div class="flex flex-col gap-base" id="turnos-disponibles-list"><div class="bg-surface-container-lowest rounded-xl p-md py-xl shadow-md border-2 border-outline-variant flex flex-col items-center justify-center text-center"><div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-md shadow-sm border border-outline-variant"><span class="material-symbols-outlined text-[32px] text-primary">edit_calendar</span></div><h3 class="font-headline-md text-primary text-[20px] font-bold mb-xs">Explora opciones para reagendar</h3><p class="font-body-md text-on-surface-variant max-w-lg mb-md leading-relaxed text-[15px]">Ajusta tu sede preferida o fechas y presiona <strong class="text-on-surface">"Buscar Turnos"</strong> para consultar los cupos disponibles de Odontología General.</p><div class="flex items-center gap-xs bg-surface-container px-md py-2 rounded-lg border border-outline-variant text-[12px] text-on-surface-variant font-caption"><span class="material-symbols-outlined text-secondary text-[16px]">info</span><span>Tu cita actual del 18 Sep permanecerá activa hasta que selecciones y confirmes una nueva.</span></div></div></div></div><aside class="lg:col-span-4 flex flex-col gap-base sticky top-24"><div class="bg-surface-container-lowest rounded-xl p-md shadow-md border-2 border-primary-fixed relative overflow-hidden"><div class="absolute top-0 left-0 right-0 h-1.5 bg-primary"></div><div class="flex items-center justify-between pb-sm mb-sm border-b border-surface-container"><div class="flex items-center gap-xs"><div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[18px]">event_note</span></div><div class="flex flex-col"><h2 class="font-label-md text-primary font-bold leading-tight">Tus Citas Confirmadas</h2><span class="font-caption text-on-surface-variant text-[11px]">Citas vigentes programadas</span></div></div><span class="px-2.5 py-0.5 rounded-full font-caption font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant text-[11px]">0 adicionales</span></div><div class="flex flex-col gap-sm"><div class="bg-surface-bright rounded-xl p-md flex flex-col items-center justify-center text-center gap-xs border-2 border-outline-variant"><div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-outline mb-1"><span class="material-symbols-outlined text-[22px]">event_busy</span></div><p class="font-label-md font-bold text-on-surface text-[14px]">No tienes otras citas agendadas</p><p class="font-caption text-on-surface-variant text-[12px] leading-relaxed">Solo cuentas con la cita previa que estás reagendando actualmente.</p></div></div><div class="flex flex-col gap-xs mt-md pt-sm border-t border-surface-container"><a class="w-full py-2.5 px-md rounded-lg font-label-md text-center font-bold bg-primary text-on-primary hover:bg-primary-container transition-colors flex items-center justify-center gap-xs shadow-md" data-path="citas-panel" href="#"><span>Ir a Mis Citas (Home)</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></a><p class="font-caption text-on-surface-variant text-center text-[11px] mt-1">Cualquier nueva cita que reserves se sumará de inmediato a tu agenda oficial.</p></div></div></aside></div></div></main></div>
-</body></html>
+useSeoMeta({ title: "Reprogramar cita - Kenko EPS" });
+
+const route = useRoute();
+const oldId = computed(() => {
+  const q = route.query.oldId ?? route.query.citaId ?? route.query.id;
+  return Array.isArray(q) ? q[0] ?? "" : (q as string) ?? "";
+});
+
+const filters = ref<Filters>({
+  type: "",
+  medicalCenterId: "",
+  physicianId: "",
+  dateFrom: "",
+  dateTo: "",
+  dayPart: "todas",
+  page: 1,
+  pageSize: 12,
+});
+
+const centers = ref<CatalogMedicalCenter[]>([]);
+const physicians = ref<CatalogPhysician[]>([]);
+const mine = ref<Appointment[]>([]);
+const items = ref<Appointment[]>([]);
+const total = ref(0);
+
+const searching = ref(false);
+const loadingMine = ref(false);
+const reschedulingId = ref<string | null>(null);
+const cancelPending = ref(false);
+
+const mineError = ref<string | null>(null);
+const searchError = ref<string | null>(null);
+const actionError = ref<string | null>(null);
+const toast = ref<string | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+const tokenInput = ref("");
+const showTokenBox = ref(false);
+
+const oldAppointment = computed(
+  () => mine.value.find((a) => a.appointmentId === oldId.value) ?? null,
+);
+const filteredItems = computed(() =>
+  items.value.filter((a) => matchesDayPart(a.startTime, filters.value.dayPart)),
+);
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / filters.value.pageSize)));
+
+function showToast(msg: string) {
+  toast.value = msg;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.value = null), 4500);
+}
+
+async function loadMine() {
+  loadingMine.value = true;
+  mineError.value = null;
+  try {
+    mine.value = await fetchMyAppointments();
+  }
+  catch (err: unknown) {
+    mineError.value = toUserMessage(err);
+  }
+  finally {
+    loadingMine.value = false;
+  }
+}
+
+async function search() {
+  searching.value = true;
+  searchError.value = null;
+  try {
+    const res = await fetchAvailable(filtersToQuery(filters.value));
+    // Nunca ofrecer la misma cita que se quiere cambiar.
+    items.value = res.items.filter((a) => a.appointmentId !== oldId.value);
+    total.value = res.total;
+  }
+  catch (err: unknown) {
+    searchError.value = toUserMessage(err);
+    const status = (err as { statusCode?: number })?.statusCode;
+    if (status === 401 || status === 403) showTokenBox.value = true;
+  }
+  finally {
+    searching.value = false;
+  }
+}
+
+function clearFilters() {
+  filters.value = {
+    type: oldAppointment.value?.type ?? "",
+    medicalCenterId: "",
+    physicianId: "",
+    dateFrom: "",
+    dateTo: "",
+    dayPart: "todas",
+    page: 1,
+    pageSize: 12,
+  };
+  search();
+}
+
+async function usarEsteTurno(nueva: Appointment) {
+  if (!oldId.value) {
+    actionError.value = "Falta la cita actual (?oldId=). Vuelve a Mis citas y pulsa Reagendar.";
+    return;
+  }
+  reschedulingId.value = nueva.appointmentId;
+  actionError.value = null;
+  try {
+    await rescheduleAppointment(oldId.value, nueva.appointmentId);
+    showToast(`Cita reprogramada al ${nueva.date} ${nueva.startTime}.`);
+    await navigateTo("/citas");
+  }
+  catch (err: unknown) {
+    actionError.value = toUserMessage(err);
+  }
+  finally {
+    reschedulingId.value = null;
+  }
+}
+
+const toCancel = ref<Appointment | null>(null);
+async function confirmCancel() {
+  if (!toCancel.value) return;
+  cancelPending.value = true;
+  try {
+    await cancelAppointment(toCancel.value.appointmentId);
+    showToast("Cita cancelada y liberada.");
+    toCancel.value = null;
+    await loadMine();
+  }
+  catch (err: unknown) {
+    actionError.value = toUserMessage(err);
+  }
+  finally {
+    cancelPending.value = false;
+  }
+}
+
+function goReschedule(a: Appointment) {
+  navigateTo({ path: "/citas/reprogramar", query: { oldId: a.appointmentId } });
+}
+
+function saveToken() {
+  setStoredToken(tokenInput.value);
+  showTokenBox.value = false;
+  showToast("Token guardado.");
+  loadMine();
+  search();
+}
+
+// Cuando ya sabemos cuál es la cita vieja, prefiltramos por su mismo tipo
+// (el back exige mismo type al reprogramar).
+watch(oldAppointment, (cur) => {
+  if (cur && !filters.value.type) {
+    filters.value.type = cur.type;
+    search();
+  }
+});
+
+onMounted(async () => {
+  tokenInput.value = getStoredToken();
+  const [c, p] = await Promise.all([fetchMedicalCenters().catch(() => []), fetchPhysicians().catch(() => [])]);
+  centers.value = c;
+  physicians.value = p;
+  await loadMine();
+  await search();
+});
+</script>
+
+<template>
+  <div class="min-h-screen bg-background text-content">
+    <header class="w-full bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+            <Icon name="ph:arrows-clockwise" class="text-xl" />
+          </div>
+          <div>
+            <p class="font-bold text-primary font-display leading-tight">Kenko EPS</p>
+            <p class="text-[10px] uppercase tracking-wider text-slate-500">Reprogramar cita</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <NuxtLink to="/citas" class="text-sm font-bold text-primary hover:underline">← Volver a agendar</NuxtLink>
+          <NuxtLink to="/" class="text-sm text-slate-500 hover:underline">Inicio</NuxtLink>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+      <div class="mb-5">
+        <h1 class="text-2xl font-bold text-primary font-display">Reprogramar cita médica</h1>
+        <p class="text-sm text-slate-600">Elige un nuevo turno libre. Al confirmar, se libera el anterior y se toma el nuevo en una sola operación.</p>
+      </div>
+
+      <!-- Recuadro con la cita actual que se quiere cambiar -->
+      <section class="bg-primary text-on-primary rounded-xl p-5 shadow-md border-2 border-secondary mb-6">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-secondary mb-2 flex items-center gap-1">
+          <Icon name="ph:repeat" />
+          Estás cambiando esta cita
+        </p>
+        <div v-if="loadingMine" class="animate-pulse text-sm">Cargando tu cita actual…</div>
+        <div v-else-if="oldAppointment" class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <p class="text-[11px] uppercase opacity-70">Especialidad</p>
+            <p class="font-bold">{{ appointmentTitle(oldAppointment) }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] uppercase opacity-70">Fecha y hora</p>
+            <p class="font-bold">{{ formatAppointmentDate(oldAppointment) }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] uppercase opacity-70">Médico</p>
+            <p class="font-bold">{{ oldAppointment.physician.name }}</p>
+          </div>
+          <div>
+            <p class="text-[11px] uppercase opacity-70">Sede</p>
+            <p class="font-bold">{{ oldAppointment.medicalCenter.name }}</p>
+          </div>
+        </div>
+        <div v-else class="text-sm bg-white/10 border border-white/20 rounded-lg p-3">
+          No encontré la cita <span class="font-mono">{{ oldId || "(sin ?oldId=)" }}</span> entre tus citas actuales.
+          Ve a <NuxtLink to="/citas" class="underline font-bold">Agendar</NuxtLink>, abre el panel lateral y pulsa Reagendar sobre la cita correcta.
+        </div>
+      </section>
+
+      <div v-if="showTokenBox" class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
+        <p class="font-bold text-amber-900">Falta tu sesión (401/403)</p>
+        <div class="flex flex-col sm:flex-row gap-2 mt-3">
+          <input v-model="tokenInput" type="text" placeholder="Pega tu JWT" class="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-xs font-mono" />
+          <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-bold" @click="saveToken">Guardar token</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-8">
+          <AppointmentFilters
+            v-model="filters"
+            :centers="centers"
+            :physicians="physicians"
+            :pending="searching"
+            @search="filters.page = 1; search()"
+            @clear="clearFilters"
+          />
+
+          <p v-if="actionError" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4">{{ actionError }}</p>
+          <p v-if="searchError" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4">{{ searchError }}</p>
+
+          <h2 class="font-bold text-slate-900 font-display mb-3">
+            Nuevo turno <span class="text-xs font-normal text-slate-500">({{ total }} opciones · debe ser del mismo tipo: {{ oldAppointment?.type ?? "—" }})</span>
+          </h2>
+
+          <div v-if="searching" class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse" role="status">
+            <div class="h-44 rounded-xl bg-slate-100" />
+            <div class="h-44 rounded-xl bg-slate-100" />
+          </div>
+          <div v-else-if="filteredItems.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
+            <p class="font-bold text-slate-900">Sin turnos libres con esos filtros</p>
+            <p class="text-sm text-slate-500 mt-1">Cambia la fecha o la sede. Recuerda: mismo tipo de cita y con más de 24h de aviso.</p>
+          </div>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AvailableAppointmentCard
+              v-for="a in filteredItems"
+              :key="a.appointmentId"
+              :appointment="a"
+              :pending="reschedulingId === a.appointmentId"
+              action-label="Usar este turno"
+              :selected="oldAppointment != null && a.type !== oldAppointment.type"
+              @action="usarEsteTurno"
+            />
+          </div>
+
+          <div class="flex items-center justify-between mt-5">
+            <button type="button" :disabled="filters.page <= 1 || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page--; search()">← Anterior</button>
+            <span class="text-xs text-slate-500">Página {{ filters.page }} de {{ totalPages }}</span>
+            <button type="button" :disabled="filters.page >= totalPages || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page++; search()">Siguiente →</button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 lg:sticky lg:top-20">
+          <MyAppointmentsPanel
+            :appointments="mine"
+            :pending="loadingMine"
+            :error="mineError"
+            @reschedule="goReschedule"
+            @cancel="toCancel = $event"
+          />
+        </div>
+      </div>
+    </main>
+
+    <CancelAppointmentModal
+      v-if="toCancel"
+      :appointment="toCancel"
+      :pending="cancelPending"
+      @close="toCancel = null"
+      @confirm="confirmCancel"
+    />
+
+    <div v-if="toast" role="status" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg z-50">
+      {{ toast }}
+    </div>
+  </div>
+</template>
