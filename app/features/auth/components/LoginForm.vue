@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import { useAuthStore } from "../store";
 import { normalizeDocumentNumber } from "../schemas";
@@ -9,6 +9,7 @@ import {
   loadRememberedDocument,
   saveRememberedDocument,
 } from "../rememberDocument";
+import { useRateLimitCountdown } from "../useRateLimitCountdown";
 import AuthAlert from "./AuthAlert.vue";
 import DocumentNumberField from "./DocumentNumberField.vue";
 import DocumentTypeSelector from "./DocumentTypeSelector.vue";
@@ -28,31 +29,7 @@ const fields = computed(() =>
 );
 
 /** Cuenta regresiva visible del 429 (el store guarda los segundos totales). */
-const remaining = ref(0);
-let timer: ReturnType<typeof setInterval> | null = null;
-
-function stopTimer(): void {
-  if (timer !== null) {
-    clearInterval(timer);
-    timer = null;
-  }
-}
-
-watch(
-  () => store.lastFailure,
-  (failure) => {
-    stopTimer();
-    if (failure?.kind === "rate-limited" && failure.retryAfterSeconds) {
-      remaining.value = failure.retryAfterSeconds;
-      timer = setInterval(() => {
-        remaining.value -= 1;
-        if (remaining.value <= 0) stopTimer();
-      }, 1000);
-    }
-  },
-);
-
-onUnmounted(stopTimer);
+const { remaining } = useRateLimitCountdown(() => store.lastFailure);
 
 onMounted(() => {
   const saved = loadRememberedDocument();
