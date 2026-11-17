@@ -9,6 +9,8 @@ import { getServiceBases } from "~/core/config/services";
 import { useAuthStore } from "~/features/auth";
 import type { AuthUser } from "~/features/auth";
 import { useMyAppointmentsQuery } from "../../appointments";
+import { cancelAppointment, createAppointmentsClient } from "../../appointments";
+import type { AppointmentResponse } from "../../appointments";
 import {
   createProfileClient,
   downloadAuthorizationPdf,
@@ -17,6 +19,7 @@ import {
   useGenerateHistoryMutation,
 } from "../../profile";
 import AppointmentsCard from "~/features/home-page/components/AppointmentsCard.vue";
+import CancelAppointmentModal from "~/features/appointments/components/CancelAppointmentModal.vue";
 import AuthorizationsSection from "~/features/home-page/components/AuthorizationsSection.vue";
 import CertificatesCard from "~/features/home-page/components/CertificatesCard.vue";
 import ClinicLocationCard from "~/features/home-page/components/ClinicLocationCard.vue";
@@ -35,6 +38,7 @@ import {
   dashboardPatientMock,
 } from "~/features/home-page/mocks/dashboard.mock";
 import type { AppointmentsSummaryView, SessionPatientView } from "~/features/home-page/types";
+import type { AppointmentView } from "~/features/home-page/types";
 
 // Identidad real de la sesión (GET /auth/me vía el store).
 // El backend aún no expone apellido ni documento: los completará profile
@@ -79,6 +83,40 @@ const appointmentsSummary = computed<AppointmentsSummaryView>(() =>
 const appointmentsError = computed(() =>
   toAppointmentsErrorMessage(appointmentsQuery.error.value),
 );
+
+// Acciones de la tarjeta: reagendar navega con el id real, cancelar abre el pop-up rojo.
+const appointmentsClient = createAppointmentsClient(bases.appointments, getAccessToken);
+const toCancel = ref<AppointmentResponse | null>(null);
+const cancelPending = ref(false);
+const cancelError = ref<string | null>(null);
+
+function goReschedule(view: AppointmentView): void {
+  navigateTo({ path: "/citas/reprogramar", query: { oldId: view.id } });
+}
+
+function askCancel(view: AppointmentView): void {
+  cancelError.value = null;
+  toCancel.value =
+    appointmentsQuery.data.value?.find((a) => a.appointmentId === view.id) ?? null;
+}
+
+async function confirmCancel(): Promise<void> {
+  if (!toCancel.value) return;
+  cancelPending.value = true;
+  cancelError.value = null;
+  try {
+    await cancelAppointment(appointmentsClient, toCancel.value.appointmentId);
+    toCancel.value = null;
+    await appointmentsQuery.refetch();
+  }
+  catch (error) {
+    cancelError.value =
+      toAppointmentsErrorMessage(error) ?? "No se pudo cancelar la cita.";
+  }
+  finally {
+    cancelPending.value = false;
+  }
+}
 
 // Autorizaciones reales (solo lectura; el filtro se cableará después).
 const authorizationsQuery = useAuthorizationsQuery(getAccessToken, bases.profile);
@@ -160,7 +198,12 @@ useHead({
             :summary="appointmentsSummary"
             :is-pending="appointmentsQuery.isPending.value"
             :error="appointmentsError"
+            @reschedule="goReschedule"
+            @cancel="askCancel"
           />
+          <p v-if="cancelError" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3">
+            {{ cancelError }}
+          </p>
         </div>
 
         <div class="lg:col-span-5 flex flex-col gap-6">
@@ -185,6 +228,14 @@ useHead({
         @download-pdf="downloadPdf"
       />
     </main>
+
+    <CancelAppointmentModal
+      v-if="toCancel"
+      :appointment="toCancel"
+      :pending="cancelPending"
+      @close="toCancel = null"
+      @confirm="confirmCancel"
+    />
 
     <HomeFooter />
   </div>

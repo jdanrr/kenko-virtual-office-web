@@ -1,19 +1,19 @@
 <script setup lang="ts">
 // Panel lateral "Tus citas confirmadas": se usa en agendar y en reprogramar.
 // Basado en el aside de stitch-referencia/agendar-con.resultados.html.
-import type { Appointment } from "../types";
-import { appointmentTitle, formatAppointmentDate } from "../types";
+import type { AppointmentResponse } from "../types";
+import { appointmentTitle, formatAppointmentDate } from "../citasView";
 
 interface Props {
-  appointments: Appointment[];
+  appointments: AppointmentResponse[];
   pending?: boolean;
   error?: string | null;
 }
 
 withDefaults(defineProps<Props>(), { pending: false, error: null });
 const emit = defineEmits<{
-  reschedule: [appointment: Appointment];
-  cancel: [appointment: Appointment];
+  reschedule: [appointment: AppointmentResponse];
+  cancel: [appointment: AppointmentResponse];
 }>();
 </script>
 

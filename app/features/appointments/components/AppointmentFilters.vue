@@ -1,24 +1,25 @@
 <script setup lang="ts">
 // Filtros de búsqueda. Especialidad/centro/médico/fecha van al back;
 // franja horaria (mañana/tarde/noche) se filtra aquí en el front porque el back no la tiene.
-import type { AppointmentFilters, CatalogMedicalCenter, CatalogPhysician, DayPart } from "../types";
-import { APPOINTMENT_TYPE_LABEL } from "../types";
+import type { MedicalCenter, Physician } from "../types";
+import type { CitasViewFilters, DayPart } from "../citasView";
+import { APPOINTMENT_TYPE_LABEL } from "../citasView";
 
 interface Props {
-  modelValue: AppointmentFilters;
-  centers: CatalogMedicalCenter[];
-  physicians: CatalogPhysician[];
+  modelValue: CitasViewFilters;
+  centers: MedicalCenter[];
+  physicians: Physician[];
   pending?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), { pending: false });
 const emit = defineEmits<{
-  "update:modelValue": [v: AppointmentFilters];
+  "update:modelValue": [v: CitasViewFilters];
   search: [];
   clear: [];
 }>();
 
-function patch(p: Partial<AppointmentFilters>) {
+function patch(p: Partial<CitasViewFilters>) {
   emit("update:modelValue", { ...props.modelValue, page: 1, ...p });
 }
 
@@ -80,7 +81,7 @@ const dayParts: { id: DayPart; label: string }[] = [
         <select
           :value="modelValue.type"
           class="border-2 border-slate-200 rounded-lg px-3 py-2 text-sm"
-          @change="patch({ type: ($event.target as HTMLSelectElement).value as AppointmentFilters['type'] })"
+          @change="patch({ type: ($event.target as HTMLSelectElement).value as CitasViewFilters['type'] })"
         >
           <option value="">Todas las especialidades</option>
           <option v-for="(label, key) in APPOINTMENT_TYPE_LABEL" :key="key" :value="key">{{ label }}</option>

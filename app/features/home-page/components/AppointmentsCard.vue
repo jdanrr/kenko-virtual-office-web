@@ -16,6 +16,11 @@ interface Props {
 
 withDefaults(defineProps<Props>(), { isPending: false, error: null });
 
+const emit = defineEmits<{
+  reschedule: [appointment: AppointmentView];
+  cancel: [appointment: AppointmentView];
+}>();
+
 // Mapeo especialidad → icono (local a home-page según CONTRACTS.md).
 function specialtyIcon(appointment: AppointmentView): string {
   if (appointment.specialty === "Odontología") return "ph:tooth";
@@ -120,6 +125,7 @@ function modalityLabel(modality: AppointmentModality): string | null {
             <button
               class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               type="button"
+              @click="emit('reschedule', summary.next)"
             >
               <Icon name="ph:calendar-plus" class="text-sm text-amber-700" aria-hidden="true" />
               <span>Reagendar</span>
@@ -127,6 +133,7 @@ function modalityLabel(modality: AppointmentModality): string | null {
             <button
               class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
               type="button"
+              @click="emit('cancel', summary.next)"
             >
               <Icon name="ph:x-circle" class="text-sm text-rose-500" aria-hidden="true" />
               <span>Cancelar cita</span>
@@ -190,6 +197,7 @@ function modalityLabel(modality: AppointmentModality): string | null {
               <button
                 class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
                 type="button"
+                @click="emit('reschedule', appointment)"
               >
                 <Icon name="ph:calendar-plus" class="text-sm text-amber-700" aria-hidden="true" />
                 <span>Reagendar</span>
@@ -197,6 +205,7 @@ function modalityLabel(modality: AppointmentModality): string | null {
               <button
                 class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
                 type="button"
+                @click="emit('cancel', appointment)"
               >
                 <Icon name="ph:x-circle" class="text-sm text-rose-500" aria-hidden="true" />
                 <span>Cancelar cita</span>
@@ -206,14 +215,14 @@ function modalityLabel(modality: AppointmentModality): string | null {
         </div>
 
         <div class="pt-4 mt-auto">
-          <a
+          <NuxtLink
+            to="/citas"
             class="w-full py-3 px-4 bg-kenko-secondary hover:bg-amber-400 text-slate-900 font-bold text-xs md:text-sm rounded-xl transition duration-150 shadow-md flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-            href="#agendar-cita"
           >
             <Icon name="ph:calendar-plus" class="font-bold text-base" aria-hidden="true" />
             <span>Agendar Nueva Cita Médica</span>
             <Icon name="ph:arrow-right" class="text-sm" aria-hidden="true" />
-          </a>
+          </NuxtLink>
         </div>
       </div>
     </template>

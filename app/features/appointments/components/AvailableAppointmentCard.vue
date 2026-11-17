@@ -1,17 +1,17 @@
 <script setup lang="ts">
 // Tarjeta de un turno disponible con botón Agendar.
-import type { Appointment } from "../types";
-import { appointmentTitle, formatAppointmentDate } from "../types";
+import type { AppointmentResponse } from "../types";
+import { appointmentTitle, formatAppointmentDate } from "../citasView";
 
 interface Props {
-  appointment: Appointment;
+  appointment: AppointmentResponse;
   pending?: boolean;
   selected?: boolean;
   actionLabel?: string;
 }
 
 withDefaults(defineProps<Props>(), { pending: false, selected: false, actionLabel: "Agendar cita" });
-const emit = defineEmits<{ action: [appointment: Appointment] }>();
+const emit = defineEmits<{ action: [appointment: AppointmentResponse] }>();
 </script>
 
 <template>

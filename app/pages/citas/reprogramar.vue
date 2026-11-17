@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Vista /citas/reprogramar?oldId= — igual a agendar + recuadro con la cita actual.
-// Reprogramar es UNA sola llamada: POST /api/citas/:oldId/reprogramar { newAppointmentId }.
+// Reprogramar es UNA sola llamada: rescheduleAppointment(client, oldId, { newAppointmentId }).
 import { computed, onMounted, ref, watch } from "vue";
 import AppointmentFilters from "~/features/appointments/components/AppointmentFilters.vue";
 import AvailableAppointmentCard from "~/features/appointments/components/AvailableAppointmentCard.vue";
@@ -8,23 +8,28 @@ import CancelAppointmentModal from "~/features/appointments/components/CancelApp
 import MyAppointmentsPanel from "~/features/appointments/components/MyAppointmentsPanel.vue";
 import {
   cancelAppointment,
-  fetchAvailable,
-  fetchMedicalCenters,
-  fetchMyAppointments,
-  fetchPhysicians,
-  filtersToQuery,
-  getStoredToken,
+  createAppointmentsClient,
+  listAvailableAppointments,
+  listMedicalCenters,
+  listMyAppointments,
+  listPhysicians,
   rescheduleAppointment,
-  setStoredToken,
-  toUserMessage,
 } from "~/features/appointments/api";
 import type {
-  Appointment,
-  AppointmentFilters as Filters,
-  CatalogMedicalCenter,
-  CatalogPhysician,
+  AppointmentResponse,
+  MedicalCenter,
+  Physician,
 } from "~/features/appointments/types";
-import { appointmentTitle, formatAppointmentDate, matchesDayPart } from "~/features/appointments/types";
+import {
+  appointmentTitle,
+  formatAppointmentDate,
+  matchesDayPart,
+  toUserMessage,
+  viewFiltersToParams,
+} from "~/features/appointments/citasView";
+import type { CitasViewFilters } from "~/features/appointments/citasView";
+import { getServiceBases } from "~/core/config/services";
+import { useAuthStore } from "~/features/auth";
 
 useSeoMeta({ title: "Reprogramar cita - Kenko EPS" });
 
@@ -34,7 +39,12 @@ const oldId = computed(() => {
   return Array.isArray(q) ? q[0] ?? "" : (q as string) ?? "";
 });
 
-const filters = ref<Filters>({
+const auth = useAuthStore();
+const getAccessToken = () => auth.accessToken;
+const bases = getServiceBases();
+const client = createAppointmentsClient(bases.appointments, getAccessToken);
+
+const filters = ref<CitasViewFilters>({
   type: "",
   medicalCenterId: "",
   physicianId: "",
@@ -45,10 +55,10 @@ const filters = ref<Filters>({
   pageSize: 12,
 });
 
-const centers = ref<CatalogMedicalCenter[]>([]);
-const physicians = ref<CatalogPhysician[]>([]);
-const mine = ref<Appointment[]>([]);
-const items = ref<Appointment[]>([]);
+const centers = ref<MedicalCenter[]>([]);
+const physicians = ref<Physician[]>([]);
+const mine = ref<AppointmentResponse[]>([]);
+const items = ref<AppointmentResponse[]>([]);
 const total = ref(0);
 
 const searching = ref(false);
@@ -61,9 +71,6 @@ const searchError = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 const toast = ref<string | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
-
-const tokenInput = ref("");
-const showTokenBox = ref(false);
 
 const oldAppointment = computed(
   () => mine.value.find((a) => a.appointmentId === oldId.value) ?? null,
@@ -83,7 +90,7 @@ async function loadMine() {
   loadingMine.value = true;
   mineError.value = null;
   try {
-    mine.value = await fetchMyAppointments();
+    mine.value = await listMyAppointments(client);
   }
   catch (err: unknown) {
     mineError.value = toUserMessage(err);
@@ -97,15 +104,13 @@ async function search() {
   searching.value = true;
   searchError.value = null;
   try {
-    const res = await fetchAvailable(filtersToQuery(filters.value));
+    const res = await listAvailableAppointments(client, viewFiltersToParams(filters.value));
     // Nunca ofrecer la misma cita que se quiere cambiar.
     items.value = res.items.filter((a) => a.appointmentId !== oldId.value);
     total.value = res.total;
   }
   catch (err: unknown) {
     searchError.value = toUserMessage(err);
-    const status = (err as { statusCode?: number })?.statusCode;
-    if (status === 401 || status === 403) showTokenBox.value = true;
   }
   finally {
     searching.value = false;
@@ -126,7 +131,7 @@ function clearFilters() {
   search();
 }
 
-async function usarEsteTurno(nueva: Appointment) {
+async function usarEsteTurno(nueva: AppointmentResponse) {
   if (!oldId.value) {
     actionError.value = "Falta la cita actual (?oldId=). Vuelve a Mis citas y pulsa Reagendar.";
     return;
@@ -134,8 +139,8 @@ async function usarEsteTurno(nueva: Appointment) {
   reschedulingId.value = nueva.appointmentId;
   actionError.value = null;
   try {
-    await rescheduleAppointment(oldId.value, nueva.appointmentId);
-    showToast(`Cita reprogramada al ${nueva.date} ${nueva.startTime}.`);
+    await rescheduleAppointment(client, oldId.value, { newAppointmentId: nueva.appointmentId });
+    showToast(`Cita reprogramada al ${nueva.date} ${nueva.startTime.slice(0, 5)}.`);
     await navigateTo("/citas");
   }
   catch (err: unknown) {
@@ -146,12 +151,12 @@ async function usarEsteTurno(nueva: Appointment) {
   }
 }
 
-const toCancel = ref<Appointment | null>(null);
+const toCancel = ref<AppointmentResponse | null>(null);
 async function confirmCancel() {
   if (!toCancel.value) return;
   cancelPending.value = true;
   try {
-    await cancelAppointment(toCancel.value.appointmentId);
+    await cancelAppointment(client, toCancel.value.appointmentId);
     showToast("Cita cancelada y liberada.");
     toCancel.value = null;
     await loadMine();
@@ -164,16 +169,8 @@ async function confirmCancel() {
   }
 }
 
-function goReschedule(a: Appointment) {
+function goReschedule(a: AppointmentResponse) {
   navigateTo({ path: "/citas/reprogramar", query: { oldId: a.appointmentId } });
-}
-
-function saveToken() {
-  setStoredToken(tokenInput.value);
-  showTokenBox.value = false;
-  showToast("Token guardado.");
-  loadMine();
-  search();
 }
 
 // Cuando ya sabemos cuál es la cita vieja, prefiltramos por su mismo tipo
@@ -186,8 +183,10 @@ watch(oldAppointment, (cur) => {
 });
 
 onMounted(async () => {
-  tokenInput.value = getStoredToken();
-  const [c, p] = await Promise.all([fetchMedicalCenters().catch(() => []), fetchPhysicians().catch(() => [])]);
+  const [c, p] = await Promise.all([
+    listMedicalCenters(client).catch(() => [] as MedicalCenter[]),
+    listPhysicians(client).catch(() => [] as Physician[]),
+  ]);
   centers.value = c;
   physicians.value = p;
   await loadMine();
@@ -210,7 +209,7 @@ onMounted(async () => {
         </div>
         <div class="flex items-center gap-4">
           <NuxtLink to="/citas" class="text-sm font-bold text-primary hover:underline">← Volver a agendar</NuxtLink>
-          <NuxtLink to="/" class="text-sm text-slate-500 hover:underline">Inicio</NuxtLink>
+          <NuxtLink to="/home-page" class="text-sm text-slate-500 hover:underline">Inicio</NuxtLink>
         </div>
       </div>
     </header>
@@ -251,14 +250,6 @@ onMounted(async () => {
           Ve a <NuxtLink to="/citas" class="underline font-bold">Agendar</NuxtLink>, abre el panel lateral y pulsa Reagendar sobre la cita correcta.
         </div>
       </section>
-
-      <div v-if="showTokenBox" class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
-        <p class="font-bold text-amber-900">Falta tu sesión (401/403)</p>
-        <div class="flex flex-col sm:flex-row gap-2 mt-3">
-          <input v-model="tokenInput" type="text" placeholder="Pega tu JWT" class="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-xs font-mono" />
-          <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-bold" @click="saveToken">Guardar token</button>
-        </div>
-      </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div class="lg:col-span-8">

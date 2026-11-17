@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // Pop-up rojo de confirmación para cancelar. Basado en stitch-referencia/popup-cancelar.html.
-import type { Appointment } from "../types";
-import { appointmentTitle, formatAppointmentDate } from "../types";
+import type { AppointmentResponse } from "../types";
+import { appointmentTitle, formatAppointmentDate } from "../citasView";
 
 interface Props {
-  appointment: Appointment | null;
+  appointment: AppointmentResponse | null;
   pending?: boolean;
 }
 

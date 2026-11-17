@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Vista /citas — Agendar + panel lateral "Mis citas".
-// Llama al back por el proxy /api/citas/* (ver server/api/citas/).
+// Usa el cliente directo de appointments (de otro equipo) + helpers locales de citasView.
+// No usa el proxy BFF ni localStorage: el token sale de useAuthStore.
 import { computed, onMounted, ref } from "vue";
 import AppointmentFilters from "~/features/appointments/components/AppointmentFilters.vue";
 import AvailableAppointmentCard from "~/features/appointments/components/AvailableAppointmentCard.vue";
@@ -8,27 +9,35 @@ import CancelAppointmentModal from "~/features/appointments/components/CancelApp
 import MyAppointmentsPanel from "~/features/appointments/components/MyAppointmentsPanel.vue";
 import {
   cancelAppointment,
-  fetchAvailable,
-  fetchMedicalCenters,
-  fetchMyAppointments,
-  fetchPhysicians,
-  filtersToQuery,
-  getStoredToken,
+  createAppointmentsClient,
+  listAvailableAppointments,
+  listMedicalCenters,
+  listMyAppointments,
+  listPhysicians,
   scheduleAppointment,
-  setStoredToken,
-  toUserMessage,
 } from "~/features/appointments/api";
 import type {
-  Appointment,
-  AppointmentFilters as Filters,
-  CatalogMedicalCenter,
-  CatalogPhysician,
+  AppointmentResponse,
+  MedicalCenter,
+  Physician,
 } from "~/features/appointments/types";
-import { matchesDayPart } from "~/features/appointments/types";
+import {
+  matchesDayPart,
+  toUserMessage,
+  viewFiltersToParams,
+} from "~/features/appointments/citasView";
+import type { CitasViewFilters } from "~/features/appointments/citasView";
+import { getServiceBases } from "~/core/config/services";
+import { useAuthStore } from "~/features/auth";
 
 useSeoMeta({ title: "Agendar cita - Kenko EPS" });
 
-const filters = ref<Filters>({
+const auth = useAuthStore();
+const getAccessToken = () => auth.accessToken;
+const bases = getServiceBases();
+const client = createAppointmentsClient(bases.appointments, getAccessToken);
+
+const filters = ref<CitasViewFilters>({
   type: "",
   medicalCenterId: "",
   physicianId: "",
@@ -39,10 +48,10 @@ const filters = ref<Filters>({
   pageSize: 12,
 });
 
-const centers = ref<CatalogMedicalCenter[]>([]);
-const physicians = ref<CatalogPhysician[]>([]);
-const mine = ref<Appointment[]>([]);
-const items = ref<Appointment[]>([]);
+const centers = ref<MedicalCenter[]>([]);
+const physicians = ref<Physician[]>([]);
+const mine = ref<AppointmentResponse[]>([]);
+const items = ref<AppointmentResponse[]>([]);
 const total = ref(0);
 
 const loadingCatalogs = ref(false);
@@ -56,9 +65,6 @@ const searchError = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 const toast = ref<string | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
-
-const tokenInput = ref("");
-const showTokenBox = ref(false);
 
 const filteredItems = computed(() =>
   items.value.filter((a) => matchesDayPart(a.startTime, filters.value.dayPart)),
@@ -74,7 +80,10 @@ function showToast(msg: string) {
 async function loadCatalogs() {
   loadingCatalogs.value = true;
   try {
-    const [c, p] = await Promise.all([fetchMedicalCenters(), fetchPhysicians()]);
+    const [c, p] = await Promise.all([
+      listMedicalCenters(client),
+      listPhysicians(client),
+    ]);
     centers.value = c;
     physicians.value = p;
   }
@@ -91,12 +100,10 @@ async function loadMine() {
   loadingMine.value = true;
   mineError.value = null;
   try {
-    mine.value = await fetchMyAppointments();
+    mine.value = await listMyAppointments(client);
   }
   catch (err: unknown) {
     mineError.value = toUserMessage(err);
-    const status = (err as { statusCode?: number })?.statusCode;
-    if (status === 401 || status === 403) showTokenBox.value = true;
   }
   finally {
     loadingMine.value = false;
@@ -108,14 +115,12 @@ async function search() {
   searchError.value = null;
   actionError.value = null;
   try {
-    const res = await fetchAvailable(filtersToQuery(filters.value));
+    const res = await listAvailableAppointments(client, viewFiltersToParams(filters.value));
     items.value = res.items;
     total.value = res.total;
   }
   catch (err: unknown) {
     searchError.value = toUserMessage(err);
-    const status = (err as { statusCode?: number })?.statusCode;
-    if (status === 401 || status === 403) showTokenBox.value = true;
   }
   finally {
     searching.value = false;
@@ -136,12 +141,12 @@ function clearFilters() {
   search();
 }
 
-async function agendar(a: Appointment) {
+async function agendar(a: AppointmentResponse) {
   schedulingId.value = a.appointmentId;
   actionError.value = null;
   try {
-    await scheduleAppointment(a.appointmentId);
-    showToast(`Cita agendada: ${a.date} ${a.startTime} con ${a.physician.name}`);
+    await scheduleAppointment(client, a.appointmentId);
+    showToast(`Cita agendada: ${a.date} ${a.startTime.slice(0, 5)} con ${a.physician.name}`);
     await Promise.all([loadMine(), search()]);
   }
   catch (err: unknown) {
@@ -153,15 +158,15 @@ async function agendar(a: Appointment) {
 }
 
 // Cancelar con pop-up rojo
-const toCancel = ref<Appointment | null>(null);
-function askCancel(a: Appointment) {
+const toCancel = ref<AppointmentResponse | null>(null);
+function askCancel(a: AppointmentResponse) {
   toCancel.value = a;
 }
 async function confirmCancel() {
   if (!toCancel.value) return;
   cancelPending.value = true;
   try {
-    await cancelAppointment(toCancel.value.appointmentId);
+    await cancelAppointment(client, toCancel.value.appointmentId);
     showToast("Cita cancelada y liberada.");
     toCancel.value = null;
     await Promise.all([loadMine(), search()]);
@@ -174,20 +179,11 @@ async function confirmCancel() {
   }
 }
 
-function goReschedule(a: Appointment) {
+function goReschedule(a: AppointmentResponse) {
   navigateTo({ path: "/citas/reprogramar", query: { oldId: a.appointmentId } });
 }
 
-function saveToken() {
-  setStoredToken(tokenInput.value);
-  showToast("Token guardado en este navegador.");
-  showTokenBox.value = false;
-  loadMine();
-  search();
-}
-
 onMounted(async () => {
-  tokenInput.value = getStoredToken();
   await loadCatalogs();
   await Promise.all([loadMine(), search()]);
 });
@@ -206,7 +202,7 @@ onMounted(async () => {
             <p class="text-[10px] uppercase tracking-wider text-slate-500">Portal paciente</p>
           </div>
         </div>
-        <NuxtLink to="/" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+        <NuxtLink to="/home-page" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
           <Icon name="ph:arrow-left" />
           Volver al inicio
         </NuxtLink>
@@ -227,22 +223,6 @@ onMounted(async () => {
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           Disponibilidad en vivo
         </span>
-      </div>
-
-      <div v-if="showTokenBox" class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
-        <p class="font-bold text-amber-900">Falta tu sesión (401/403)</p>
-        <p class="text-amber-800 text-xs mt-1">Pega el JWT que te da el microservicio de authentication para llamar al back de citas.</p>
-        <div class="flex flex-col sm:flex-row gap-2 mt-3">
-          <input
-            v-model="tokenInput"
-            type="text"
-            placeholder="Bearer eyJhbGciOi…"
-            class="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-xs font-mono"
-          />
-          <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-bold" @click="saveToken">
-            Guardar token
-          </button>
-        </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
