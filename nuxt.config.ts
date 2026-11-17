@@ -18,6 +18,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: "2025-07-15",
 
+  runtimeConfig: {
+    public: {
+      apiAuthBase: "",
+      apiProfileBase: "",
+      apiAppointmentsBase: "",
+    },
+  },
+
   i18n: {
     defaultLocale: "es",
     locales: [{ code: "es", language: "es-ES", name: "Español" }],

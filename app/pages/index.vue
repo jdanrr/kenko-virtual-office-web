@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// Ruta fina de inicio: solo renderiza la página de la feature home-page.
-import HomePage from "~/features/home-page/pages/HomePage.vue";
+// La primera página es el login: la raíz redirige a `/iniciar-sesion`.
+await navigateTo("/iniciar-sesion", { replace: true });
 </script>
 
 <template>
-  <HomePage />
+  <div />
 </template>

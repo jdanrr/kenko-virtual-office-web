@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Tarjeta de certificados: recibe los documentos por props (maqueta sin lógica).
-// TODO(profile): recibir datos de useCertificatesQuery() y cablear las
-// descargas con los helpers de la feature profile.
+// Tarjeta de certificados: genera los documentos bajo demanda.
+// Generar ES enviar: el backend crea el PDF, lo sube a S3 y publica el
+// evento que dispara el correo al email registrado (sin endpoint aparte).
 import type {
   AffiliationCertificateView,
   MedicalHistorySummaryView,
@@ -15,6 +15,10 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), { isPending: false, error: null });
+
+defineEmits<{
+  (e: "generate-certificate" | "generate-history"): void;
+}>();
 </script>
 
 <template>
@@ -26,34 +30,27 @@ withDefaults(defineProps<Props>(), { isPending: false, error: null });
 
     <!-- Estado de carga -->
     <div v-if="isPending" role="status" class="grid grid-cols-1 gap-3 pt-1 animate-pulse">
-      <span class="sr-only">Cargando certificados…</span>
+      <span class="sr-only">Generando documento…</span>
       <div class="h-48 rounded-xl bg-slate-100" />
       <div class="h-40 rounded-xl bg-slate-100" />
     </div>
 
-    <!-- Estado de error -->
-    <p v-else-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
-      No se pudieron cargar los certificados. Inténtalo de nuevo más tarde.
-    </p>
-
     <div v-else class="grid grid-cols-1 gap-3 pt-1">
+      <!-- El aviso de error no oculta los botones: reintentar es la acción. -->
+      <p v-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
+        {{ error }}
+      </p>
       <!-- Certificado de afiliación -->
       <div
-        v-if="certificate"
         class="p-3.5 bg-slate-50/80 hover:bg-emerald-50/40 rounded-xl border border-slate-200 transition flex flex-col justify-between"
       >
         <div class="flex items-start justify-between gap-2 mb-2">
           <div>
-            <span
-              class="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-100/90 px-1.5 py-0.5 rounded"
-            >
-              POST /certificates
-            </span>
             <h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1 font-display">
               Certificado Afiliación
             </h3>
             <p class="text-[11px] text-slate-500">
-              PDF o entrega directa por correo registrado
+              Se genera bajo demanda y llega a tu correo registrado
             </p>
           </div>
           <div
@@ -64,7 +61,20 @@ withDefaults(defineProps<Props>(), { isPending: false, error: null });
           </div>
         </div>
 
+        <p v-if="!certificate && !isPending && !error" class="text-[11px] text-slate-500 mb-2.5">
+          Aún no has generado tu certificado. Usa el botón para crearlo.
+        </p>
+
+        <p
+          v-if="certificate && !isPending && !error"
+          role="status"
+          class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5 mb-2.5"
+        >
+          ¡Listo! Tu certificado fue generado y enviado a tu correo registrado.
+        </p>
+
         <dl
+          v-if="certificate"
           class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"
         >
           <div class="flex justify-between">
@@ -83,39 +93,26 @@ withDefaults(defineProps<Props>(), { isPending: false, error: null });
 
         <div class="flex items-center gap-2">
           <button
-            class="flex-1 py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+            class="flex-1 py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
             type="button"
+            @click="$emit('generate-certificate')"
           >
             <Icon name="ph:download-simple" class="text-sm" aria-hidden="true" />
-            Descargar PDF
-          </button>
-          <button
-            aria-label="Enviar certificado por correo"
-            class="py-2 px-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold flex items-center justify-center transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-            title="Enviar por correo"
-            type="button"
-          >
-            <Icon name="ph:arrow-right" class="text-sm" aria-hidden="true" />
+            Generar certificado
           </button>
         </div>
       </div>
 
       <!-- Historial médico -->
       <div
-        v-if="history"
         class="p-3.5 bg-slate-50/80 hover:bg-blue-50/40 rounded-xl border border-slate-200 transition flex flex-col justify-between"
       >
         <div class="flex items-start justify-between gap-2 mb-2">
           <div>
-            <span
-              class="text-[10px] font-mono text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded"
-            >
-              POST /medical-history
-            </span>
             <h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1 font-display">
               Historial Médico
             </h3>
-            <p class="text-[11px] text-slate-500">Consolidado general clínico</p>
+            <p class="text-[11px] text-slate-500">Consolidado general clínico (llega a tu correo registrado)</p>
           </div>
           <div
             aria-hidden="true"
@@ -125,7 +122,20 @@ withDefaults(defineProps<Props>(), { isPending: false, error: null });
           </div>
         </div>
 
+        <p v-if="!history && !isPending && !error" class="text-[11px] text-slate-500 mb-2.5">
+          Aún no has generado tu historial. Usa el botón para crearlo.
+        </p>
+
+        <p
+          v-if="history && !isPending && !error"
+          role="status"
+          class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5 mb-2.5"
+        >
+          ¡Listo! Tu historial fue generado y enviado a tu correo registrado.
+        </p>
+
         <dl
+          v-if="history"
           class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"
         >
           <div class="flex justify-between">
@@ -144,11 +154,12 @@ withDefaults(defineProps<Props>(), { isPending: false, error: null });
 
         <div class="flex items-center gap-2">
           <button
-            class="w-full py-2 px-2.5 bg-kenko-primary hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
+            class="w-full py-2 px-2.5 bg-kenko-primary hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
             type="button"
+            @click="$emit('generate-history')"
           >
             <Icon name="ph:download-simple" class="text-sm" aria-hidden="true" />
-            Descargar Historial
+            Generar historial
           </button>
         </div>
       </div>

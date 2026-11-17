@@ -72,12 +72,11 @@ function modalityLabel(modality: AppointmentModality): string | null {
       <div class="h-20 rounded-xl bg-slate-100" />
     </div>
 
-    <!-- Estado de error -->
-    <p v-else-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
-      No se pudieron cargar las citas. Inténtalo de nuevo más tarde.
-    </p>
-
     <template v-else>
+      <!-- El aviso de error no oculta las acciones: reintentar es la acción. -->
+      <p v-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5">
+        {{ error }}
+      </p>
       <!-- Próxima cita confirmada -->
       <div
         v-if="summary.next"
@@ -119,14 +118,14 @@ function modalityLabel(modality: AppointmentModality): string | null {
           </div>
           <div class="flex items-center gap-2 sm:self-center">
             <button
-              class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
+              class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               type="button"
             >
               <Icon name="ph:calendar-plus" class="text-sm text-amber-700" aria-hidden="true" />
               <span>Reagendar</span>
             </button>
             <button
-              class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+              class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
               type="button"
             >
               <Icon name="ph:x-circle" class="text-sm text-rose-500" aria-hidden="true" />
@@ -189,14 +188,14 @@ function modalityLabel(modality: AppointmentModality): string | null {
             </div>
             <div class="flex items-center gap-2 sm:self-center">
               <button
-                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-amber-100/60 text-slate-700 text-xs font-semibold rounded-lg border border-amber-300/80 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
                 type="button"
               >
                 <Icon name="ph:calendar-plus" class="text-sm text-amber-700" aria-hidden="true" />
                 <span>Reagendar</span>
               </button>
               <button
-                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold rounded-lg border border-slate-200 hover:border-rose-200 shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
                 type="button"
               >
                 <Icon name="ph:x-circle" class="text-sm text-rose-500" aria-hidden="true" />
@@ -208,7 +207,7 @@ function modalityLabel(modality: AppointmentModality): string | null {
 
         <div class="pt-4 mt-auto">
           <a
-            class="w-full py-3 px-4 bg-kenko-secondary hover:bg-amber-400 text-slate-900 font-bold text-xs md:text-sm rounded-xl transition duration-150 shadow-md flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+            class="w-full py-3 px-4 bg-kenko-secondary hover:bg-amber-400 text-slate-900 font-bold text-xs md:text-sm rounded-xl transition duration-150 shadow-md flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
             href="#agendar-cita"
           >
             <Icon name="ph:calendar-plus" class="font-bold text-base" aria-hidden="true" />

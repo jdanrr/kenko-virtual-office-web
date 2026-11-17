@@ -17,6 +17,8 @@ export const dashboardPatientMock: SessionPatientView = {
   shortName: "Tatiana R.",
   documentMasked: "CC 1.020.485.***",
   initials: "TR",
+  gender: "female",
+  email: "tatiana.rivero@example.com",
 };
 
 const nextAppointmentMock: AppointmentView = {
@@ -69,6 +71,7 @@ export const medicalHistoryMock: MedicalHistorySummaryView = {
 export const authorizationsMock: AuthorizationView[] = [
   {
     id: "AUT-92841",
+    shortId: "AUT-92841",
     code: "BLOOD_TEST",
     title: "Examen de sangre",
     description: "Cuadro hemático, perfil lipídico y glicemia",
@@ -80,6 +83,7 @@ export const authorizationsMock: AuthorizationView[] = [
   },
   {
     id: "AUT-93104",
+    shortId: "AUT-93104",
     code: "XRAY",
     title: "Radiografía de Tórax",
     description: "Proyección PA y lateral estándar",
@@ -91,6 +95,7 @@ export const authorizationsMock: AuthorizationView[] = [
   },
   {
     id: "AUT-91520",
+    shortId: "AUT-91520",
     code: "DENTAL_CLEANING",
     title: "Limpieza dental",
     status: "rechazada",

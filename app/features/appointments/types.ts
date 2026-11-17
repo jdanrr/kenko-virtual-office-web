@@ -1,103 +1,75 @@
-// Tipos del microservicio appointments (backend real).
-// Nombres en inglés, comentarios en español. Todo camelCase como responde el back.
+// Tipos del microservicio Appointments (FastAPI).
+// Fuente: info del equipo backend (base http://localhost:8002/api/v1).
+// Respuestas en camelCase, sin sobre `{ data }` (listas y objetos crudos).
+// Nombres en inglés; comentarios en español.
 
+/** `AppointmentType` (app/models.py): únicos tipos de cita. */
 export type AppointmentType = "GENERAL" | "ODONTOLOGIA" | "PSICOLOGIA";
 
-export interface AppointmentPhysician {
+export interface PhysicianRef {
   physicianId: string;
   name: string;
 }
 
-export interface AppointmentMedicalCenter {
+export interface MedicalCenterRef {
   medicalCenterId: string;
   name: string;
   location: string;
 }
 
-/** Cita tal como la devuelve el back (mis citas y disponibles comparten forma). */
-export interface Appointment {
+/** `AppointmentResponse` (app/schemas.py): cita libre o asignada. */
+export interface AppointmentResponse {
   appointmentId: string;
   type: AppointmentType;
-  date: string; // YYYY-MM-DD
-  weekday: string; // ej. "Thursday"
-  startTime: string; // "09:00"
-  endTime: string; // "09:30"
-  physician: AppointmentPhysician;
-  medicalCenter: AppointmentMedicalCenter;
+  /** Fecha `YYYY-MM-DD` (hora local de Bogotá). */
+  date: string;
+  /** Día en mayúsculas (p. ej. `"JUEVES"`). */
+  weekday: string;
+  /** Hora `HH:MM:SS` (p. ej. `"08:00:00"`). */
+  startTime: string;
+  endTime: string;
+  physician: PhysicianRef;
+  medicalCenter: MedicalCenterRef;
 }
 
-export interface AvailableAppointmentsResponse {
+/** `PaginatedAppointments` (app/schemas.py): página de citas libres. */
+export interface PaginatedAppointments {
   page: number;
   pageSize: number;
   total: number;
-  items: Appointment[];
+  items: AppointmentResponse[];
 }
 
-export interface CatalogMedicalCenter {
-  medicalCenterId: string;
-  name: string;
-  location: string;
-  appointmentTypes?: AppointmentType[];
+/** Filtros de `GET /appointments/available` (todos opcionales). */
+export interface AvailableAppointmentsParams {
+  type?: AppointmentType;
+  medicalCenterId?: string;
+  physicianId?: string;
+  /** `YYYY-MM-DD`. */
+  dateFrom?: string;
+  /** `YYYY-MM-DD`. */
+  dateTo?: string;
+  page?: number;
+  pageSize?: number;
 }
 
-export interface CatalogPhysician {
+/** Body de `POST /appointments/{id}/reschedule`. */
+export interface RescheduleRequest {
+  newAppointmentId: string;
+}
+
+export interface Physician {
   physicianId: string;
   firstName: string;
   lastName: string;
   specialty: AppointmentType;
-  primaryMedCenterId?: string | null;
-  secondaryMedCenterId?: string | null;
+  primaryMedCenterId: string;
+  secondaryMedCenterId: string | null;
 }
 
-/** Error estándar del back: { error: { code, message, correlationId } } */
-export interface BackendApiError {
-  error: {
-    code:
-      | "not_found"
-      | "conflict"
-      | "business_rule_violation"
-      | "validation_error"
-      | "unauthorized"
-      | "forbidden";
-    message: string;
-    correlationId: string;
-  };
-}
-
-/** Filtros de la vista. Hora NO existe en back: se filtra aquí en el front. */
-export type DayPart = "todas" | "manana" | "tarde" | "noche";
-
-export interface AppointmentFilters {
-  type: "" | AppointmentType;
+export interface MedicalCenter {
   medicalCenterId: string;
-  physicianId: string;
-  dateFrom: string; // YYYY-MM-DD
-  dateTo: string; // YYYY-MM-DD
-  dayPart: DayPart;
-  page: number;
-  pageSize: number;
-}
-
-export const APPOINTMENT_TYPE_LABEL: Record<AppointmentType, string> = {
-  GENERAL: "Medicina General",
-  ODONTOLOGIA: "Odontología",
-  PSICOLOGIA: "Psicología",
-};
-
-/** Franja horaria — solo front, el back no la soporta. */
-export function matchesDayPart(startTime: string, part: DayPart): boolean {
-  if (part === "todas") return true;
-  const hour = Number(startTime.split(":")[0]);
-  if (Number.isNaN(hour)) return true;
-  if (part === "manana") return hour >= 6 && hour < 12;
-  if (part === "tarde") return hour >= 12 && hour < 18;
-  return hour >= 18;
-}
-
-export function appointmentTitle(a: Pick<Appointment, "type">): string {
-  return APPOINTMENT_TYPE_LABEL[a.type] ?? a.type;
-}
-
-export function formatAppointmentDate(a: Pick<Appointment, "date" | "startTime" | "endTime">): string {
-  return `${a.date} · ${a.startTime} - ${a.endTime}`;
+  name: string;
+  location: string;
+  appointmentTypes: AppointmentType[];
 }

@@ -36,7 +36,7 @@
           <span>Urgencias Médicas: <strong>123 / #745</strong></span>
         </div>
         <a
-          class="hover:text-white underline underline-offset-4 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 rounded"
+          class="hover:text-white underline underline-offset-4 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 rounded"
           href="#soporte"
         >
           Soporte Técnico Portal

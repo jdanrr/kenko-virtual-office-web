@@ -1,128 +1,101 @@
-// Cliente frontend de citas: siempre llama a nuestro proxy /api/citas/* (mismo origen).
-// El proxy reenvía al microservicio http://localhost:8002/api/v1 con el JWT.
-// El JWT nunca se inventa aquí: sale de localStorage 'kenko_jwt' (lo pone el login de auth
-// o el campo manual de la vista cuando el back responde 401).
-
+// Acceso al microservicio Appointments (directo, sin BFF).
+// Auth: `Authorization: Bearer <access-token-kenko-auth>` (mismo JWT de login).
+// Sin cookies: los otros servicios validan el Bearer y no usan cookies.
+// Las respuestas vienen crudas (`envelope: false`): sin sobre `{ data }`.
+// Errores `{ error: { code, message, correlationId } }` con códigos en
+// minúsculas (`unauthorized`, `forbidden`, `not_found`, ...).
+import { createServiceClient } from "../../core/api/httpClient";
+import type { ServiceClient } from "../../core/api/httpClient";
 import type {
-  Appointment,
-  AppointmentFilters,
-  AvailableAppointmentsResponse,
-  BackendApiError,
-  CatalogMedicalCenter,
-  CatalogPhysician,
+  AppointmentResponse,
+  AvailableAppointmentsParams,
+  MedicalCenter,
+  PaginatedAppointments,
+  Physician,
+  RescheduleRequest,
 } from "./types";
 
-function authHeaders(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  const token = window.localStorage.getItem("kenko_jwt")?.trim();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+export function createAppointmentsClient(
+  baseURL: string,
+  getAccessToken: () => string | null,
+): ServiceClient {
+  return createServiceClient({ baseURL, getAccessToken });
 }
 
-export function getStoredToken(): string {
-  if (typeof window === "undefined") return "";
-  return window.localStorage.getItem("kenko_jwt") ?? "";
-}
-
-export function setStoredToken(token: string): void {
-  if (typeof window === "undefined") return;
-  if (!token.trim()) window.localStorage.removeItem("kenko_jwt");
-  else window.localStorage.setItem("kenko_jwt", token.trim());
-}
-
-/** Mensaje legible desde un error del back o de red. */
-export function toUserMessage(err: unknown): string {
-  const data = (err as { data?: BackendApiError })?.data;
-  if (data?.error?.message) return data.error.message;
-  const status = (err as { statusCode?: number; status?: number })?.statusCode
-    ?? (err as { status?: number })?.status;
-  if (status === 401) return "Tu sesión expiró o falta el token. Pega tu JWT para continuar.";
-  if (status === 403) return "Tu cuenta aún no tiene perfil creado (ProfileCreated). Complétalo antes de agendar.";
-  if (status === 404) return "La cita ya no existe o no es tuya.";
-  if (status === 409) return "Esa cita acaba de ser tomada por otro afiliado. Elige otra.";
-  if (status === 422) return "El back rechazó la operación por regla de negocio (24h de aviso, 90 días máx. o distinto tipo).";
-  return "No se pudo conectar con el servicio de citas. Revisa que el back esté prendido en :8002.";
-}
-
-export async function fetchMyAppointments(includePast = false): Promise<Appointment[]> {
-  return await $fetch<Appointment[]>("/api/citas/me", {
-    headers: authHeaders(),
-    query: includePast ? { include_past: "true" } : {},
+/** `GET /appointments/me`: citas del usuario (futuras salvo `includePast`). */
+export async function listMyAppointments(
+  client: ServiceClient,
+  includePast = false,
+): Promise<AppointmentResponse[]> {
+  const query = includePast ? "?include_past=true" : "";
+  return client.request<AppointmentResponse[]>(`/appointments/me${query}`, {
+    envelope: false,
   });
 }
 
-export interface AvailableQuery {
-  page?: number;
-  pageSize?: number;
-  type?: string;
-  medicalCenterId?: string;
-  physicianId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
-export async function fetchAvailable(
-  q: AvailableQuery,
-): Promise<AvailableAppointmentsResponse> {
-  return await $fetch<AvailableAppointmentsResponse>("/api/citas/disponibles", {
-    headers: authHeaders(),
-    query: {
-      page: q.page ?? 1,
-      page_size: q.pageSize ?? 20,
-      ...(q.type ? { type: q.type } : {}),
-      ...(q.medicalCenterId ? { medical_center_id: q.medicalCenterId } : {}),
-      ...(q.physicianId ? { physician_id: q.physicianId } : {}),
-      ...(q.dateFrom ? { date_from: q.dateFrom } : {}),
-      ...(q.dateTo ? { date_to: q.dateTo } : {}),
-    },
+/** `GET /appointments/available`: citas libres con filtros opcionales. */
+export async function listAvailableAppointments(
+  client: ServiceClient,
+  params: AvailableAppointmentsParams = {},
+): Promise<PaginatedAppointments> {
+  const search = new URLSearchParams();
+  if (params.type) search.set("type", params.type);
+  if (params.medicalCenterId) search.set("medical_center_id", params.medicalCenterId);
+  if (params.physicianId) search.set("physician_id", params.physicianId);
+  if (params.dateFrom) search.set("date_from", params.dateFrom);
+  if (params.dateTo) search.set("date_to", params.dateTo);
+  search.set("page", String(params.page ?? 1));
+  search.set("page_size", String(params.pageSize ?? 20));
+  const query = `?${search.toString()}`;
+  return client.request<PaginatedAppointments>(`/appointments/available${query}`, {
+    envelope: false,
   });
 }
 
-export async function fetchMedicalCenters(): Promise<CatalogMedicalCenter[]> {
-  return await $fetch<CatalogMedicalCenter[]>("/api/citas/centros", {
-    headers: authHeaders(),
-  });
+/** `POST /appointments/{id}/schedule`: agendar una cita libre (sin body). */
+export async function scheduleAppointment(
+  client: ServiceClient,
+  appointmentId: string,
+): Promise<AppointmentResponse> {
+  return client.request<AppointmentResponse>(
+    `/appointments/${appointmentId}/schedule`,
+    { method: "POST", envelope: false },
+  );
 }
 
-export async function fetchPhysicians(): Promise<CatalogPhysician[]> {
-  return await $fetch<CatalogPhysician[]>("/api/citas/medicos", {
-    headers: authHeaders(),
-  });
-}
-
-export async function scheduleAppointment(appointmentId: string): Promise<Appointment> {
-  return await $fetch<Appointment>(`/api/citas/${appointmentId}/agendar`, {
+/** `POST /appointments/{id}/cancel`: cancelar una cita propia (sin body). */
+export async function cancelAppointment(
+  client: ServiceClient,
+  appointmentId: string,
+): Promise<AppointmentResponse> {
+  return client.request<AppointmentResponse>(`/appointments/${appointmentId}/cancel`, {
     method: "POST",
-    headers: authHeaders(),
+    envelope: false,
   });
 }
 
+/** `POST /appointments/{id}/reschedule`: mover a otra cita libre del mismo tipo. */
 export async function rescheduleAppointment(
-  oldId: string,
-  newAppointmentId: string,
-): Promise<Appointment> {
-  return await $fetch<Appointment>(`/api/citas/${oldId}/reprogramar`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: { newAppointmentId },
-  });
+  client: ServiceClient,
+  appointmentId: string,
+  body: RescheduleRequest,
+): Promise<AppointmentResponse> {
+  return client.request<AppointmentResponse>(
+    `/appointments/${appointmentId}/reschedule`,
+    { method: "POST", body, envelope: false },
+  );
 }
 
-export async function cancelAppointment(appointmentId: string): Promise<Appointment> {
-  return await $fetch<Appointment>(`/api/citas/${appointmentId}/cancelar`, {
-    method: "POST",
-    headers: authHeaders(),
-  });
+/** `GET /catalog/physicians`: catálogo de médicos. */
+export async function listPhysicians(client: ServiceClient): Promise<Physician[]> {
+  return client.request<Physician[]>("/catalog/physicians", { envelope: false });
 }
 
-/** Convierte los filtros de la vista al query que espera el back. */
-export function filtersToQuery(f: AppointmentFilters): AvailableQuery {
-  return {
-    page: f.page,
-    pageSize: f.pageSize,
-    type: f.type || undefined,
-    medicalCenterId: f.medicalCenterId || undefined,
-    physicianId: f.physicianId || undefined,
-    dateFrom: f.dateFrom || undefined,
-    dateTo: f.dateTo || undefined,
-  };
+/** `GET /catalog/medical-centers`: catálogo de sedes. */
+export async function listMedicalCenters(
+  client: ServiceClient,
+): Promise<MedicalCenter[]> {
+  return client.request<MedicalCenter[]>("/catalog/medical-centers", {
+    envelope: false,
+  });
 }

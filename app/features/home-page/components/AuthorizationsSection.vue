@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Sección de autorizaciones: recibe la lista por props (maqueta sin lógica).
-// TODO(profile): recibir `items` de useAuthorizationsQuery(filter), emitir el
-// cambio de filtro y cablear las descargas con la feature profile.
+// Sección de autorizaciones: lista real del backend + descarga de PDF.
+// Filtros aún estáticos (TODO: emitir el cambio y filtrar en la query).
+// TODO(profile): `notify` (envío por correo) no tiene botón en el diseño.
 import type {
   AuthorizationFilter,
   AuthorizationStatus,
@@ -13,13 +13,20 @@ interface Props {
   activeFilter?: AuthorizationFilter;
   isPending?: boolean;
   error?: string | null;
+  /** Aviso transitorio (p. ej. "Preparando tu PDF…"). */
+  notice?: string | null;
 }
 
 withDefaults(defineProps<Props>(), {
   activeFilter: "todas",
   isPending: false,
   error: null,
+  notice: null,
 });
+
+defineEmits<{
+  (e: "download-pdf", authorizationId: string): void;
+}>();
 
 const filters: { value: AuthorizationFilter; label: string }[] = [
   { value: "todas", label: "Todos" },
@@ -81,11 +88,6 @@ const statusIcon: Record<AuthorizationStatus, string> = {
           >
             Autorizaciones Médicas
           </h2>
-          <span
-            class="text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200"
-          >
-            GET /authorizations
-          </span>
         </div>
         <p class="text-xs text-slate-500 mt-0.5">
           Consulta, descarga de PDF y notificación de órdenes autorizadas
@@ -93,7 +95,7 @@ const statusIcon: Record<AuthorizationStatus, string> = {
       </div>
       <div class="flex items-center gap-3">
         <button
-          class="text-xs font-semibold text-kenko-primary hover:text-kenko-accent flex items-center gap-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
+          class="text-xs font-semibold text-kenko-primary hover:text-kenko-accent flex items-center gap-1 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded"
           type="button"
         >
           Ver historial completo
@@ -101,6 +103,14 @@ const statusIcon: Record<AuthorizationStatus, string> = {
         </button>
       </div>
     </div>
+
+    <p
+      v-if="notice"
+      role="status"
+      class="text-xs text-slate-700 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 mb-4"
+    >
+      {{ notice }}
+    </p>
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
       <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtro por estado">
@@ -112,7 +122,7 @@ const statusIcon: Record<AuthorizationStatus, string> = {
           :class="filter.value === activeFilter
             ? 'bg-slate-900 text-white font-bold shadow-xs'
             : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium'"
-          class="px-2.5 py-1 text-xs rounded-lg transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+          class="px-2.5 py-1 text-xs rounded-lg transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           type="button"
         >
           {{ filter.label }}
@@ -133,7 +143,7 @@ const statusIcon: Record<AuthorizationStatus, string> = {
 
     <!-- Estado de error -->
     <p v-else-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
-      No se pudieron cargar las autorizaciones. Inténtalo de nuevo más tarde.
+      {{ error }}
     </p>
 
     <!-- Estado vacío -->
@@ -187,49 +197,30 @@ const statusIcon: Record<AuthorizationStatus, string> = {
           >
             <div class="flex justify-between">
               <dt class="text-slate-500">Código:</dt>
-              <dd class="font-mono font-bold text-slate-800">{{ item.id }}</dd>
+              <dd class="font-mono font-bold text-slate-800" :title="item.id">{{ item.shortId }}</dd>
             </div>
             <div class="flex justify-between">
               <dt class="text-slate-500">Médico:</dt>
               <dd class="font-medium text-slate-800">{{ item.doctorName }}</dd>
             </div>
-            <div v-if="item.validityUntilLabel" class="flex justify-between">
-              <dt class="text-slate-500">Vigencia hasta:</dt>
-              <dd class="font-semibold text-emerald-800">{{ item.validityUntilLabel }}</dd>
-            </div>
-            <div v-if="item.estimatedTime" class="flex justify-between">
-              <dt class="text-slate-500">Tiempo estimado:</dt>
-              <dd class="font-semibold text-amber-800">{{ item.estimatedTime }}</dd>
-            </div>
-            <div v-if="item.suggestedAction" class="flex justify-between">
-              <dt class="text-slate-500">Acción sugerida:</dt>
-              <dd class="font-semibold text-rose-800">{{ item.suggestedAction }}</dd>
-            </div>
           </dl>
         </div>
         <div class="mt-4 pt-3 flex items-center gap-2">
           <button
-            v-if="item.status === 'rechazada'"
-            class="w-full py-2 px-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
-            title="Descargar soporte PDF"
-            type="button"
-          >
-            <Icon name="ph:download-simple" class="text-sm font-bold" aria-hidden="true" />
-            Soporte
-          </button>
-          <button
-            v-else
-            :title="`GET /authorizations/${item.id}/pdf`"
             :class="item.status === 'aprobada'
               ? 'bg-emerald-600 hover:bg-emerald-700 text-white focus-visible:outline-emerald-600'
-              : 'bg-white hover:bg-amber-100/60 text-slate-800 border border-amber-300 focus-visible:outline-amber-500'"
-            class="flex-1 py-2 px-2.5 text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+              : item.status === 'rechazada'
+                ? 'bg-rose-600 hover:bg-rose-700 text-white focus-visible:outline-rose-600'
+                : 'bg-white hover:bg-amber-100/60 text-slate-800 border border-amber-300 focus-visible:outline-amber-500'"
+            class="flex-1 py-2 px-2.5 text-xs font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2"
+            :title="`GET /authorizations/${item.id}/pdf`"
             type="button"
+            @click="$emit('download-pdf', item.id)"
           >
             <Icon
               name="ph:download-simple"
               class="text-sm font-bold"
-              :class="item.status === 'aprobada' ? '' : 'text-amber-700'"
+              :class="item.status === 'en-proceso' ? 'text-amber-700' : ''"
               aria-hidden="true"
             />
             Descargar PDF
