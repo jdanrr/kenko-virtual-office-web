@@ -87,14 +87,17 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | --- | --- | --- |
 | `types.ts` | Tipos del contrato: `DOCUMENT_TYPES`, `LoginRequest`, `AuthTokenPair`, `AuthUser`, sobre `{ data }/{ error }`, `ApiErrorCode`, guardia `isApiFailure`. | `types.test.ts` |
 | `schemas.ts` | `normalizeDocumentNumber`, `loginSchema` (zod), `toLoginRequest`. **Server-safe** (lo importa el BFF). | `schemas.test.ts` |
-| `api.ts` | Cliente del BFF: `login`, `fetchMe`, `refreshSession`. Traduce errores a `AuthFailure` por `code` (nunca por `message`). Client-safe. | `api.test.ts` |
+| `api.ts` | Cliente del BFF: `login`, `fetchMe`, `refreshSession`, `register`. Traduce errores a `AuthFailure` por `code` (nunca por `message`), incluye `register-conflict` (409 genérico). Client-safe. | `api.test.ts` |
 | `store.ts` | Pinia `useAuthStore`: sesión en memoria, `logIn`, `restoreSession`, `refreshNow`, `logOut`, auto-refresh 60 s antes de vencer, getters `isAuthenticated`/`greeting`. | `store.test.ts` |
 | `rememberDocument.ts` | Persistencia opt-in del documento en `localStorage`, SSR-safe y tolerante a datos corruptos. | `rememberDocument.test.ts` |
 | `components/DocumentTypeSelector.vue` | Radiogroup accesible de 4 tipos. | `.test.ts` |
 | `components/DocumentNumberField.vue` | Input de documento con ayuda "sin puntos" y error asociado. | `.test.ts` |
 | `components/PasswordField.vue` | Input de contraseña con mostrar/ocultar accesible. | `.test.ts` |
 | `components/AuthAlert.vue` | Aviso `role="alert"` con código de referencia (`correlationId`). | `.test.ts` |
-| `components/LoginForm.vue` | Integra átomos + store + recordar documento + cuenta regresiva 429. | `.test.ts` |
+| `registerStore.ts` | `useRegisterStore`: wizard 4 pasos en memoria, validación por paso, `submit()` con salto al paso con error, `stepFields`, `reset()`. | `registerStore.test.ts` |
+| `registerSchemas.ts` | Schemas zod por paso + `birthDateLimits()`, `normalizePhone`, `isBlacklistedPassword`, `toRegisterRequest()`. Server-safe. | `registerSchemas.test.ts` |
+| `phoneFormat.ts` | Formato visual del celular (presentación; la normalización vive en schemas). | `phoneFormat.test.ts` |
+| `components/RegisterStepper.vue` + `PersonalFields.vue` + `ContactFields.vue` + `SecurityFields.vue` + `RegisterForm.vue` (wizard) + `RegisterSummary.vue` + `RegisterSuccessModal.vue` | UI del registro; `PasswordField` extendido con props opcionales (login intacto). | `.test.ts` c/u |
 
 ### BFF (`server/`)
 
@@ -105,12 +108,14 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | `server/api/auth/login.post.ts` | `POST /api/auth/login` → `POST /auth/login` del microservicio. Revalida con `loginSchema`, reenvía cookie y `retry-after`, descarta `refreshToken` de la respuesta. |
 | `server/api/auth/me.get.ts` | `GET /api/auth/me` → `GET /auth/me`. Exige y reenvía `Authorization: Bearer`. |
 | `server/api/auth/refresh.post.ts` | `POST /api/auth/refresh` → `POST /auth/refresh`. Reenvía solo la cookie httpOnly, propaga cookie rotada y `retry-after`. Sin cookie → 401. |
+| `server/api/auth/register.post.ts` | `POST /api/auth/register` → `POST /auth/register`. Revalida todo, propaga `201` / `400`+`details` / `409` / `429`. Sin PII en logs. |
 
 ### UI y estilos
 
 | Archivo | Responsabilidad |
 | --- | --- |
 | `app/pages/iniciar-sesion.vue` | Página `/iniciar-sesion`: tarjeta + aside de seguridad, saludo inline tras login, intenta `restoreSession()` al montar. Placeholders deshabilitados. |
+| `app/pages/registro.vue` | Página `/registro` (ruta pública): wizard 4 pasos + resumen en vivo + ayuda, modal de éxito con `maskedEmail` y enlace real a `/iniciar-sesion`. Borrador solo en memoria. |
 | `app/layouts/auth.vue` | Layout de acceso: header institucional, slot, footer legal. |
 | `app/layouts/auth.test.ts` | Render SSR del layout (markup estático). |
 | `app/assets/css/main.css` | Tailwind + `@font-face` locales + variables y `@theme inline` según `colores-base.md`. |
@@ -121,6 +126,7 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 - `POST /api/auth/login` → `200 { data: { accessToken, expiresIn } }` (el refresh **no** se devuelve).
 - `GET /api/auth/me` → `200 { data: { userId, firstName, email } }`.
 - `POST /api/auth/refresh` → `200 { data: { accessToken, expiresIn } }`.
+- `POST /api/auth/register` → `201 { data: { userId, maskedEmail } }`.
 - Errores siempre `{ error: { code, message, correlationId, details? } }`.
 
 ---
@@ -138,8 +144,9 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | 6 | 4 átomos accesibles + tests de componentes. | 9 tests |
 | 7 | `LoginForm`, `rememberDocument`, `layouts/auth.vue`, `pages/iniciar-sesion.vue`, placeholders deshabilitados, saludo inline sin redirect. | 43 tests totales + build |
 | 8 | Refresh silencioso: BFF `/refresh`, `refreshSession`, auto-renovación y `restoreSession`, corrección de validación de contraseña (error duplicado). | 51 tests + endpoints probados en dev |
+| R0–R8 | Registro: tipos + schemas por paso, BFF `/register`, cliente con `register-conflict`, `registerStore`, UI 4 pasos + stepper + resumen + modal éxito, página `/registro` (ruta pública en middleware). Decisiones: ciudad texto libre, checklist según contrato, layout auth reusado, borrador en memoria. | 115 tests + lint + build verde |
 
-**Estado de verificación actual:** `bunx vitest run` → **51/51**; `bunx eslint app/ server/ vitest.config.ts` → limpio; `bun run dev` sirve `/iniciar-sesion` (200) y los BFF responden 400/401 correctamente. El último `bun run build` verde fue antes de agregar la ruta de refresh; falta repetirlo (ver §11).
+**Estado de verificación actual:** `bunx vitest run` → **117/117**; `bunx eslint app/ server/ vitest.config.ts` → limpio; `bun run build` verde. E2E real contra backend 5500: registro `201`, login `200` + cookie, **refresh `200`** (tras quitar `Content-Type` sin body en el proxy; el backend intentaba parsear JSON vacío y daba 500). Auditoría 2026-11-16: `registerPayloadSchema` compartido, `fieldsFromIssues` y `useRateLimitCountdown` unificados, fallbacks al puerto 5500.
 
 ---
 

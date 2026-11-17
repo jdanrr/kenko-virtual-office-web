@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:8001";
+    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
 
   try {
     const response = await $fetch.raw(`${upstreamBase}/auth/me`, {

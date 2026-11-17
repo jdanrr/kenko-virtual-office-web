@@ -18,14 +18,14 @@ export default defineEventHandler(async (event) => {
   const cookie = forwardCookie(getRequestHeader(event, "cookie"), AUTH_REFRESH_COOKIE);
 
   const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:8001";
+    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
 
   if (cookie) {
     try {
       const response = await $fetch.raw(`${upstreamBase}/auth/logout`, {
         method: "POST",
         headers: {
-          "content-type": "application/json",
+          // Sin `content-type`: no hay body (mismo motivo que en refresh).
           "x-correlation-id": correlationId,
           cookie,
         },

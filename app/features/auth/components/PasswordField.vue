@@ -2,11 +2,26 @@
 import { ref, useId } from "vue";
 
 /** Campo de contraseña con mostrar/ocultar accesible. */
-const props = defineProps<{
-  modelValue: string;
-  error?: string;
-  disabled?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: string;
+    error?: string;
+    disabled?: boolean;
+    /** Etiqueta visible (login usa "Contraseña"). */
+    label?: string;
+    /** Nombre del input y autocomplete según el flujo. */
+    inputName?: string;
+    autocomplete?: string;
+    placeholder?: string;
+  }>(),
+  {
+    label: "Contraseña",
+    inputName: "password",
+    autocomplete: "current-password",
+    placeholder: "Ingresa tu contraseña",
+    error: undefined,
+  },
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: string];
@@ -24,7 +39,7 @@ function onInput(event: Event): void {
 <template>
   <div class="flex flex-col gap-1.5">
     <label class="font-display text-sm font-bold text-content" :for="inputId">
-      Contraseña
+      {{ props.label }}
     </label>
     <div class="relative flex items-center">
       <svg
@@ -47,9 +62,9 @@ function onInput(event: Event): void {
             : 'border-zinc-200 focus:border-primary'
         "
         :type="visible ? 'text' : 'password'"
-        name="password"
-        autocomplete="current-password"
-        placeholder="Ingresa tu contraseña"
+        :name="props.inputName"
+        :autocomplete="props.autocomplete"
+        :placeholder="props.placeholder"
         :value="props.modelValue"
         :disabled="props.disabled"
         :aria-invalid="!!props.error"

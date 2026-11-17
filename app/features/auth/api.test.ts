@@ -1,11 +1,27 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AuthError, fetchMe, login, refreshSession } from "./api";
+import { AuthError, fetchMe, login, refreshSession, register } from "./api";
 
 const valid = {
   documentType: "CC",
   documentNumber: "12345678",
   password: "secreta-1",
+} as const;
+
+const validRegister = {
+  documentType: "CC",
+  documentNumber: "1020304050",
+  firstName: "María Fernanda",
+  lastName: "Gómez Rojas",
+  birthDate: "1995-03-21",
+  gender: "female",
+  email: "maria.gomez@example.com",
+  phone: "+573001234567",
+  addressLine: "Cra 15 # 93-60 Apto 402",
+  city: "Bogotá D.C.",
+  password: "Clave-segura-1",
+  confirmPassword: "Clave-segura-1",
+  ley1581: true,
 } as const;
 
 function fail(status: number, data: unknown, retryAfter?: string) {
@@ -148,6 +164,32 @@ describe("refreshSession", () => {
     const thrown = await refreshSession().catch((e) => e);
     expect(thrown.failure.kind).toBe("session-expired");
   });
+
+  it("llamadas concurrentes comparten un único vuelo (no rota dos veces)", async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: { accessToken: "jwt2", expiresIn: 900 } }),
+              20,
+            ),
+          ),
+      );
+    vi.stubGlobal("$fetch", fetch);
+
+    const [first, second, third] = await Promise.all([
+      refreshSession(),
+      refreshSession(),
+      refreshSession(),
+    ]);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(first).toEqual({ accessToken: "jwt2", expiresIn: 900 });
+    expect(second).toEqual(first);
+    expect(third).toEqual(first);
+  });
 });
 
 describe("fetchMe", () => {
@@ -180,5 +222,100 @@ describe("fetchMe", () => {
     );
     const thrown = await fetchMe("expired").catch((e) => e);
     expect(thrown.failure.kind).toBe("session-expired");
+  });
+});
+
+describe("register", () => {
+  it("valida en cliente sin llamar a la red", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("$fetch", fetch);
+    const thrown = await register({ ...validRegister, city: "" }).catch((e) => e);
+    expect(thrown).toBeInstanceOf(AuthError);
+    expect(thrown.failure.kind).toBe("validation");
+    expect(thrown.failure.fields).toMatchObject({ city: expect.any(String) });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("devuelve userId y maskedEmail en éxito (201)", async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      data: { userId: "u1", maskedEmail: "m***@example.com" },
+    });
+    vi.stubGlobal("$fetch", fetch);
+    await expect(register({ ...validRegister })).resolves.toEqual({
+      userId: "u1",
+      maskedEmail: "m***@example.com",
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/auth/register", {
+      method: "POST",
+      body: expect.objectContaining({
+        documentNumber: "1020304050",
+        email: "maria.gomez@example.com",
+      }),
+    });
+    const body = fetch.mock.calls[0]?.[1].body as Record<string, unknown>;
+    expect(body).not.toHaveProperty("ley1581");
+    expect(body).toHaveProperty("confirmPassword");
+  });
+
+  it("400 VALIDATION_ERROR mapea details por campo", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(400, {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Revisa.",
+            correlationId: "ref-10",
+            details: [{ field: "birthDate", message: "La fecha no puede ser futura." }],
+          },
+        }),
+      ),
+    );
+    const thrown = await register({ ...validRegister }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("validation");
+    expect(thrown.failure.fields).toEqual({
+      birthDate: "La fecha no puede ser futura.",
+    });
+  });
+
+  it("409 genérico sin revelar qué existe (anti-enumeración)", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(409, {
+          error: {
+            code: "REGISTER_CONFLICT",
+            message: "No se pudo completar el registro.",
+            correlationId: "ref-11",
+          },
+        }),
+      ),
+    );
+    const thrown = await register({ ...validRegister }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("register-conflict");
+    expect(thrown.failure.message).toContain("No pudimos crear tu cuenta");
+    expect(thrown.failure.correlationId).toBe("ref-11");
+  });
+
+  it("429 expone segundos de Retry-After", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(
+          429,
+          {
+            error: {
+              code: "RATE_LIMITED",
+              message: "Demasiadas solicitudes.",
+              correlationId: "ref-12",
+            },
+          },
+          "30",
+        ),
+      ),
+    );
+    const thrown = await register({ ...validRegister }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("rate-limited");
+    expect(thrown.failure.retryAfterSeconds).toBe(30);
   });
 });

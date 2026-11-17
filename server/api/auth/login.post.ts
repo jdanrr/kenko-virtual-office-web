@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
   const payload = toLoginRequest(parsed.data);
   const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:8001";
+    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
 
   let upstream: { status: number; headers: Headers; data: unknown };
   try {

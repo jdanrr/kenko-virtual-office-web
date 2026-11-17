@@ -108,11 +108,9 @@ watch(
               </span>
               <div class="flex-grow border-t border-zinc-200" />
             </div>
-            <button
-              class="w-full min-h-[48px] px-4 py-2.5 rounded-xl border-2 border-primary/20 text-primary font-display text-sm font-bold transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-50 mt-1"
-              type="button"
-              disabled
-              title="Disponible próximamente"
+            <NuxtLink
+              class="w-full min-h-[48px] px-4 py-2.5 rounded-xl border-2 border-primary/20 hover:border-primary text-primary font-display text-sm font-bold transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-secondary mt-1"
+              to="/registro"
             >
               <svg
                 class="w-5 h-5"
@@ -129,7 +127,7 @@ watch(
                 />
               </svg>
               <span>Crear cuenta nueva</span>
-            </button>
+            </NuxtLink>
           </div>
         </article>
       </div>

@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_blank" name="shell-type"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<!-- Figtree (500, 600, 700, 800) for Titles & Manrope (400, 500, 600) for Body -->
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+      main > :first-child {
+        margin-top: 0 !important;
+      }
+      main > :last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: "#21496a",
+              "primary-dark": "#1a3a54",
+              secondary: "#ffb51b",
+              accent: "#1e5bd7",
+              bg: "#f9fafb",
+              text: "#18181b"
+            }
+          },
+          fontFamily: {
+            heading: ['Figtree', 'sans-serif'],
+            body: ['Manrope', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-[#f9fafb] font-body text-[#18181b] antialiased min-h-screen flex flex-col justify-between">
+<!-- Top Bar: Vigilado Supersalud in brand primary #21496a -->
+<div class="bg-[#21496a] text-white py-1.5 px-4 text-center text-xs font-medium">
+<div class="max-w-6xl mx-auto flex items-center justify-between">
+<span>Superintendencia Nacional de Salud - Vigilado Supersalud</span>
+<span class="hidden sm:inline font-semibold">Canal de Autenticación de Afiliados</span>
+<span class="font-medium tracking-wide">Línea 018000-KENKO</span>
+</div>
+</div>
+<main class="w-full flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
+<div class="flex flex-col w-full">
+<div class="w-full max-w-6xl mx-auto">
+<!-- Top Stepper Header Card -->
+<div class="bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 mb-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<div class="flex items-center gap-2 mb-1.5 flex-wrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#ffb51b] text-[#18181b]">
+                  Portal Oficial Afiliación 2025
+                </span>
+<span class="text-zinc-500 text-xs font-medium">Normativa SGSSS • Colombia</span>
+</div>
+<h1 class="text-[#21496a] font-heading font-extrabold text-2xl md:text-3xl tracking-tight">Registro de Nuevo Afiliado</h1>
+<p aria-live="polite" class="text-zinc-600 text-sm mt-0.5" id="step-live-announcer">
+                Paso <span class="font-bold text-[#21496a]" id="current-step-display">1</span> de 4: <span class="font-medium" id="current-step-name">Documento de Identidad</span>
+</p>
+</div>
+<!-- Emergency Hotline Pill & Fast Actions -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 hover:bg-zinc-200 text-[#21496a] rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" onclick="openSimulationModal()" title="Simular respuestas API 400 y 409" type="button">
+<span class="material-symbols-outlined text-sm">bug_report</span>
+                Simular Errores API (400 / 409)
+              </button>
+<a class="text-[#1e5bd7] hover:underline text-sm font-semibold flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-[#ffb51b] rounded" href="#">
+<span class="material-symbols-outlined text-base">help</span>
+                Guía de Trámites
+              </a>
+</div>
+</div>
+<!-- Stepper Track -->
+<nav aria-label="Progreso del Registro" class="relative">
+<ol class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<!-- Step 1 (Active) -->
+<li class="cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-[#21496a] text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" id="stepper-item-1" onclick="navigateToStep(1)">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white text-[#21496a] shadow-sm flex-shrink-0" id="step-badge-1">
+                  1
+                </div>
+<div class="min-w-0">
+<span class="text-[11px] font-bold uppercase tracking-wider block opacity-85">Etapa 1</span>
+<span class="font-heading font-semibold text-sm block truncate">Documento</span>
+</div>
+</li>
+<!-- Step 2 -->
+<li class="cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-[#18181b] transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" id="stepper-item-2" onclick="navigateToStep(2)">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white border border-[#18181b]/10 text-zinc-600 flex-shrink-0" id="step-badge-2">
+                  2
+                </div>
+<div class="min-w-0">
+<span class="text-[11px] font-bold uppercase tracking-wider block text-zinc-500">Etapa 2</span>
+<span class="font-heading font-semibold text-sm block truncate">Datos personales</span>
+</div>
+</li>
+<!-- Step 3 -->
+<li class="cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-[#18181b] transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" id="stepper-item-3" onclick="navigateToStep(3)">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white border border-[#18181b]/10 text-zinc-600 flex-shrink-0" id="step-badge-3">
+                  3
+                </div>
+<div class="min-w-0">
+<span class="text-[11px] font-bold uppercase tracking-wider block text-zinc-500">Etapa 3</span>
+<span class="font-heading font-semibold text-sm block truncate">Contacto &amp; Residencia</span>
+</div>
+</li>
+<!-- Step 4 -->
+<li class="cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-[#18181b] transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" id="stepper-item-4" onclick="navigateToStep(4)">
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white border border-[#18181b]/10 text-zinc-600 flex-shrink-0" id="step-badge-4">
+                  4
+                </div>
+<div class="min-w-0">
+<span class="text-[11px] font-bold uppercase tracking-wider block text-zinc-500">Etapa 4</span>
+<span class="font-heading font-semibold text-sm block truncate">Seguridad &amp; Ley 1581</span>
+</div>
+</li>
+</ol>
+</nav>
+</div>
+<!-- Main Registration Shell Layout (Grid: Form & Guidance) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left / Center: Dynamic Step Content Panel -->
+<section class="lg:col-span-8 flex flex-col gap-6">
+<!-- Global Form Container -->
+<form class="space-y-6" id="affiliationForm" onsubmit="event.preventDefault();">
+<!-- ================= STEP 1: DOCUMENTO DE IDENTIDAD ================= -->
+<div class="bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 md:p-8 transition-opacity duration-200" id="step-panel-1">
+<div class="flex items-center gap-3 pb-5 mb-6 border-b border-zinc-100">
+<div class="w-10 h-10 rounded-xl bg-[#21496a]/10 flex items-center justify-center text-[#21496a]">
+<span class="material-symbols-outlined">badge</span>
+</div>
+<div>
+<h2 class="text-[#21496a] font-heading font-bold text-xl">Tipo y Número de Identificación</h2>
+<p class="text-zinc-600 text-sm">Selecciona el tipo de documento expedido oficialmente en Colombia.</p>
+</div>
+</div>
+<!-- Document Type Selection Cards -->
+<fieldset class="mb-6">
+<legend class="text-[#18181b] font-heading font-semibold text-sm mb-3 flex items-center justify-between">
+<span>Tipo de Documento Oficial <span class="text-red-600">*</span></span>
+<span class="text-xs font-medium text-zinc-500 font-body">Obligatorio</span>
+</legend>
+<div aria-label="Tipos de Documento EPS" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5" role="radiogroup">
+<!-- CC Card -->
+<label class="doc-card relative flex flex-col p-4 rounded-xl cursor-pointer bg-white border-2 border-[#1e5bd7] shadow-sm transition-all group focus-within:ring-2 focus-within:ring-[#ffb51b]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded bg-[#21496a] text-white font-bold text-xs">CC</span>
+<span class="font-heading font-semibold text-sm text-[#18181b]">Cédula de Ciudadanía</span>
+</div>
+<input checked="" class="w-4 h-4 text-[#1e5bd7] accent-[#1e5bd7] cursor-pointer" name="documentType" onchange="updateDocSelection(this)" type="radio" value="CC"/>
+</div>
+<span class="text-zinc-600 text-xs sm:text-sm mt-2 pl-0.5 leading-relaxed">Mayores de 18 años con ciudadanía colombiana nativa o por adopción.</span>
+</label>
+<!-- TI Card -->
+<label class="doc-card relative flex flex-col p-4 rounded-xl cursor-pointer bg-white border border-[#18181b]/10 hover:border-zinc-300 transition-all group focus-within:ring-2 focus-within:ring-[#ffb51b]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded bg-zinc-100 text-[#21496a] font-bold text-xs">TI</span>
+<span class="font-heading font-semibold text-sm text-[#18181b]">Tarjeta de Identidad</span>
+</div>
+<input class="w-4 h-4 text-[#1e5bd7] accent-[#1e5bd7] cursor-pointer" name="documentType" onchange="updateDocSelection(this)" type="radio" value="TI"/>
+</div>
+<span class="text-zinc-600 text-xs sm:text-sm mt-2 pl-0.5 leading-relaxed">Menores de edad colombianos de 7 a 17 años cumplidos.</span>
+</label>
+<!-- CE Card -->
+<label class="doc-card relative flex flex-col p-4 rounded-xl cursor-pointer bg-white border border-[#18181b]/10 hover:border-zinc-300 transition-all group focus-within:ring-2 focus-within:ring-[#ffb51b]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded bg-zinc-100 text-[#21496a] font-bold text-xs">CE</span>
+<span class="font-heading font-semibold text-sm text-[#18181b]">Cédula de Extranjería</span>
+</div>
+<input class="w-4 h-4 text-[#1e5bd7] accent-[#1e5bd7] cursor-pointer" name="documentType" onchange="updateDocSelection(this)" type="radio" value="CE"/>
+</div>
+<span class="text-zinc-600 text-xs sm:text-sm mt-2 pl-0.5 leading-relaxed">Extranjeros con residencia y visa autorizada en Colombia.</span>
+</label>
+<!-- PA Card -->
+<label class="doc-card relative flex flex-col p-4 rounded-xl cursor-pointer bg-white border border-[#18181b]/10 hover:border-zinc-300 transition-all group focus-within:ring-2 focus-within:ring-[#ffb51b]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded bg-zinc-100 text-[#21496a] font-bold text-xs">PA</span>
+<span class="font-heading font-semibold text-sm text-[#18181b]">Pasaporte</span>
+</div>
+<input class="w-4 h-4 text-[#1e5bd7] accent-[#1e5bd7] cursor-pointer" name="documentType" onchange="updateDocSelection(this)" type="radio" value="PA"/>
+</div>
+<span class="text-zinc-600 text-xs sm:text-sm mt-2 pl-0.5 leading-relaxed">Titulares de pasaporte internacional sin cédula de extranjería aún.</span>
+</label>
+</div>
+</fieldset>
+<!-- Document Number Input -->
+<div class="mb-6">
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="docNumber">
+                    Número de Documento <span class="text-red-600">*</span>
+</label>
+<div class="relative">
+<input aria-describedby="docNumberHelp docNumberError" autocomplete="off" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-base focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all pr-12" id="docNumber" maxlength="20" name="docNumber" oninput="handleDocNumberInput(this)" placeholder="Ej. 1020304050" type="text"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-zinc-400">
+<span class="material-symbols-outlined text-xl" id="docNumberIcon">pin</span>
+</div>
+</div>
+<!-- Helper Text and Validation Notice -->
+<div class="mt-2 space-y-1">
+<p class="text-xs text-zinc-500 flex items-center gap-1.5" id="docNumberHelp">
+<span class="material-symbols-outlined text-sm">info</span>
+                      Escribe tu documento sin puntos ni guiones (entre 4 y 20 caracteres alfanuméricos).
+                    </p>
+<p class="hidden text-xs text-red-600 flex items-center gap-1.5" id="docNumberError" role="alert">
+<span class="material-symbols-outlined text-sm">cancel</span>
+<span id="docNumberErrorMsg">El número de documento debe tener entre 4 y 20 caracteres válidos (sin puntos ni guiones).</span>
+</p>
+</div>
+</div>
+<!-- Identity Verification Note -->
+<div class="p-4 rounded-xl bg-zinc-50 border border-[#18181b]/5 flex items-start gap-3">
+<span class="material-symbols-outlined text-[#21496a] mt-0.5">verified_user</span>
+<div class="text-[#18181b] text-xs sm:text-sm">
+<span class="font-bold block mb-0.5 text-[#21496a]">Validación Registraduría Nacional / Migración Colombia</span>
+                    Los datos ingresados se cotejan de forma segura con la base de datos nacional BDUA - ADRES para garantizar la validez de tu cobertura en salud.
+                  </div>
+</div>
+</div>
+<!-- ================= STEP 2: DATOS PERSONALES ================= -->
+<div class="hidden bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 md:p-8 transition-opacity duration-200" id="step-panel-2">
+<div class="flex items-center gap-3 pb-5 mb-6 border-b border-zinc-100">
+<div class="w-10 h-10 rounded-xl bg-[#21496a]/10 flex items-center justify-center text-[#21496a]">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<h2 class="text-[#21496a] font-heading font-bold text-xl">Datos Personales Básicos</h2>
+<p class="text-zinc-600 text-sm">Ingresa los nombres y datos biográficos tal como aparecen en tu documento oficial.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+<!-- First Name -->
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="firstName">
+                      Nombres <span class="text-red-600">*</span>
+</label>
+<input aria-describedby="firstNameError" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="firstName" maxlength="100" name="firstName" oninput="updateSummary()" placeholder="Ej. Carlos Alberto" type="text"/>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="firstNameError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Ingresa un nombre válido (mínimo 1 letra, máximo 100 caracteres).
+                    </p>
+</div>
+<!-- Last Name -->
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="lastName">
+                      Apellidos <span class="text-red-600">*</span>
+</label>
+<input aria-describedby="lastNameError" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="lastName" maxlength="100" name="lastName" oninput="updateSummary()" placeholder="Ej. Gómez Restrepo" type="text"/>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="lastNameError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Ingresa tus apellidos completos.
+                    </p>
+</div>
+</div>
+<!-- Birth Date & Colombian Age Constraints -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="birthDate">
+                      Fecha de Nacimiento <span class="text-red-600">*</span>
+</label>
+<div class="relative">
+<input aria-describedby="birthDateHelp birthDateError" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="birthDate" max="2025-05-18" min="1905-01-01" name="birthDate" onchange="updateSummary()" type="date"/>
+</div>
+<p class="mt-1 text-xs text-zinc-500" id="birthDateHelp">
+                      Formato AAAA-MM-DD. No fechas futuras y máximo 120 años de edad.
+                    </p>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="birthDateError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      La fecha es requerida, no puede ser futura ni superar 120 años.
+                    </p>
+</div>
+<!-- Gender Selection Cards -->
+<div>
+<span class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5">
+                      Sexo / Género Registrado <span class="text-red-600">*</span>
+</span>
+<div aria-label="Género del afiliado" class="grid grid-cols-3 gap-2" role="radiogroup">
+<label class="cursor-pointer">
+<input checked="" class="sr-only peer" name="gender" type="radio" value="male"/>
+<div class="py-3 px-2 rounded-xl text-center text-xs sm:text-sm font-semibold border border-zinc-200 bg-zinc-50 text-zinc-600 peer-checked:bg-[#21496a] peer-checked:text-white peer-checked:border-[#21496a] peer-focus:ring-2 peer-focus:ring-[#ffb51b] transition-all flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-base">male</span>
+<span>Masculino</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="sr-only peer" name="gender" type="radio" value="female"/>
+<div class="py-3 px-2 rounded-xl text-center text-xs sm:text-sm font-semibold border border-zinc-200 bg-zinc-50 text-zinc-600 peer-checked:bg-[#21496a] peer-checked:text-white peer-checked:border-[#21496a] peer-focus:ring-2 peer-focus:ring-[#ffb51b] transition-all flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-base">female</span>
+<span>Femenino</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="sr-only peer" name="gender" type="radio" value="other"/>
+<div class="py-3 px-2 rounded-xl text-center text-xs sm:text-sm font-semibold border border-zinc-200 bg-zinc-50 text-zinc-600 peer-checked:bg-[#21496a] peer-checked:text-white peer-checked:border-[#21496a] peer-focus:ring-2 peer-focus:ring-[#ffb51b] transition-all flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-base">transgender</span>
+<span>Otro / Ind.</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= STEP 3: CONTACTO Y RESIDENCIA ================= -->
+<div class="hidden bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 md:p-8 transition-opacity duration-200" id="step-panel-3">
+<div class="flex items-center gap-3 pb-5 mb-6 border-b border-zinc-100">
+<div class="w-10 h-10 rounded-xl bg-[#21496a]/10 flex items-center justify-center text-[#21496a]">
+<span class="material-symbols-outlined">markunread_mailbox</span>
+</div>
+<div>
+<h2 class="text-[#21496a] font-heading font-bold text-xl">Contacto y Ubicación de Residencia</h2>
+<p class="text-zinc-600 text-sm">Para asignación de IPS primaria y envío de órdenes médicas electrónicas.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+<!-- Email (Normalized trim & lowercase) -->
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="email">
+                      Correo Electrónico <span class="text-red-600">*</span>
+</label>
+<div class="relative">
+<input aria-describedby="emailError" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="email" name="email" onblur="this.value = this.value.trim().toLowerCase(); updateSummary();" oninput="updateSummary()" placeholder="ejemplo@correo.com" type="email"/>
+<span class="absolute inset-y-0 right-3 flex items-center text-zinc-400 pointer-events-none">
+<span class="material-symbols-outlined text-lg">alternate_email</span>
+</span>
+</div>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="emailError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Ingresa un correo electrónico con formato válido.
+                    </p>
+</div>
+<!-- Phone with Colombia +57 móvil 10 dígitos (sin mostrar la palabra E.164) -->
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="phone">
+                      Teléfono Móvil Celular <span class="text-red-600">*</span>
+</label>
+<div class="flex">
+<div class="inline-flex items-center gap-1 px-3 bg-zinc-100 border border-r-0 border-zinc-200 text-[#18181b] font-medium text-sm rounded-l-xl select-none">
+<span>🇨🇴</span>
+<span>+57</span>
+</div>
+<input aria-describedby="phoneHelp phoneError" class="w-full h-12 px-4 rounded-r-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="phone" maxlength="14" name="phone" oninput="handlePhoneInput(this)" placeholder="300 123 4567" type="tel"/>
+</div>
+<p class="mt-1 text-xs text-zinc-500" id="phoneHelp">
+                      Móvil Colombia de 10 dígitos (Ej. 300 123 4567)
+                    </p>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="phoneError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Ingresa un número móvil válido de 10 dígitos (iniciando con 3).
+                    </p>
+</div>
+</div>
+<!-- City & Address -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="city">
+                      Ciudad o Municipio de Residencia <span class="text-red-600">*</span>
+</label>
+<select class="w-full h-12 px-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="city" name="city" onchange="updateSummary()">
+<option disabled="" selected="" value="">Selecciona tu ciudad...</option>
+<option value="Bogotá D.C.">Bogotá D.C.</option>
+<option value="Medellín">Medellín (Antioquia)</option>
+<option value="Cali">Cali (Valle del Cauca)</option>
+<option value="Barranquilla">Barranquilla (Atlántico)</option>
+<option value="Bucaramanga">Bucaramanga (Santander)</option>
+<option value="Cartagena">Cartagena (Bolívar)</option>
+<option value="Pereira">Pereira (Risaralda)</option>
+<option value="Manizales">Manizales (Caldas)</option>
+<option value="Cúcuta">Cúcuta (Norte de Santander)</option>
+<option value="Ibagué">Ibagué (Tolima)</option>
+<option value="Otro">Otro municipio nacional</option>
+</select>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="cityError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Por favor selecciona tu ciudad o municipio.
+                    </p>
+</div>
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="addressLine">
+                      Dirección de Residencia <span class="text-red-600">*</span>
+</label>
+<input aria-describedby="addressError" class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all" id="addressLine" maxlength="150" name="addressLine" oninput="updateSummary()" placeholder="Ej. Calle 72 # 10-34 Apto 402" type="text"/>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="addressError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      La dirección de residencia es obligatoria.
+                    </p>
+</div>
+</div>
+</div>
+<!-- ================= STEP 4: SEGURIDAD Y LEY 1581 ================= -->
+<div class="hidden bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 md:p-8 transition-opacity duration-200" id="step-panel-4">
+<div class="flex items-center gap-3 pb-5 mb-6 border-b border-zinc-100">
+<div class="w-10 h-10 rounded-xl bg-[#21496a]/10 flex items-center justify-center text-[#21496a]">
+<span class="material-symbols-outlined">lock_open</span>
+</div>
+<div>
+<h2 class="text-[#21496a] font-heading font-bold text-xl">Seguridad y Consentimiento Legal</h2>
+<p class="text-zinc-600 text-sm">Crea tu clave segura de acceso para el portal y autoriza el manejo confidencial de tus datos.</p>
+</div>
+</div>
+<!-- Password Fields -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="password">
+                      Contraseña de Acceso <span class="text-red-600">*</span>
+</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all pr-10" id="password" name="password" oninput="validatePasswordStrength(this.value)" placeholder="8 a 128 caracteres" type="password"/>
+<button aria-label="Mostrar contraseña" class="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-[#21496a]" onclick="togglePasswordVisibility('password', this)" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="passwordError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      La contraseña debe cumplir todos los requisitos de seguridad.
+                    </p>
+</div>
+<div>
+<label class="block font-heading font-semibold text-sm text-[#18181b] mb-1.5" for="confirmPassword">
+                      Confirmar Contraseña <span class="text-red-600">*</span>
+</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl bg-zinc-50 border border-zinc-200 text-[#18181b] text-sm focus:bg-white focus:outline-none focus:border-[#21496a] focus:ring-2 focus:ring-[#ffb51b] transition-all pr-10" id="confirmPassword" name="confirmPassword" oninput="checkPasswordMatch()" placeholder="Repite la contraseña" type="password"/>
+<button aria-label="Mostrar contraseña confirmada" class="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-[#21496a]" onclick="togglePasswordVisibility('confirmPassword', this)" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+<p class="hidden mt-1 text-xs text-red-600 flex items-center gap-1" id="passwordMatchError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                      Las contraseñas no coinciden.
+                    </p>
+</div>
+</div>
+<!-- Password Checklist & Blacklist Banner -->
+<div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200/80 mb-6">
+<div class="mb-3">
+<div class="flex items-center justify-between mb-1.5 text-xs">
+<span class="text-[#18181b] font-medium">Robustez de la clave:</span>
+<span class="font-bold text-zinc-500" id="strengthText">Muy débil</span>
+</div>
+<div class="grid grid-cols-4 gap-1.5 h-2">
+<div class="h-full rounded-full bg-zinc-200 transition-all" id="bar-1"></div>
+<div class="h-full rounded-full bg-zinc-200 transition-all" id="bar-2"></div>
+<div class="h-full rounded-full bg-zinc-200 transition-all" id="bar-3"></div>
+<div class="h-full rounded-full bg-zinc-200 transition-all" id="bar-4"></div>
+</div>
+</div>
+<ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-zinc-600 text-xs">
+<li class="flex items-center gap-1.5" id="rule-length">
+<span class="material-symbols-outlined text-base">radio_button_unchecked</span>
+                      Mínimo 8 caracteres (máx. 128)
+                    </li>
+<li class="flex items-center gap-1.5" id="rule-uppercase">
+<span class="material-symbols-outlined text-base">radio_button_unchecked</span>
+                      Al menos una letra mayúscula
+                    </li>
+<li class="flex items-center gap-1.5" id="rule-number">
+<span class="material-symbols-outlined text-base">radio_button_unchecked</span>
+                      Al menos un número (0-9)
+                    </li>
+<li class="flex items-center gap-1.5" id="rule-special">
+<span class="material-symbols-outlined text-base">radio_button_unchecked</span>
+                      Al menos un símbolo (@, $, #, etc.)
+                    </li>
+</ul>
+<div class="hidden mt-3 p-2.5 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-2 border border-red-200" id="blacklistWarning">
+<span class="material-symbols-outlined text-base">warning</span>
+<span>Contraseña insegura detectada (patrón común o palabra bloqueada como 'colombia123', 'kenko1234' o secuencias obvias).</span>
+</div>
+</div>
+<!-- Ley 1581 de 2012 Habeas Data Card -->
+<div class="bg-zinc-50 p-5 rounded-xl mb-4 border-l-4 border-[#21496a] border border-zinc-200/80">
+<div class="flex items-start gap-3">
+<div class="pt-0.5">
+<input aria-required="true" class="w-5 h-5 accent-[#21496a] text-[#21496a] rounded cursor-pointer mt-0.5 focus:ring-2 focus:ring-[#ffb51b]" id="consentLey1581" name="consentLey1581" onchange="document.getElementById('consentError').classList.add('hidden')" type="checkbox"/>
+</div>
+<label class="text-xs sm:text-sm text-[#18181b] cursor-pointer select-none" for="consentLey1581">
+<span class="font-bold block mb-1 text-[#21496a]">Consentimiento Expreso - Ley Estatutaria 1581 de 2012 <span class="text-red-600">*</span></span>
+                      Autorizo de manera previa, expresa e informada el tratamiento de mis datos personales y de salud por parte de <strong>Kenko EPS</strong> según la 
+                      <a class="text-[#1e5bd7] underline font-semibold hover:text-[#1a3a54] focus:outline-none focus:ring-2 focus:ring-[#ffb51b] rounded" href="#habeas-data-modal" onclick="alert('Visualización completa de la Política de Tratamiento de Información Kenko EPS (Ley 1581 de 2012, Decreto 1377 de 2013). Tus datos de salud están protegidos bajo estricto secreto médico y confidencialidad.');">
+                        Política de Tratamiento de Información (Ley 1581 de 2012)
+                      </a>.
+                      Entiendo que esta autorización es indispensable para la gestión de mi aseguramiento en el Sistema General de Seguridad Social en Salud.
+                    </label>
+</div>
+<p class="hidden mt-2 text-xs text-red-600 flex items-center gap-1 pl-8" id="consentError">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                    Debes aceptar la autorización de tratamiento de datos para continuar.
+                  </p>
+</div>
+<!-- Optional notifications checkbox -->
+<div class="p-4 rounded-xl bg-white border border-[#18181b]/10 flex items-start gap-3">
+<input checked="" class="w-4 h-4 accent-[#21496a] text-[#21496a] rounded cursor-pointer mt-1 focus:ring-2 focus:ring-[#ffb51b]" id="consentNotifications" type="checkbox"/>
+<label class="text-xs sm:text-sm text-zinc-600 cursor-pointer" for="consentNotifications">
+                    Deseo recibir recordatorios de citas médicas, autorizaciones y alertas de medicamentos a través de SMS y WhatsApp.
+                  </label>
+</div>
+</div>
+<!-- Bottom Flow Controls -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-200">
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<button class="hidden w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-xl bg-zinc-100 text-[#18181b] font-heading font-semibold text-sm hover:bg-zinc-200 transition-colors items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" id="btnPrev" onclick="handlePrevStep()" type="button">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+                    Volver al paso anterior
+                  </button>
+<a class="w-full sm:w-auto text-center font-heading font-semibold text-sm text-[#1e5bd7] hover:underline px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#ffb51b] rounded" href="#iniciar-sesion">
+                    ¿Ya tengo cuenta, iniciar sesión?
+                  </a>
+</div>
+<div class="w-full sm:w-auto">
+<button class="w-full sm:w-auto min-h-[48px] px-8 py-3 rounded-xl bg-[#21496a] text-[#f9fafb] hover:bg-[#1a3a54] font-heading font-bold text-base shadow-sm transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#ffb51b] disabled:opacity-75 disabled:cursor-not-allowed" id="btnNext" onclick="handleNextStep()" type="button">
+<span class="hidden animate-spin material-symbols-outlined text-lg" id="btnNextSpinner">progress_activity</span>
+<span id="btnNextLabel">Continuar al siguiente paso</span>
+<span class="material-symbols-outlined text-lg" id="btnNextIcon">arrow_forward</span>
+</button>
+</div>
+</div>
+</form>
+</section>
+<!-- Right Column: Registration Summary / Status Sidecard -->
+<aside class="lg:col-span-4 flex flex-col gap-6">
+<!-- Live Enrollment Summary Card -->
+<div class="bg-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6 sticky top-6">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100">
+<h3 class="font-heading font-bold text-lg text-[#21496a] flex items-center gap-2">
+<span class="material-symbols-outlined text-[#21496a] text-xl">fact_check</span>
+                  Resumen en Vivo
+                </h3>
+<span class="text-xs font-semibold text-zinc-600 bg-zinc-100 px-2.5 py-0.5 rounded-full">
+                  Paso a Paso
+                </span>
+</div>
+<div class="space-y-4">
+<!-- Step 1 Summary Item -->
+<div class="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+<span class="text-[11px] font-bold text-zinc-500 block uppercase tracking-wider">Identificación</span>
+<p class="font-heading font-semibold text-sm text-[#18181b] mt-0.5" id="summaryDoc">
+                    CC • Sin definir
+                  </p>
+</div>
+<!-- Step 2 Summary Item -->
+<div class="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+<span class="text-[11px] font-bold text-zinc-500 block uppercase tracking-wider">Afiliado Principal</span>
+<p class="font-heading font-semibold text-sm text-[#18181b] mt-0.5" id="summaryName">
+                    Pendiente de ingreso
+                  </p>
+</div>
+<!-- Step 3 Summary Item -->
+<div class="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+<span class="text-[11px] font-bold text-zinc-500 block uppercase tracking-wider">Ubicación y Contacto</span>
+<p class="font-heading font-semibold text-sm text-[#18181b] mt-0.5" id="summaryContact">
+                    Pendiente de ingreso
+                  </p>
+</div>
+</div>
+<!-- Assurance Guarantee Badge -->
+<div class="mt-6 pt-5 border-t border-zinc-100 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-[#ffb51b]/20 flex items-center justify-center text-[#18181b] flex-shrink-0">
+<span class="material-symbols-outlined text-lg">health_and_safety</span>
+</div>
+<div class="text-zinc-600 text-xs leading-tight">
+                  Afiliación directa al régimen contributivo y subsidiado con validación BDUA inmediata.
+                </div>
+</div>
+</div>
+<!-- Assistance Card with Colombia Phone -->
+<div class="bg-[#21496a] text-white rounded-2xl border border-[#18181b]/10 shadow-sm p-6">
+<div class="flex items-center gap-2 mb-2 font-heading font-bold text-lg">
+<span class="material-symbols-outlined text-[#ffb51b]">headset_mic</span>
+                ¿Necesitas ayuda?
+              </div>
+<p class="text-xs sm:text-sm text-zinc-200 mb-4 opacity-95">
+                Nuestros asesores de afiliación en salud te orientan en cualquier punto de tu registro.
+              </p>
+<div class="space-y-2.5 text-xs sm:text-sm font-semibold">
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10">
+<span class="font-medium text-zinc-200">Línea Gratuita Nacional</span>
+<span class="font-bold text-[#ffb51b]">01 8000 915 500</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10">
+<span class="font-medium text-zinc-200">Bogotá D.C.</span>
+<span class="font-bold text-[#ffb51b]">(601) 307 8000</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<!-- ================= SUCCESS MODAL ================= -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" id="successModal">
+<div class="bg-white rounded-2xl border border-[#18181b]/10 shadow-2xl max-w-lg w-full p-8 text-center relative animate-in fade-in zoom-in-95 duration-200">
+<div class="w-16 h-16 rounded-full bg-[#ffb51b]/20 text-[#21496a] flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-4xl font-bold text-[#21496a]">check_circle</span>
+</div>
+<h3 class="text-[#21496a] font-heading font-extrabold text-2xl mb-2">¡Registro Exitoso!</h3>
+<div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 text-[#18181b] text-sm mb-6">
+<p class="mb-3">
+            Te enviamos un correo de bienvenida a <strong class="text-[#21496a] font-semibold" id="successMaskedEmail">m***@dominio.com</strong>. Revisa tu bandeja de entrada o carpeta de spam para activar tu cuenta Kenko EPS.
+          </p>
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-200 text-zinc-700 text-xs font-semibold">
+<span class="material-symbols-outlined text-xs">lock</span>
+            Protección de identidad y Habeas Data aplicada
+          </div>
+</div>
+<div class="space-y-3">
+<a class="w-full min-h-[48px] px-6 py-3 rounded-xl bg-[#21496a] text-[#f9fafb] hover:bg-[#1a3a54] font-heading font-bold text-sm shadow flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]" href="#iniciar-sesion">
+<span>Ir a Iniciar Sesión</span>
+<span class="material-symbols-outlined text-base">login</span>
+</a>
+<button class="w-full py-2.5 font-heading text-sm text-zinc-600 hover:text-[#18181b] font-medium" onclick="closeSuccessModal()" type="button">
+            Permanecer en esta página
+          </button>
+</div>
+</div>
+</div>
+<!-- ================= ERROR SIMULATION MODAL ================= -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" id="simulationModal">
+<div class="bg-white rounded-2xl border border-[#18181b]/10 shadow-2xl max-w-xl w-full p-6 md:p-8 relative">
+<div class="flex items-center justify-between pb-4 mb-4 border-b border-zinc-200">
+<div class="flex items-center gap-2 text-[#21496a] font-heading font-bold text-xl">
+<span class="material-symbols-outlined text-[#21496a]">terminal</span>
+            Simulador de Respuestas API
+          </div>
+<button aria-label="Cerrar modal" class="p-1 rounded-full hover:bg-zinc-100 text-zinc-500" onclick="closeSimulationModal()" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="text-zinc-600 text-sm mb-6">
+          Selecciona un caso de fallo para comprobar cómo la interfaz mapea los mensajes de error estandarizados sin filtrar información confidencial.
+        </p>
+<div class="space-y-4">
+<!-- 400 -->
+<div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+<div>
+<span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 mb-1">HTTP 400 VALIDATION_ERROR</span>
+<p class="font-heading font-semibold text-sm text-[#18181b]">Mapeo granular de errores de campo con <code>details</code></p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-[#21496a] text-[#f9fafb] text-xs font-bold flex-shrink-0 hover:bg-[#1a3a54] transition-colors focus:ring-2 focus:ring-[#ffb51b]" onclick="triggerSimulatedError(400)" type="button">
+              Ejecutar 400
+            </button>
+</div>
+<!-- 409 -->
+<div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+<div>
+<span class="inline-block px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 mb-1">HTTP 409 REGISTER_CONFLICT</span>
+<p class="font-heading font-semibold text-sm text-[#18181b]">Notificación genérica anti-enumeración de usuario existente</p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-[#21496a] text-[#f9fafb] text-xs font-bold flex-shrink-0 hover:bg-[#1a3a54] transition-colors focus:ring-2 focus:ring-[#ffb51b]" onclick="triggerSimulatedError(409)" type="button">
+              Ejecutar 409
+            </button>
+</div>
+</div>
+<div class="hidden mt-6 p-4 rounded-xl border-l-4 border-red-600 bg-red-50 text-red-900 border border-red-200" id="simulatedErrorBanner">
+<div class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-lg mt-0.5 text-red-600">error</span>
+<div>
+<span class="font-bold text-sm block" id="simulatedErrorTitle">Error detectado</span>
+<p class="text-xs sm:text-sm mt-0.5" id="simulatedErrorDescription"></p>
+</div>
+</div>
+</div>
+<div class="mt-6 text-right">
+<button class="px-5 py-2.5 rounded-xl bg-zinc-100 text-[#18181b] font-heading font-semibold text-sm hover:bg-zinc-200 focus:ring-2 focus:ring-[#ffb51b]" onclick="closeSimulationModal()" type="button">
+            Cerrar Simulador
+          </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="py-4 text-center text-zinc-600 text-xs bg-zinc-100 border-t border-[#18181b]/10">
+<div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+<span class="font-medium">Kenko EPS • Cumplimiento Ley 1581 de 2012 y Habeas Data</span>
+<span class="text-zinc-500">Seguridad SSL 256-bit Certificada</span>
+</div>
+</footer>
+<!-- Interactive Client-side Script -->
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    const stepNames = [
+      "Documento de Identidad",
+      "Datos personales",
+      "Contacto y Residencia",
+      "Seguridad y Consentimiento"
+    ];
+
+    const blacklistPasswords = ["colombia123", "kenko1234", "12345678", "password", "clave123", "123456789"];
+
+    // Initialize maximum birth date (today) and minimum birth date (120 years ago)
+    (function initDateConstraints() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const maxDate = `${yyyy}-${mm}-${dd}`;
+      const minDate = `${yyyy - 120}-01-01`;
+      
+      const birthDateInput = document.getElementById('birthDate');
+      if (birthDateInput) {
+        birthDateInput.max = maxDate;
+        birthDateInput.min = minDate;
+      }
+    })();
+
+    function updateDocSelection(radioElem) {
+      const docCards = document.querySelectorAll('.doc-card');
+      docCards.forEach(card => {
+        card.classList.remove('border-2', 'border-[#1e5bd7]', 'shadow-sm');
+        card.classList.add('border', 'border-[#18181b]/10');
+      });
+      const currentCard = radioElem.closest('.doc-card');
+      currentCard.classList.remove('border', 'border-[#18181b]/10');
+      currentCard.classList.add('border-2', 'border-[#1e5bd7]', 'shadow-sm');
+      
+      updateSummary();
+    }
+
+    function handleDocNumberInput(inputElem) {
+      // Normalization: alphanumeric only, removing dots, dashes and spaces
+      let val = inputElem.value.replace(/[^a-zA-Z0-9]/g, '');
+      inputElem.value = val;
+      const errorEl = document.getElementById('docNumberError');
+      if (val.length > 0 && (val.length < 4 || val.length > 20)) {
+        errorEl.classList.remove('hidden');
+      } else {
+        errorEl.classList.add('hidden');
+      }
+      updateSummary();
+    }
+
+    function handlePhoneInput(inputElem) {
+      // Clean non-digits
+      let digits = inputElem.value.replace(/\D/g, '');
+      if (digits.length > 10) digits = digits.slice(0, 10);
+      
+      // Format as 300 123 4567
+      let formatted = digits;
+      if (digits.length > 6) {
+        formatted = `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+      } else if (digits.length > 3) {
+        formatted = `${digits.slice(0, 3)} ${digits.slice(3)}`;
+      }
+      inputElem.value = formatted;
+      
+      if (digits.length === 10) {
+        document.getElementById('phoneError').classList.add('hidden');
+      }
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const selectedDocType = document.querySelector('input[name="documentType"]:checked')?.value || 'CC';
+      const docNum = document.getElementById('docNumber').value || 'Sin definir';
+      document.getElementById('summaryDoc').textContent = `${selectedDocType} • ${docNum}`;
+
+      const firstName = document.getElementById('firstName')?.value.trim() || '';
+      const lastName = document.getElementById('lastName')?.value.trim() || '';
+      if (firstName || lastName) {
+        document.getElementById('summaryName').textContent = `${firstName} ${lastName}`.trim();
+      } else {
+        document.getElementById('summaryName').textContent = 'Pendiente de ingreso';
+      }
+
+      const city = document.getElementById('city')?.value || '';
+      const phone = document.getElementById('phone')?.value.trim() || '';
+      if (city || phone) {
+        document.getElementById('summaryContact').textContent = `${city || 'Ciudad s/d'} • ${phone ? '+57 ' + phone : '+57 s/d'}`;
+      } else {
+        document.getElementById('summaryContact').textContent = 'Pendiente de ingreso';
+      }
+    }
+
+    function navigateToStep(stepNumber) {
+      if (stepNumber < 1 || stepNumber > totalSteps) return;
+
+      // If jumping forward, validate intermediate steps sequentially
+      if (stepNumber > currentStep) {
+        for (let s = currentStep; s < stepNumber; s++) {
+          if (!validateCurrentStep(s)) {
+            return;
+          }
+        }
+      }
+
+      document.getElementById(`step-panel-${currentStep}`).classList.add('hidden');
+      
+      for (let i = 1; i <= totalSteps; i++) {
+        const item = document.getElementById(`stepper-item-${i}`);
+        const badge = document.getElementById(`step-badge-${i}`);
+
+        if (i === stepNumber) {
+          item.className = "cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-[#21496a] text-white transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ffb51b]";
+          badge.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white text-[#21496a] shadow-sm flex-shrink-0";
+          badge.innerHTML = `${i}`;
+        } else if (i < stepNumber) {
+          item.className = "cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-zinc-200 text-[#18181b] hover:bg-zinc-300 transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]";
+          badge.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-[#21496a] text-white flex-shrink-0";
+          badge.innerHTML = `<span class="material-symbols-outlined text-sm font-bold">check</span>`;
+        } else {
+          item.className = "cursor-pointer group flex items-center gap-3 p-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-[#18181b] transition-all focus:outline-none focus:ring-2 focus:ring-[#ffb51b]";
+          badge.className = "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-white border border-[#18181b]/10 text-zinc-600 flex-shrink-0";
+          badge.innerHTML = `${i}`;
+        }
+      }
+
+      currentStep = stepNumber;
+      document.getElementById(`step-panel-${currentStep}`).classList.remove('hidden');
+
+      document.getElementById('current-step-display').textContent = currentStep;
+      document.getElementById('current-step-name').textContent = stepNames[currentStep - 1];
+
+      const prevBtn = document.getElementById('btnPrev');
+      const nextBtnLabel = document.getElementById('btnNextLabel');
+      const nextBtnIcon = document.getElementById('btnNextIcon');
+
+      if (currentStep === 1) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+
+      if (currentStep === totalSteps) {
+        nextBtnLabel.textContent = "Crear mi cuenta en Kenko";
+        nextBtnIcon.textContent = "how_to_reg";
+      } else {
+        nextBtnLabel.textContent = "Continuar al siguiente paso";
+        nextBtnIcon.textContent = "arrow_forward";
+      }
+
+      updateSummary();
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    function validateCurrentStep(step) {
+      if (step === 1) {
+        const docVal = document.getElementById('docNumber').value.trim();
+        const err = document.getElementById('docNumberError');
+        if (docVal.length < 4 || docVal.length > 20) {
+          err.classList.remove('hidden');
+          document.getElementById('docNumber').focus();
+          return false;
+        }
+        err.classList.add('hidden');
+        return true;
+      }
+
+      if (step === 2) {
+        const fn = document.getElementById('firstName').value.trim();
+        const ln = document.getElementById('lastName').value.trim();
+        const bd = document.getElementById('birthDate').value;
+        let valid = true;
+
+        if (!fn || fn.length < 1) {
+          document.getElementById('firstNameError').classList.remove('hidden');
+          if (valid) document.getElementById('firstName').focus();
+          valid = false;
+        } else {
+          document.getElementById('firstNameError').classList.add('hidden');
+        }
+
+        if (!ln || ln.length < 1) {
+          document.getElementById('lastNameError').classList.remove('hidden');
+          if (valid) document.getElementById('lastName').focus();
+          valid = false;
+        } else {
+          document.getElementById('lastNameError').classList.add('hidden');
+        }
+
+        if (!bd) {
+          document.getElementById('birthDateError').classList.remove('hidden');
+          if (valid) document.getElementById('birthDate').focus();
+          valid = false;
+        } else {
+          const selected = new Date(bd);
+          const now = new Date();
+          const minYear = now.getFullYear() - 120;
+          if (selected > now || selected.getFullYear() < minYear) {
+            document.getElementById('birthDateError').classList.remove('hidden');
+            if (valid) document.getElementById('birthDate').focus();
+            valid = false;
+          } else {
+            document.getElementById('birthDateError').classList.add('hidden');
+          }
+        }
+
+        return valid;
+      }
+
+      if (step === 3) {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        document.getElementById('email').value = email;
+        const phone = document.getElementById('phone').value.replace(/\D/g, '');
+        const city = document.getElementById('city').value;
+        const address = document.getElementById('addressLine').value.trim();
+        let valid = true;
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!email || !emailRegex.test(email)) {
+          document.getElementById('emailError').classList.remove('hidden');
+          if (valid) document.getElementById('email').focus();
+          valid = false;
+        } else {
+          document.getElementById('emailError').classList.add('hidden');
+        }
+
+        // 10 digits starting with 3
+        if (!phone || phone.length !== 10 || !phone.startsWith('3')) {
+          document.getElementById('phoneError').classList.remove('hidden');
+          if (valid) document.getElementById('phone').focus();
+          valid = false;
+        } else {
+          document.getElementById('phoneError').classList.add('hidden');
+        }
+
+        if (!city) {
+          document.getElementById('cityError').classList.remove('hidden');
+          if (valid) document.getElementById('city').focus();
+          valid = false;
+        } else {
+          document.getElementById('cityError').classList.add('hidden');
+        }
+
+        if (!address || address.length < 5) {
+          document.getElementById('addressError').classList.remove('hidden');
+          if (valid) document.getElementById('addressLine').focus();
+          valid = false;
+        } else {
+          document.getElementById('addressError').classList.add('hidden');
+        }
+
+        return valid;
+      }
+
+      if (step === 4) {
+        const pwd = document.getElementById('password').value;
+        const confirmPwd = document.getElementById('confirmPassword').value;
+        const consent = document.getElementById('consentLey1581').checked;
+        let valid = true;
+
+        const lengthRule = pwd.length >= 8 && pwd.length <= 128;
+        const upperRule = /[A-Z]/.test(pwd);
+        const numRule = /[0-9]/.test(pwd);
+        const specialRule = /[^A-Za-z0-9]/.test(pwd);
+        const isBlacklisted = blacklistPasswords.includes(pwd.toLowerCase());
+
+        if (!lengthRule || !upperRule || !numRule || !specialRule || isBlacklisted) {
+          document.getElementById('passwordError').classList.remove('hidden');
+          if (valid) document.getElementById('password').focus();
+          valid = false;
+        } else {
+          document.getElementById('passwordError').classList.add('hidden');
+        }
+
+        if (!confirmPwd || pwd !== confirmPwd) {
+          document.getElementById('passwordMatchError').classList.remove('hidden');
+          if (valid) document.getElementById('confirmPassword').focus();
+          valid = false;
+        } else {
+          document.getElementById('passwordMatchError').classList.add('hidden');
+        }
+
+        if (!consent) {
+          document.getElementById('consentError').classList.remove('hidden');
+          valid = false;
+        } else {
+          document.getElementById('consentError').classList.add('hidden');
+        }
+
+        return valid;
+      }
+
+      return true;
+    }
+
+    function handleNextStep() {
+      if (currentStep < totalSteps) {
+        if (validateCurrentStep(currentStep)) {
+          navigateToStep(currentStep + 1);
+        }
+      } else {
+        if (validateCurrentStep(4)) {
+          submitRegistration();
+        }
+      }
+    }
+
+    function handlePrevStep() {
+      if (currentStep > 1) {
+        navigateToStep(currentStep - 1);
+      }
+    }
+
+    function submitRegistration() {
+      const btn = document.getElementById('btnNext');
+      const label = document.getElementById('btnNextLabel');
+      const icon = document.getElementById('btnNextIcon');
+      const spinner = document.getElementById('btnNextSpinner');
+
+      btn.disabled = true;
+      spinner.classList.remove('hidden');
+      icon.classList.add('hidden');
+      label.textContent = "Creando tu cuenta...";
+
+      setTimeout(() => {
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+        icon.classList.remove('hidden');
+        label.textContent = "Crear mi cuenta en Kenko";
+        showSuccessModal();
+      }, 1500);
+    }
+
+    function togglePasswordVisibility(fieldId, btnElem) {
+      const input = document.getElementById(fieldId);
+      const icon = btnElem.querySelector('.material-symbols-outlined');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
+    function validatePasswordStrength(pwd) {
+      const lengthRule = pwd.length >= 8 && pwd.length <= 128;
+      const upperRule = /[A-Z]/.test(pwd);
+      const numRule = /[0-9]/.test(pwd);
+      const specialRule = /[^A-Za-z0-9]/.test(pwd);
+
+      updateRuleElem('rule-length', lengthRule);
+      updateRuleElem('rule-uppercase', upperRule);
+      updateRuleElem('rule-number', numRule);
+      updateRuleElem('rule-special', specialRule);
+
+      const isBlacklisted = blacklistPasswords.includes(pwd.toLowerCase());
+      const warning = document.getElementById('blacklistWarning');
+      if (isBlacklisted && pwd.length > 0) {
+        warning.classList.remove('hidden');
+      } else {
+        warning.classList.add('hidden');
+      }
+
+      let score = 0;
+      if (lengthRule) score++;
+      if (upperRule) score++;
+      if (numRule) score++;
+      if (specialRule) score++;
+
+      const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3'), document.getElementById('bar-4')];
+      bars.forEach(b => b.className = 'h-full rounded-full bg-zinc-200 transition-all');
+
+      const strengthText = document.getElementById('strengthText');
+
+      if (score === 0 || isBlacklisted) {
+        strengthText.textContent = "Muy débil";
+        strengthText.className = "font-bold text-red-600";
+        if (pwd.length > 0) bars[0].className = 'h-full rounded-full bg-red-600 transition-all';
+      } else if (score === 1 || score === 2) {
+        strengthText.textContent = "Regular";
+        strengthText.className = "font-bold text-amber-600";
+        bars[0].className = 'h-full rounded-full bg-[#ffb51b] transition-all';
+        bars[1].className = 'h-full rounded-full bg-[#ffb51b] transition-all';
+      } else if (score === 3) {
+        strengthText.textContent = "Buena";
+        strengthText.className = "font-bold text-[#21496a]";
+        bars[0].className = 'h-full rounded-full bg-[#21496a] transition-all';
+        bars[1].className = 'h-full rounded-full bg-[#21496a] transition-all';
+        bars[2].className = 'h-full rounded-full bg-[#21496a] transition-all';
+      } else if (score === 4) {
+        strengthText.textContent = "Muy Segura";
+        strengthText.className = "font-bold text-[#21496a]";
+        bars.forEach(b => b.className = 'h-full rounded-full bg-[#21496a] transition-all');
+      }
+
+      checkPasswordMatch();
+    }
+
+    function updateRuleElem(elemId, isValid) {
+      const el = document.getElementById(elemId);
+      const icon = el.querySelector('.material-symbols-outlined');
+      if (isValid) {
+        el.classList.add('text-[#21496a]', 'font-medium');
+        el.classList.remove('text-zinc-600');
+        icon.textContent = 'check_circle';
+      } else {
+        el.classList.remove('text-[#21496a]', 'font-medium');
+        el.classList.add('text-zinc-600');
+        icon.textContent = 'radio_button_unchecked';
+      }
+    }
+
+    function checkPasswordMatch() {
+      const pwd = document.getElementById('password').value;
+      const confirmPwd = document.getElementById('confirmPassword').value;
+      const err = document.getElementById('passwordMatchError');
+      if (confirmPwd.length > 0) {
+        if (pwd !== confirmPwd) {
+          err.classList.remove('hidden');
+        } else {
+          err.classList.add('hidden');
+        }
+      } else {
+        err.classList.add('hidden');
+      }
+    }
+
+    function maskEmail(email) {
+      if (!email || !email.includes('@')) return 'm***@dominio.com';
+      const [user, domain] = email.split('@');
+      if (user.length <= 2) {
+        return `${user[0] || 'u'}***@${domain}`;
+      }
+      return `${user[0]}***${user[user.length - 1]}@${domain}`;
+    }
+
+    function showSuccessModal() {
+      const userEmail = document.getElementById('email').value.trim() || 'miusuario@correo.com';
+      document.getElementById('successMaskedEmail').textContent = maskEmail(userEmail);
+      document.getElementById('successModal').classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+
+    function openSimulationModal() {
+      document.getElementById('simulationModal').classList.remove('hidden');
+    }
+
+    function closeSimulationModal() {
+      document.getElementById('simulationModal').classList.add('hidden');
+    }
+
+    function triggerSimulatedError(code) {
+      const banner = document.getElementById('simulatedErrorBanner');
+      const title = document.getElementById('simulatedErrorTitle');
+      const desc = document.getElementById('simulatedErrorDescription');
+
+      banner.classList.remove('hidden');
+
+      if (code === 400) {
+        title.textContent = "Error 400: VALIDATION_ERROR (Campos incompletos o inválidos)";
+        desc.textContent = "El servidor rechazó los datos: 'docNumber': 'Longitud mínima 4 requerida', 'password': 'La clave contiene patrones bloqueados de uso común'.";
+        
+        document.getElementById('docNumberError').classList.remove('hidden');
+        document.getElementById('docNumberErrorMsg').textContent = "Error de API: Número de documento no cumple formato requerido.";
+      } else if (code === 409) {
+        title.textContent = "Error 409: REGISTER_CONFLICT (Política Anti-enumeración)";
+        desc.textContent = "No pudimos crear tu cuenta con estos datos. Revisa tu documento y correo o intenta recuperar tu contraseña.";
+      }
+    }
+  </script>
+</body></html>

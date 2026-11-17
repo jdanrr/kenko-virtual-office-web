@@ -36,13 +36,15 @@ export default defineEventHandler(async (event) => {
   }
 
   const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:8001";
+    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
 
   try {
     const response = await $fetch.raw(`${upstreamBase}/auth/refresh`, {
       method: "POST",
       headers: {
-        "content-type": "application/json",
+        // Sin `content-type`: no hay body. Enviar `application/json` con
+        // cuerpo vacío hacía que el backend intentara parsear JSON y
+        // respondiera 500. La cookie viaja en el header `cookie`.
         "x-correlation-id": correlationId,
         cookie,
       },
