@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "./apiError";
-import { createServiceClient, setAuthHooks, toApiError } from "./httpClient";
+import { createServiceClient, normalizeBaseUrl, setAuthHooks, toApiError } from "./httpClient";
 
 /**
  * Pruebas del cliente HTTP (sin servicios reales: respuestas simuladas).
@@ -34,6 +34,35 @@ const validationBody = {
 beforeEach(() => {
   setAuthHooks(null);
   vi.unstubAllGlobals();
+});
+
+describe("normalizeBaseUrl", () => {
+  it("quita barras finales y espacios", () => {
+    expect(normalizeBaseUrl("http://localhost:8002/api/v1")).toBe(
+      "http://localhost:8002/api/v1",
+    );
+    expect(normalizeBaseUrl("http://localhost:8002/api/v1/")).toBe(
+      "http://localhost:8002/api/v1",
+    );
+    expect(normalizeBaseUrl("  http://localhost:8002/api/v1///  ")).toBe(
+      "http://localhost:8002/api/v1",
+    );
+  });
+});
+
+describe("baseURL", () => {
+  it("sin baseURL no llama a la red y pide revisar el .env", async () => {
+    const fetchImpl = vi.fn(async () => ({ data: {} }));
+    const client = createServiceClient({
+      baseURL: "   ",
+      fetchImpl: fetchImpl as never,
+    });
+    await expect(client.request("/certificates", { method: "POST" })).rejects.toMatchObject({
+      status: 0,
+      code: "CONFIG_ERROR",
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
 });
 
 describe("toApiError", () => {

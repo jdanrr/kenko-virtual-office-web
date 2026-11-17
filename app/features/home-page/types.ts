@@ -4,14 +4,19 @@
 // a estas vistas en el punto de conexión (HomePage.vue).
 // Nombres en inglés; comentarios en español.
 
+export type PatientGender = "male" | "female" | "other";
+
 export interface SessionPatientView {
   id: string;
   firstName: string;
   lastName: string;
   shortName: string;
-  /** Documento enmascarado, nunca completo. */
+  /** Documento enmascarado, nunca completo (lo completará profile). */
   documentMasked: string;
   initials: string;
+  /** Género para el saludo; `null` hasta que lo exponga profile. */
+  gender: PatientGender | null;
+  email: string;
 }
 
 export type AppointmentModality = "presencial" | "teleconsulta";

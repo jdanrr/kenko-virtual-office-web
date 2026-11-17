@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../api/apiError";
-import { getQueryClient, queryKeys, shouldRetry } from "./client";
+import { getQueryClient, createQueryClient, queryKeys, shouldRetry } from "./client";
 
 /** Pruebas de la configuración de TanStack Query (sin red). */
 
@@ -31,5 +31,12 @@ describe("getQueryClient", () => {
 
   it("las claves son arreglos estables por feature y recurso", () => {
     expect(queryKeys.auth.me()).toEqual(["auth", "me"]);
+  });
+
+  it("createQueryClient devuelve instancias aisladas (una por petición SSR)", () => {
+    const a = createQueryClient();
+    const b = createQueryClient();
+    expect(a).not.toBe(b);
+    expect(a).not.toBe(getQueryClient());
   });
 });

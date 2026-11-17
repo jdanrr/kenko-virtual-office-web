@@ -72,12 +72,11 @@ function modalityLabel(modality: AppointmentModality): string | null {
       <div class="h-20 rounded-xl bg-slate-100" />
     </div>
 
-    <!-- Estado de error -->
-    <p v-else-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
-      No se pudieron cargar las citas. Inténtalo de nuevo más tarde.
-    </p>
-
     <template v-else>
+      <!-- El aviso de error no oculta las acciones: reintentar es la acción. -->
+      <p v-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4 mb-5">
+        {{ error }}
+      </p>
       <!-- Próxima cita confirmada -->
       <div
         v-if="summary.next"

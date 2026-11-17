@@ -47,6 +47,9 @@ function toPatientView(user: AuthUser): SessionPatientView {
     shortName: user.firstName,
     documentMasked: user.email,
     initials: user.firstName.charAt(0).toUpperCase(),
+    // TODO(profile): el backend aún no expone género ni documento.
+    gender: null,
+    email: user.email,
   };
 }
 
@@ -55,6 +58,15 @@ const getAccessToken = () => auth.accessToken;
 const headerPatient = computed<SessionPatientView>(() =>
   auth.user ? toPatientView(auth.user) : dashboardPatientMock,
 );
+
+// Menú del avatar: logout cierra todo y redirige; perfil aún sin vista.
+async function logout(): Promise<void> {
+  await auth.logOutEverywhere();
+}
+
+function goToProfile(): void {
+  // TODO: navegar a la vista de perfil cuando exista.
+}
 
 // Citas reales del usuario (requiere sesión; el guarda la garantiza).
 const bases = getServiceBases();
@@ -110,7 +122,7 @@ async function downloadPdf(authorizationId: string): Promise<void> {
       createProfileClient(bases.profile, getAccessToken),
       authorizationId,
     );
-    downloadNotice.value = null;
+    downloadNotice.value = "PDF descargado. Revisa tu carpeta de descargas.";
   } catch (error) {
     downloadNotice.value =
       toProfileErrorMessage(error) ?? "No se pudo descargar el PDF.";
@@ -136,7 +148,7 @@ useHead({
 
 <template>
   <div class="min-h-screen flex flex-col antialiased">
-    <HomeHeader :patient="headerPatient" />
+    <HomeHeader :patient="headerPatient" @profile="goToProfile" @logout="logout" />
 
     <main
       class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6"

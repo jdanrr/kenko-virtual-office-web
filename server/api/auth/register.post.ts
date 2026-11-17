@@ -23,6 +23,7 @@ import {
   newCorrelationId,
   toFieldDetails,
   validationErrorEnvelope,
+  upstreamAuthBase,
 } from "../../utils/auth";
 
 function isRegisterSuccess(payload: unknown): payload is ApiSuccess<RegisterSuccess> {
@@ -56,8 +57,7 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const upstreamBase = upstreamAuthBase();
 
   let upstream: { status: number; headers: Headers; data: unknown };
   try {

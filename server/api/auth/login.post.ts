@@ -21,6 +21,7 @@ import {
   pickCookies,
   toFieldDetails,
   validationErrorEnvelope,
+  upstreamAuthBase,
 } from "../../utils/auth";
 
 function isLoginSuccess(payload: unknown): payload is ApiSuccess<AuthTokenPair> {
@@ -45,8 +46,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const payload = toLoginRequest(parsed.data);
-  const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const upstreamBase = upstreamAuthBase();
 
   let upstream: { status: number; headers: Headers; data: unknown };
   try {

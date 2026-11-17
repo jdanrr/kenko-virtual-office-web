@@ -15,6 +15,16 @@ import type {
 /** §2: cookie httpOnly de refresh que fija/rota/limpia el backend. */
 export const AUTH_REFRESH_COOKIE = "kenko_refresh";
 
+/**
+ * Base del microservicio Auth sin `/` final.
+ * Evita `//auth/...` (Hono es estricto y responde 404) cuando el `.env`
+ * trae la base con barra final (p. ej. `http://localhost:5500/`).
+ */
+export function upstreamAuthBase(): string {
+  const raw = process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  return raw.trim().replace(/\/+$/, "");
+}
+
 /** §2: la BFF genera `X-Correlation-Id` cuando el navegador no trae uno. */
 export function newCorrelationId(): string {
   return randomUUID();

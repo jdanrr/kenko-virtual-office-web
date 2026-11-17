@@ -21,5 +21,7 @@ export function useMyAppointmentsQuery(
   return useQuery<AppointmentResponse[]>({
     queryKey: appointmentKeys.mine(),
     queryFn: () => listMyAppointments(client),
+    // Solo en cliente: el token vive en memoria del navegador (en SSR no hay).
+    enabled: import.meta.client,
   });
 }

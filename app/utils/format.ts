@@ -38,10 +38,28 @@ function capitalize(word: string): string {
   return lower.charAt(0).toLocaleUpperCase("es-CO") + lower.slice(1);
 }
 
-/** `"2026-11-20"` o `"2026-11-20T08:00:00Z"` → `"20 Nov 2026"`. */
+/**
+ * `"2026-11-20"` → `"20 Nov 2026"`.
+ * Si trae hora (`"2026-11-17T01:00:00Z"`), se interpreta en hora de Bogotá:
+ * un documento generado el 16 a las 8pm (COT) es 17 en UTC, pero aquí fue 16.
+ */
 export function formatShortDate(iso: string): string {
-  const [datePart] = iso.split("T");
-  const [year, month, day] = (datePart ?? "").split("-").map(Number);
+  let year: number;
+  let month: number;
+  let day: number;
+  if (iso.includes("T")) {
+    const instant = new Date(iso);
+    if (Number.isNaN(instant.getTime())) return iso;
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Bogota",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(instant);
+    [year, month, day] = parts.split("-").map(Number);
+  } else {
+    [year, month, day] = iso.split("-").map(Number);
+  }
   if (!year || !month || !day) return iso;
   return `${day} ${MONTHS_SHORT_ES[month - 1]} ${year}`;
 }

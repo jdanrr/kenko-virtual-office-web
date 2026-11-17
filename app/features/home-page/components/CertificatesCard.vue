@@ -35,23 +35,17 @@ defineEmits<{
       <div class="h-40 rounded-xl bg-slate-100" />
     </div>
 
-    <!-- Estado de error -->
-    <p v-else-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
-      {{ error }}
-    </p>
-
     <div v-else class="grid grid-cols-1 gap-3 pt-1">
+      <!-- El aviso de error no oculta los botones: reintentar es la acción. -->
+      <p v-if="error" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-4">
+        {{ error }}
+      </p>
       <!-- Certificado de afiliación -->
       <div
         class="p-3.5 bg-slate-50/80 hover:bg-emerald-50/40 rounded-xl border border-slate-200 transition flex flex-col justify-between"
       >
         <div class="flex items-start justify-between gap-2 mb-2">
           <div>
-            <span
-              class="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-100/90 px-1.5 py-0.5 rounded"
-            >
-              POST /certificates
-            </span>
             <h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1 font-display">
               Certificado Afiliación
             </h3>
@@ -67,12 +61,20 @@ defineEmits<{
           </div>
         </div>
 
-        <p v-if="!certificate" class="text-[11px] text-slate-500 mb-2.5">
+        <p v-if="!certificate && !isPending && !error" class="text-[11px] text-slate-500 mb-2.5">
           Aún no has generado tu certificado. Usa el botón para crearlo.
         </p>
 
+        <p
+          v-if="certificate && !isPending && !error"
+          role="status"
+          class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5 mb-2.5"
+        >
+          ¡Listo! Tu certificado fue generado y enviado a tu correo registrado.
+        </p>
+
         <dl
-          v-else
+          v-if="certificate"
           class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"
         >
           <div class="flex justify-between">
@@ -107,11 +109,6 @@ defineEmits<{
       >
         <div class="flex items-start justify-between gap-2 mb-2">
           <div>
-            <span
-              class="text-[10px] font-mono text-blue-600 font-semibold bg-blue-100 px-1.5 py-0.5 rounded"
-            >
-              POST /medical-history
-            </span>
             <h3 class="text-xs md:text-sm font-bold text-slate-900 mt-1 font-display">
               Historial Médico
             </h3>
@@ -125,12 +122,20 @@ defineEmits<{
           </div>
         </div>
 
-        <p v-if="!history" class="text-[11px] text-slate-500 mb-2.5">
+        <p v-if="!history && !isPending && !error" class="text-[11px] text-slate-500 mb-2.5">
           Aún no has generado tu historial. Usa el botón para crearlo.
         </p>
 
+        <p
+          v-if="history && !isPending && !error"
+          role="status"
+          class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5 mb-2.5"
+        >
+          ¡Listo! Tu historial fue generado y enviado a tu correo registrado.
+        </p>
+
         <dl
-          v-else
+          v-if="history"
           class="bg-white rounded-lg p-2 border border-slate-200/80 text-[11px] space-y-1 mb-2.5 text-slate-600"
         >
           <div class="flex justify-between">

@@ -10,6 +10,7 @@ import {
   forwardCookie,
   newCorrelationId,
   pickCookies,
+  upstreamAuthBase,
 } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
@@ -17,8 +18,7 @@ export default defineEventHandler(async (event) => {
     getRequestHeader(event, "x-correlation-id") ?? newCorrelationId();
   const cookie = forwardCookie(getRequestHeader(event, "cookie"), AUTH_REFRESH_COOKIE);
 
-  const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const upstreamBase = upstreamAuthBase();
 
   if (cookie) {
     try {

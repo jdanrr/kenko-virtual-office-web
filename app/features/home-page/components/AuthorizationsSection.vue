@@ -88,11 +88,6 @@ const statusIcon: Record<AuthorizationStatus, string> = {
           >
             Autorizaciones Médicas
           </h2>
-          <span
-            class="text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200"
-          >
-            GET /authorizations
-          </span>
         </div>
         <p class="text-xs text-slate-500 mt-0.5">
           Consulta, descarga de PDF y notificación de órdenes autorizadas

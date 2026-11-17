@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   AUTH_REFRESH_COOKIE,
@@ -9,6 +9,7 @@ import {
   pickCookies,
   toFieldDetails,
   unauthorizedEnvelope,
+  upstreamAuthBase,
   validationErrorEnvelope,
 } from "./auth";
 
@@ -93,5 +94,27 @@ describe("forwardCookie", () => {
     expect(forwardCookie("theme=dark", AUTH_REFRESH_COOKIE)).toBeNull();
     expect(forwardCookie(`${AUTH_REFRESH_COOKIE}=`, AUTH_REFRESH_COOKIE)).toBeNull();
     expect(forwardCookie("=abc", AUTH_REFRESH_COOKIE)).toBeNull();
+  });
+});
+
+describe("upstreamAuthBase", () => {
+  const KEY = "NUXT_PUBLIC_API_AUTH_BASE";
+  const previous = process.env[KEY];
+
+  afterEach(() => {
+    if (previous === undefined) Reflect.deleteProperty(process.env, KEY);
+    else process.env[KEY] = previous;
+  });
+
+  it("usa el valor por defecto sin barra final", () => {
+    Reflect.deleteProperty(process.env, KEY);
+    expect(upstreamAuthBase()).toBe("http://localhost:5500");
+  });
+
+  it("quita barras finales y espacios (evita //auth/... → 404)", () => {
+    process.env[KEY] = "http://localhost:5500/";
+    expect(upstreamAuthBase()).toBe("http://localhost:5500");
+    process.env[KEY] = "  http://localhost:5500///  ";
+    expect(upstreamAuthBase()).toBe("http://localhost:5500");
   });
 });

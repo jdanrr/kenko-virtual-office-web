@@ -140,7 +140,8 @@ describe("toCertificateView y toHistoryView", () => {
       issuedISO: "2026-03-15T10:00:00Z",
       issuedLabel: "15 Mar 2026",
       memberSinceISO: "2021-02-01T00:00:00Z",
-      memberSinceLabel: "1 Feb 2021",
+      // 1.º de febrero 00:00 UTC = 31 de enero 7pm en Bogotá.
+      memberSinceLabel: "31 Ene 2021",
     });
     expect(
       toHistoryView({ pdfId: "p1", generatedAt: "2026-03-14T10:00:00Z", recordCount: 3 }),

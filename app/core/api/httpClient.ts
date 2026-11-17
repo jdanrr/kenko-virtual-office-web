@@ -188,6 +188,14 @@ export interface ServiceRequestOptions extends FetchOptions {
   envelope?: boolean;
 }
 
+/**
+ * Base sin `/` final ni espacios (evita `//recurso` → 404 en backends
+ * estrictos como Hono/FastAPI cuando el `.env` trae barra final).
+ */
+export function normalizeBaseUrl(base: string): string {
+  return base.trim().replace(/\/+$/, "");
+}
+
 export interface ServiceClient {
   request<T>(path: string, options?: ServiceRequestOptions): Promise<T>;
 }
@@ -200,12 +208,21 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
     useCookies = false,
     getAccessToken,
     noRefreshPaths = DEFAULT_NO_REFRESH_PATHS,
-    fetchImpl = ofetch.create({ baseURL, retry: false }),
+    fetchImpl = ofetch.create({ baseURL: normalizeBaseUrl(baseURL), retry: false }),
   } = options;
+  const normalizedBase = normalizeBaseUrl(baseURL);
 
   let refreshPromise: Promise<AccessTokenPair> | null = null;
 
   async function raw<T>(path: string, opts: ServiceRequestOptions = {}): Promise<T> {
+    if (!normalizedBase) {
+      throw new ApiError({
+        status: 0,
+        code: "CONFIG_ERROR",
+        message:
+          "Falta configurar la URL del microservicio. Revisa tu archivo .env y reinicia el servidor.",
+      });
+    }
     const { envelope = true, ...fetchOpts } = opts;
     const token = getAccessToken?.() ?? null;
     const headers = new Headers(fetchOpts.headers as HeadersInit | undefined);

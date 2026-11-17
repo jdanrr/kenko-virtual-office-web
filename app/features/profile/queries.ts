@@ -30,6 +30,8 @@ export function useAuthorizationsQuery(
   return useQuery<AuthorizationResponse[]>({
     queryKey: profileKeys.authorizations(),
     queryFn: () => listAuthorizations(client),
+    // Solo en cliente: el token vive en memoria del navegador (en SSR no hay).
+    enabled: import.meta.client,
   });
 }
 

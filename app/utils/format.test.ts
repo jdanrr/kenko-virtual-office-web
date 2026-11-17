@@ -47,4 +47,9 @@ describe("formatAppointmentDateTime", () => {
     expect(formatShortDate("2026-03-15T10:00:00Z")).toBe("15 Mar 2026");
     expect(formatShortDate("no-fecha")).toBe("no-fecha");
   });
+
+  it("formatShortDate usa hora Bogotá, no UTC", () => {
+    // 16 de noviembre 8pm en Colombia = 17 en UTC: aquí fue 16.
+    expect(formatShortDate("2026-11-17T01:00:00Z")).toBe("16 Nov 2026");
+  });
 });

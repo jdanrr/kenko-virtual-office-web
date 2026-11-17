@@ -17,6 +17,8 @@ export const dashboardPatientMock: SessionPatientView = {
   shortName: "Tatiana R.",
   documentMasked: "CC 1.020.485.***",
   initials: "TR",
+  gender: "female",
+  email: "tatiana.rivero@example.com",
 };
 
 const nextAppointmentMock: AppointmentView = {

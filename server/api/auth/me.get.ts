@@ -9,6 +9,7 @@ import {
   isDataEnvelope,
   newCorrelationId,
   unauthorizedEnvelope,
+  upstreamAuthBase,
 } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
@@ -23,8 +24,7 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  const upstreamBase =
-    process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const upstreamBase = upstreamAuthBase();
 
   try {
     const response = await $fetch.raw(`${upstreamBase}/auth/me`, {
