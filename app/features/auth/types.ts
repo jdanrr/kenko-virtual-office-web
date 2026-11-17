@@ -38,6 +38,46 @@ export interface AuthUser {
   email: string;
 }
 
+/** §3.1: únicos géneros que acepta la API. */
+export const GENDERS = ["male", "female", "other"] as const;
+
+export type Gender = (typeof GENDERS)[number];
+
+/**
+ * §3.1 `POST /auth/register` — cuerpo ya normalizado (12 campos).
+ * `confirmPassword` SÍ se envía (el backend la exige idéntica), solo no se
+ * almacena. Nombres/dirección solo con `trim` (sin cambiar capitalización).
+ */
+export interface RegisterRequest {
+  firstName: string;
+  lastName: string;
+  /** Fecha ISO `YYYY-MM-DD`, no futura, no mayor a 120 años. */
+  birthDate: string;
+  gender: Gender;
+  /** `trim` + minúsculas, máx. 254. */
+  email: string;
+  /** Normalizado a E.164 (p. ej. `+573001234567`). */
+  phone: string;
+  addressLine: string;
+  city: string;
+  documentType: DocumentType;
+  /** Mayúsculas, sin espacios/puntos/guiones, `^[A-Z0-9]{4,20}$`. */
+  documentNumber: string;
+  /** 8–128, fuera de la lista negra. */
+  password: string;
+  /** Idéntica a `password`. */
+  confirmPassword: string;
+}
+
+/**
+ * §3.1 salida `201 { data: { userId, maskedEmail } }`
+ * (`maskedEmail` tipo `m***@dominio`: se muestra tal cual, sin reconstruir).
+ */
+export interface RegisterSuccess {
+  userId: string;
+  maskedEmail: string;
+}
+
 /** §1.2 sobre de respuesta en éxito: `{ data }`. */
 export interface ApiSuccess<T> {
   data: T;
