@@ -1,5 +1,15 @@
 import { loginSchema, toLoginRequest, type LoginFormValues } from "./schemas";
-import { isApiFailure, type ApiFieldDetail, type AuthUser } from "./types";
+import {
+  registerSchema,
+  toRegisterRequest,
+  type RegisterFormValues,
+} from "./registerSchemas";
+import {
+  isApiFailure,
+  type ApiFieldDetail,
+  type AuthUser,
+  type RegisterSuccess,
+} from "./types";
 
 /**
  * Cliente del BFF de Authentication (`/api/auth/*`, nunca directo al microservicio).
@@ -13,6 +23,7 @@ export type FieldErrors = Record<string, string>;
 export type AuthFailureKind =
   | "validation"
   | "invalid-credentials"
+  | "register-conflict"
   | "session-expired"
   | "rate-limited"
   | "network"
@@ -57,7 +68,8 @@ function fieldErrorsFromDetails(
   return fields;
 }
 
-function fieldErrorsFromIssues(
+/** Mapea issues de zod a errores por campo (primer mensaje por campo). */
+export function fieldsFromIssues(
   issues: ReadonlyArray<{ path: ReadonlyArray<string | number>; message: string }>,
 ): FieldErrors {
   const fields: FieldErrors = {};
@@ -97,7 +109,10 @@ function snapshot(error: unknown): UpstreamSnapshot {
   };
 }
 
-function toAuthError(error: unknown, context: "login" | "session"): AuthError {
+function toAuthError(
+  error: unknown,
+  context: "login" | "session" | "register",
+): AuthError {
   const { status, data, retryAfter } = snapshot(error);
   const failure = isApiFailure(data) ? data.error : undefined;
 
@@ -130,6 +145,16 @@ function toAuthError(error: unknown, context: "login" | "session"): AuthError {
             message: "Tu sesión terminó. Vuelve a entrar.",
             correlationId: failure?.correlationId,
           });
+    case 409:
+      if (context === "register" && failure?.code === "REGISTER_CONFLICT") {
+        return new AuthError({
+          kind: "register-conflict",
+          message:
+            "No pudimos crear tu cuenta con estos datos. Revisa tu documento y correo o intenta recuperar tu contraseña.",
+          correlationId: failure.correlationId,
+        });
+      }
+      break;
     case 429: {
       const retryAfterSeconds = parseRetryAfter(retryAfter);
       return new AuthError({
@@ -174,6 +199,19 @@ function isAuthUser(payload: unknown): payload is { data: AuthUser } {
   );
 }
 
+function isRegisterSuccess(payload: unknown): payload is { data: RegisterSuccess } {
+  if (typeof payload !== "object" || payload === null || !("data" in payload)) {
+    return false;
+  }
+  const data = (payload as { data: unknown }).data as Record<string, unknown>;
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    typeof data.userId === "string" &&
+    typeof data.maskedEmail === "string"
+  );
+}
+
 /**
  * `POST /api/auth/login`. Valida en cliente (respuesta inmediata) y delega
  * al BFF. El `refreshToken` nunca llega aquí: vive en cookie httpOnly.
@@ -184,7 +222,7 @@ export async function login(values: LoginFormValues): Promise<LoginResult> {
     throw new AuthError({
       kind: "validation",
       message: "Revisa los datos ingresados.",
-      fields: fieldErrorsFromIssues(parsed.error.issues),
+      fields: fieldsFromIssues(parsed.error.issues),
     });
   }
   try {
@@ -202,6 +240,45 @@ export async function login(values: LoginFormValues): Promise<LoginResult> {
   } catch (error) {
     if (error instanceof AuthError) throw error;
     throw toAuthError(error, "login");
+  }
+}
+
+/**
+ * `POST /api/auth/register` (§3.1). Valida en cliente (respuesta inmediata)
+ * y delega al BFF. Devuelve `{ userId, maskedEmail }`: el email enmascarado
+ * se muestra tal cual, nunca se reconstruye el completo.
+ */
+export async function register(values: RegisterFormValues): Promise<RegisterSuccess> {
+  const parsed = registerSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new AuthError({
+      kind: "validation",
+      message: "Revisa los datos ingresados.",
+      fields: fieldsFromIssues(parsed.error.issues),
+    });
+  }
+  const payload = toRegisterRequest(parsed.data);
+  if (!payload) {
+    throw new AuthError({
+      kind: "unexpected",
+      message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+    });
+  }
+  try {
+    const result = await clientFetch()<unknown>("/api/auth/register", {
+      method: "POST",
+      body: payload,
+    });
+    if (!isRegisterSuccess(result)) {
+      throw new AuthError({
+        kind: "unexpected",
+        message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+      });
+    }
+    return result.data;
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw toAuthError(error, "register");
   }
 }
 
@@ -230,8 +307,24 @@ export async function fetchMe(accessToken: string): Promise<AuthUser> {
 /**
  * `POST /api/auth/refresh` (§3.3). Renovación silenciosa: el refresh token
  * viaja solo en la cookie httpOnly; aquí no se toca.
+ *
+ * Vuelo único compartido: si el bootstrap, el `httpClient` central y la
+ * renovación del store coinciden, esperan la MISMA petición en vez de
+ * lanzar 3. Reusar un token rotado revocaría la familia completa (§3.3),
+ * así que nunca debe haber dos refresh en paralelo.
  */
-export async function refreshSession(): Promise<LoginResult> {
+let refreshInflight: Promise<LoginResult> | null = null;
+
+export function refreshSession(): Promise<LoginResult> {
+  if (!refreshInflight) {
+    refreshInflight = doRefresh().finally(() => {
+      refreshInflight = null;
+    });
+  }
+  return refreshInflight;
+}
+
+async function doRefresh(): Promise<LoginResult> {
   try {
     const result = await clientFetch()<unknown>("/api/auth/refresh", {
       method: "POST",
