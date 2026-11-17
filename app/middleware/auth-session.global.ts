@@ -7,10 +7,11 @@ import { useAuthStore } from "~/features/auth/store";
  * - Rutas públicas con sesión activa → `/` (evita el bucle de login).
  *
  * La página de login aún no consume `?redirect=` (pendiente de las
- * pantallas): hoy el login deja al usuario donde está. Las rutas `/register`,
- * `/forgot-password` y `/reset` aún no tienen página (muestran 404).
+ * pantallas): hoy el login deja al usuario donde está. Las rutas
+ * `/recuperar-contrasena` aún no tiene página (muestra 404) y `/reset`
+ * la genera el backend en el enlace del correo (no renombrar).
  */
-const PUBLIC_PATHS = ["/iniciar-sesion", "/register", "/forgot-password", "/reset"];
+const PUBLIC_PATHS = ["/iniciar-sesion", "/registro", "/recuperar-contrasena", "/reset"];
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return;
