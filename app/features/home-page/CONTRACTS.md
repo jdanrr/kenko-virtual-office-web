@@ -16,7 +16,7 @@ Decisiones registradas:
   (p. ej. `2026-03-15T10:00:00-05:00`). El formateo para mostrar
   ("15 Mar 2026 - 10:00 AM") lo hace `home-page` en `app/utils/format.ts`.
 - IDs como `string`. Textos visibles en español.
-- Datos remotos con Pinia Colada (`useQuery` / `useMutation`).
+- Datos remotos con TanStack Query (ver `core/query/client.ts`).
 - Cada feature expone tipos + composables **solo** por su `index.ts`.
 
 ## 1. Auth — `features/auth/`
@@ -41,76 +41,92 @@ Pendiente de auth: la home asume sesión activa; su middleware redirige
 a `/login` (ruta de ellos) si no hay sesión. Confirmar qué muestra el
 encabezado sin sesión.
 
-## 2. Appointments — `features/appointments/`
+## 2. Appointments — `features/appointments/` (contrato real del backend)
+
+Base: `http://localhost:8002/api/v1` (`NUXT_PUBLIC_API_APPOINTMENTS_BASE`).
+Auth: `Authorization: Bearer` (mismo JWT); **sin cookies y sin sobre
+`{ data }`** (respuestas crudas en camelCase). Errores
+`{ error: { code, message, correlationId } }` en minúsculas (`unauthorized`,
+`forbidden`, `not_found`, `conflict`, `validation_error`,
+`business_rule_violation`, `service_unavailable`).
 
 ```ts
-// types.ts
-export type AppointmentModality = 'presencial' | 'teleconsulta';
-export type AppointmentStatus = 'confirmada' | 'pendiente';
-
-export interface Appointment {
-  id: string;
-  title: string; // "Odontología General - Control"
-  specialty: string; // "Odontología" (home-page mapea el icono)
-  modality: AppointmentModality;
-  status: AppointmentStatus;
-  dateISO: string;
-  doctorName: string; // "Dr. Andrés Silva"
-  site: string; // "Sede Chicó" | "Enlace virtual"
-}
-
-export interface AppointmentsSummary {
-  next: Appointment | null;
-  others: Appointment[];
-  pendingCount: number;
+// types.ts (fiel al backend)
+export type AppointmentType = "GENERAL" | "ODONTOLOGIA" | "PSICOLOGIA";
+export interface AppointmentResponse {
+  appointmentId: string;
+  type: AppointmentType;
+  date: string; // YYYY-MM-DD
+  weekday: string; // "JUEVES"
+  startTime: string; // "08:00:00"
+  endTime: string;
+  physician: { physicianId: string; name: string };
+  medicalCenter: { medicalCenterId: string; name: string; location: string };
 }
 ```
 
-Barrel: tipos + `useAppointmentsSummaryQuery()` (Colada, retorna el
-summary) + mutations `useRescheduleAppointment()` /
-`useCancelAppointment()` con firma `(id: string) => Promise<void>`.
+Barrel (`index.ts`): tipos + API (`listMyAppointments`,
+`listAvailableAppointments`, `schedule/cancel/rescheduleAppointment`,
+`listPhysicians`, `listMedicalCenters`) + `useMyAppointmentsQuery`
+(TanStack Query). Sin Colada: se usa TanStack Query según decisión de equipo.
 
-## 3. Profile — `features/profile/` (incluye certificados y autorizaciones)
+Mapeo a la tarjeta (home-page `mapping.ts`, confirmado con el backend):
+toda cita de `/me` está agendada → `confirmada` y `presencial` (siempre hay
+sede); sin `modalidad` ni `estado` en el backend. `403` = usuario aún no
+sincronizado (worker `ProfileCreated`) → mensaje específico, no genérico.
+Botones reagendar/cancelar/agendar: pendientes de flujos con pantallas.
+
+## 3. Profile — `features/profile/` (contrato real del backend Go)
+
+Base: `http://127.0.0.1:8080` (`NUXT_PUBLIC_API_PROFILE_BASE`), sin prefijo.
+Auth: `Authorization: Bearer` (mismo JWT); **sin cookies y sin sobre
+`{ data }`** (respuestas crudas). Errores simples `{"error": "texto"}`
+(`401 unauthorized`, `404`, `502`, `500`).
 
 ```ts
-// types.ts
-export interface AffiliationCertificate {
-  id: string; // "CERT-2026-88412"
-  issuedISO: string; // "2026-03-15"
-  memberSinceISO: string; // "2021-02-01"
+// types.ts (fiel al backend)
+export interface CertificateGenerated {
+  certificateId: string; // UUID
+  issuedAt: string; // RFC3339
+  affiliationStartDate: string; // RFC3339
 }
-
-export interface MedicalHistorySummary {
-  recordCount: number; // 3
-  updatedISO: string; // "2026-03-14"
+export interface MedicalHistoryGenerated {
+  pdfId: string;
+  generatedAt: string; // RFC3339
+  recordCount: number; // citas incluidas
 }
-
-export type AuthorizationStatus = 'aprobada' | 'en-proceso' | 'rechazada';
-export type AuthorizationFilter = AuthorizationStatus | 'todas';
-
-export interface Authorization {
-  id: string; // "AUT-92841"
-  code: string; // "BLOOD_TEST" | "XRAY" | "DENTAL_CLEANING"
-  title: string;
-  description: string;
-  status: AuthorizationStatus;
-  dateISO: string;
-  doctorName: string;
-  validityUntilISO?: string; // solo aprobada
-  estimatedTime?: string; // solo en-proceso ("24 a 48 horas hábiles")
-  rejectionReason?: string; // solo rechazada
-  rejectionCode?: string; // "MISSING_DOCUMENTATION"
-  suggestedAction?: string; // "Adjuntar historia clínica previa"
+export interface AuthorizationResponse {
+  authorizationId: string; // UUID
+  type: "BLOOD_TEST" | "XRAY" | "DENTAL_CLEANING";
+  typeLabel: string; // "Examen de sangre" (lista para mostrar)
+  status: "IN_PROGRESS" | "REJECTED" | "APPROVED";
+  statusLabel: string; // "En proceso" (lista para mostrar)
+  rejectionReason?: string; // solo REJECTED
+  rejectionReasonLabel?: string;
+  createdAt: string; // RFC3339
+  appointment: {
+    appointmentId: string;
+    date: string; // YYYY-MM-DD
+    appointmentType: string; // "MEDICINA_GENERAL", ...
+    physicianName: string;
+  };
 }
 ```
 
-Barrel: tipos + `useCertificatesQuery()` +
-`useDownloadCertificatePdf(id)` / `useDownloadMedicalHistoryPdf()` +
-`useAuthorizationsQuery(filter)` + `useDownloadAuthorizationPdf(id)`.
-Cada helper de descarga retorna `{ download, isPending, error }`.
-Cómo se obtiene el PDF (URL firmada, blob, `Content-Disposition`) es
-interno de profile. Los endpoints y las bases de `NUXT_PUBLIC_API_*`
-los cablea cada feature; `home-page` no los usa.
+Barrel (`index.ts`): tipos + API (`generateCertificate`,
+`generateMedicalHistory`, `listAuthorizations`, `downloadAuthorizationPdf`,
+`notifyAuthorization`) + queries (`useAuthorizationsQuery`,
+`useGenerateCertificateMutation`, `useGenerateHistoryMutation`).
+
+Mapeo a las tarjetas (home-page `mapping.ts`, confirmado con el backend):
+certificado e historial se **generan bajo demanda** con POST (el backend
+devuelve metadatos, no hay PDF para descargar; el evento publicado dispara
+el correo al email registrado, sin endpoint aparte). `404` = aún sin
+generar → mensaje que invita a usar el botón. Autorizaciones: lista con `GET`,
+etiquetas del backend tal cual, `shortId` = 8 primeros del UUID,
+`description` = tipo de cita + fecha asociada; sin vigencia/tiempos/acción
+sugerida (no existen en el backend). PDF por tarjeta con `GET .../:id/pdf`
+(blob + descarga); `notify` existe pero sin botón en el diseño (TODO).
 
 ## Garantías de `home-page`
 

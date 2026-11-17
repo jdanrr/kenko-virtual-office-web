@@ -185,6 +185,27 @@ describe("refresh reactivo ante 401", () => {
     expect(refreshAccessToken).not.toHaveBeenCalled();
   });
 
+  it("envelope:false devuelve la respuesta cruda (sin sobre {data})", async () => {
+    const raw = [{ appointmentId: "a1" }];
+    const client = createServiceClient({
+      baseURL: "http://x",
+      fetchImpl: (async () => raw) as never,
+    });
+    await expect(client.request("/appointments/me", { envelope: false })).resolves.toBe(raw);
+  });
+
+  it("error simple {error: texto} usa el estado HTTP como código", () => {
+    const simple = (status: number, message: string) => {
+      const error = new Error(`HTTP ${status}`) as Error & { status: number; data: unknown };
+      error.status = status;
+      error.data = { error: message };
+      return toApiError(error);
+    };
+    expect(simple(401, "unauthorized")).toMatchObject({ status: 401, code: "UNAUTHORIZED", message: "unauthorized" });
+    expect(simple(404, "profile not found")).toMatchObject({ status: 404, code: "NOT_FOUND" });
+    expect(simple(502, "event publish failed")).toMatchObject({ status: 502, code: "INTERNAL_ERROR" });
+  });
+
   it("agrega Bearer y usa credentials include solo en auth directo", async () => {
     const seen: { auth: string | null; credentials: unknown }[] = [];
     const fetchImpl = vi.fn(async (_p: string, o?: { headers?: Headers; credentials?: unknown }) => {

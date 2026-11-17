@@ -57,6 +57,8 @@ export type AuthorizationFilter = AuthorizationStatus | "todas";
 
 export interface AuthorizationView {
   id: string;
+  /** Primeros 8 caracteres del UUID para mostrar. */
+  shortId: string;
   code: string;
   title: string;
   description?: string;

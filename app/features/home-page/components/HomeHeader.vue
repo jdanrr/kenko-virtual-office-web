@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // Encabezado del portal: saludo y perfil del afiliado por props.
 // TODO(auth): recibir `patient` de usePatientSession() en HomePage.vue.
+import { computed } from "vue";
+
 import type { SessionPatientView } from "~/features/home-page/types";
 
 interface Props {
@@ -8,7 +10,12 @@ interface Props {
   isPending?: boolean;
 }
 
-withDefaults(defineProps<Props>(), { isPending: false });
+const props = withDefaults(defineProps<Props>(), { isPending: false });
+
+// Nombre completo sin espacios sobrantes (el apellido llega con profile).
+const fullName = computed(
+  () => `${props.patient?.firstName ?? ""} ${props.patient?.lastName ?? ""}`.trim(),
+);
 </script>
 
 <template>
@@ -48,7 +55,7 @@ withDefaults(defineProps<Props>(), { isPending: false });
             v-else
             class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2 font-display"
           >
-            <span v-if="patient">¡Bienvenida {{ patient.firstName }} {{ patient.lastName }}!</span>
+            <span v-if="patient">¡Bienvenida {{ fullName }}!</span>
             <span v-else>¡Bienvenida!</span>
             <span aria-hidden="true" class="text-amber-600 text-base">✨</span>
           </h1>

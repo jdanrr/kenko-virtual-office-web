@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// La página de inicio vive en `/home-page`: la raíz redirige allí.
-await navigateTo("/home-page", { replace: true });
+// La primera página es el login: la raíz redirige a `/iniciar-sesion`.
+await navigateTo("/iniciar-sesion", { replace: true });
 </script>
 
 <template>

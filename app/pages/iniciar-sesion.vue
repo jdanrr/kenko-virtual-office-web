@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
 
 import { useAuthStore } from "../features/auth/store";
 import LoginForm from "../features/auth/components/LoginForm.vue";
@@ -24,6 +24,23 @@ onMounted(() => {
 function onLogout(): void {
   store.logOut();
 }
+
+const route = useRoute();
+
+// Tras un login correcto: ir a la página principal (o al destino pedido
+// por `?redirect=`). Solo se aceptan rutas internas (sin redirección abierta).
+watch(
+  () => store.isAuthenticated,
+  (authenticated) => {
+    if (!authenticated) return;
+    const redirect = route.query.redirect;
+    const target =
+      typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")
+        ? redirect
+        : "/home-page";
+    void navigateTo(target, { replace: true });
+  },
+);
 </script>
 
 <template>

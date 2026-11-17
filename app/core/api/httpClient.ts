@@ -113,6 +113,12 @@ interface ErrorEnvelope {
   details?: unknown;
 }
 
+function errorCodeFromStatus(status: number): string {
+  if (status === 401) return "UNAUTHORIZED";
+  if (status === 404) return "NOT_FOUND";
+  return "INTERNAL_ERROR";
+}
+
 function isEnvelope(value: unknown): value is { error: ErrorEnvelope } {
   if (typeof value !== "object" || value === null || !("error" in value)) {
     return false;
@@ -128,6 +134,16 @@ export function toApiError(error: unknown): ApiError {
       status: 0,
       code: "NETWORK_ERROR",
       message: "No pudimos conectarnos. Revisa tu conexión e intenta de nuevo.",
+    });
+  }
+  // Algunos servicios responden `{"error": "texto"}` (código en el estado HTTP).
+  const rawError = (snap.data as { error?: unknown } | null)?.error;
+  if (typeof rawError === "string") {
+    return new ApiError({
+      status: snap.status,
+      code: errorCodeFromStatus(snap.status),
+      message: rawError,
+      correlationId: snap.correlationId ?? undefined,
     });
   }
   const failure = isEnvelope(snap.data) ? snap.data.error : undefined;
@@ -166,8 +182,14 @@ function unwrapData<T>(payload: unknown, path: string): T {
   });
 }
 
+export interface ServiceRequestOptions extends FetchOptions {
+  skipRefresh?: boolean;
+  /** `false` cuando el servicio responde sin sobre `{ data }` (p. ej. Appointments). */
+  envelope?: boolean;
+}
+
 export interface ServiceClient {
-  request<T>(path: string, options?: FetchOptions & { skipRefresh?: boolean }): Promise<T>;
+  request<T>(path: string, options?: ServiceRequestOptions): Promise<T>;
 }
 
 const DEFAULT_NO_REFRESH_PATHS = ["/auth/login", "/auth/refresh"];
@@ -183,18 +205,19 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
 
   let refreshPromise: Promise<AccessTokenPair> | null = null;
 
-  async function raw<T>(path: string, opts: FetchOptions = {}): Promise<T> {
+  async function raw<T>(path: string, opts: ServiceRequestOptions = {}): Promise<T> {
+    const { envelope = true, ...fetchOpts } = opts;
     const token = getAccessToken?.() ?? null;
-    const headers = new Headers(opts.headers as HeadersInit | undefined);
+    const headers = new Headers(fetchOpts.headers as HeadersInit | undefined);
     if (token && !headers.has("authorization")) {
       headers.set("authorization", `Bearer ${token}`);
     }
     const result = await fetchImpl<unknown>(path, {
-      ...opts,
+      ...fetchOpts,
       headers,
       ...(useCookies ? { credentials: "include" as RequestCredentials } : {}),
     });
-    return unwrapData<T>(result, path);
+    return envelope ? unwrapData<T>(result, path) : (result as T);
   }
 
   function needsRefresh(path: string, error: ApiError): boolean {
@@ -222,10 +245,7 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
     return refreshPromise;
   }
 
-  async function request<T>(
-    path: string,
-    opts: FetchOptions & { skipRefresh?: boolean } = {},
-  ): Promise<T> {
+  async function request<T>(path: string, opts: ServiceRequestOptions = {}): Promise<T> {
     const { skipRefresh = false, ...fetchOpts } = opts;
     try {
       return await raw<T>(path, fetchOpts);

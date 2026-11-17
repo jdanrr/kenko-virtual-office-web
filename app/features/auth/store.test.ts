@@ -271,4 +271,53 @@ describe("useAuthStore", () => {
     expect(store.accessToken).toBeNull();
     expect(navigateToMock).toHaveBeenCalledWith("/iniciar-sesion");
   });
+
+  it("un segundo login reemplaza por completo la sesión anterior", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { accessToken: "jwt-ana", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u-ana", firstName: "Ana", email: "ana@x.co" },
+      })
+      .mockResolvedValueOnce({ data: { accessToken: "jwt-luis", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u-luis", firstName: "Luis", email: "luis@x.co" },
+      });
+    vi.stubGlobal("$fetch", fetch);
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    expect(store.accessToken).toBe("jwt-ana");
+    expect(store.greeting).toBe("Hola, Ana");
+
+    await store.logIn({ ...valid, documentNumber: "87.654-321" });
+    expect(store.accessToken).toBe("jwt-luis");
+    expect(store.user?.userId).toBe("u-luis");
+    expect(store.greeting).toBe("Hola, Luis");
+    // El saludo del segundo usuario se pidió con el token del segundo login.
+    expect(fetch).toHaveBeenNthCalledWith(4, "/api/auth/me", {
+      headers: { authorization: "Bearer jwt-luis" },
+    });
+  });
+
+  it("el token vive solo en memoria, nunca en almacenamientos del navegador", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u1", firstName: "María", email: "m@x.co" },
+      });
+    vi.stubGlobal("$fetch", fetch);
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    expect(store.accessToken).toBe("jwt");
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      expect(localStorage.getItem(key ?? "")).not.toContain("jwt");
+    }
+    expect(sessionStorage.length).toBe(0);
+    expect(document.cookie).not.toContain("jwt");
+  });
 });
