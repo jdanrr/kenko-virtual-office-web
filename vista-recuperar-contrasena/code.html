@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_blank" name="shell-type"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<!-- Google Fonts: Figtree (Headings) and Manrope (Body/Forms) -->
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-bg": "#f9fafb",
+            "main-text": "#18181b",
+            "primary": "#21496a",
+            "primary-hover": "#17354f",
+            "secondary": "#ffb51b",
+            "secondary-dark": "#d99304",
+            "accent": "#1e5bd7",
+            "accent-hover": "#1746a8",
+            "border-subtle": "rgba(24, 24, 27, 0.1)",
+            "neutral-muted": "#64748b",
+            "neutral-subtle": "#f1f5f9",
+            "error": "#dc2626",
+            "error-bg": "#fef2f2"
+          },
+          fontFamily: {
+            heading: ["Figtree", "sans-serif"],
+            body: ["Manrope", "sans-serif"]
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            md: "0.5rem",
+            lg: "0.625rem",
+            xl: "0.875rem",
+            full: "9999px"
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    .focus-ring-secondary:focus-within,
+    .focus-ring-secondary:focus {
+      outline: 2px solid #ffb51b;
+      outline-offset: 1px;
+    }
+  </style>
+</head>
+<body class="bg-surface-bg font-body text-main-text antialiased min-h-screen flex flex-col justify-between selection:bg-secondary/30 selection:text-main-text">
+<!-- Top Regulatory Banner -->
+<header class="bg-primary text-white/90 py-2 px-4 text-xs font-medium border-b border-primary-hover shadow-sm">
+<div class="max-w-6xl mx-auto flex items-center justify-between">
+<span class="flex items-center gap-1.5">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+        Superintendencia Nacional de Salud • Vigilado Supersalud
+      </span>
+<span class="hidden sm:inline font-semibold text-white/80">Canal de Autenticación de Afiliados</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">headset_mic</span>
+        Línea 018000-KENKO
+      </span>
+</div>
+</header>
+<!-- Main Container -->
+<main class="w-full flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-xl mx-auto py-6 sm:py-8 flex flex-col items-center">
+<!-- Institutional Security Badge & Title Header -->
+<div class="text-center mb-7 flex flex-col items-center">
+<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#18181b]/10 text-primary text-xs font-semibold shadow-sm mb-3">
+<span class="material-symbols-outlined text-sm text-accent">verified_user</span>
+<span>Canal Oficial y Seguro • Kenko EPS</span>
+</div>
+<h1 class="font-heading font-bold text-2xl sm:text-3xl text-primary tracking-tight">Gestión de Acceso</h1>
+<p class="font-body text-sm text-neutral-muted mt-1.5 max-w-md">Protege tu historia clínica y gestiona la seguridad de tus servicios de salud en línea.</p>
+</div>
+<!-- Central Flow Card -->
+<div class="w-full bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8 transition-all">
+<!-- Segmented Tab Navigation - Both fully clickable anytime -->
+<div class="grid grid-cols-2 p-1.5 bg-neutral-subtle rounded-xl border border-[#18181b]/10 mb-7" role="tablist">
+<button aria-controls="view-phase-1" aria-selected="true" class="py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-semibold transition-all duration-200 bg-primary text-white shadow-sm flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="tab-phase-1" onclick="switchPhase('forgot')" role="tab" type="button">
+<span class="material-symbols-outlined text-base">mail</span>
+<span>1. Solicitar enlace</span>
+</button>
+<button aria-controls="view-phase-2" aria-selected="false" class="py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-medium transition-all duration-200 text-neutral-muted hover:text-primary flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="tab-phase-2" onclick="switchPhase('reset')" role="tab" type="button">
+<span class="material-symbols-outlined text-base">key</span>
+<span>2. Restablecer clave</span>
+</button>
+</div>
+<!-- ================= TAB 1: SOLICITAR ENLACE ================= -->
+<div aria-labelledby="tab-phase-1" class="flex flex-col" id="view-phase-1" role="tabpanel">
+<div class="mb-6">
+<h2 class="font-heading font-bold text-xl text-primary">Recuperar acceso a tu cuenta</h2>
+<p class="font-body text-xs sm:text-sm text-neutral-muted mt-1">Ingresa tu documento registrado para recibir un enlace de restablecimiento seguro en tu correo electrónico.</p>
+</div>
+<!-- Formulario Fase 1 -->
+<form class="flex flex-col gap-5" id="forgot-form" onsubmit="handleForgotSubmit(event)">
+<!-- Tipo de documento pills -->
+<div class="flex flex-col gap-2">
+<label class="font-heading text-xs font-semibold text-main-text">Tipo de documento</label>
+<div class="grid grid-cols-4 gap-2" id="doc-pill-group">
+<button class="py-2 px-3 text-xs font-heading font-semibold rounded-lg border border-primary bg-primary text-white transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="pill-CC" onclick="selectDocType('CC')" type="button">CC</button>
+<button class="py-2 px-3 text-xs font-heading font-medium rounded-lg border border-[#18181b]/15 bg-surface-bg text-main-text hover:border-primary/40 transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="pill-TI" onclick="selectDocType('TI')" type="button">TI</button>
+<button class="py-2 px-3 text-xs font-heading font-medium rounded-lg border border-[#18181b]/15 bg-surface-bg text-main-text hover:border-primary/40 transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="pill-CE" onclick="selectDocType('CE')" type="button">CE</button>
+<button class="py-2 px-3 text-xs font-heading font-medium rounded-lg border border-[#18181b]/15 bg-surface-bg text-main-text hover:border-primary/40 transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" id="pill-PA" onclick="selectDocType('PA')" type="button">PA</button>
+</div>
+<input id="selected-doc-type" type="hidden" value="CC"/>
+</div>
+<!-- Número de documento input -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="font-heading text-xs font-semibold text-main-text" for="doc-number">Número de documento</label>
+<span class="font-body text-[11px] text-neutral-muted">Sin puntos ni guiones</span>
+</div>
+<div class="relative">
+<input class="w-full h-11 px-3.5 pr-10 rounded-xl bg-surface-bg border border-[#18181b]/15 text-main-text font-body text-sm focus:bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/30 focus:outline-none transition-all duration-150" id="doc-number" inputmode="numeric" oninput="if(document.getElementById('new-password').value) evaluatePasswordPolicy(document.getElementById('new-password').value)" placeholder="Ej. 1020304050" type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-neutral-muted text-xl pointer-events-none">badge</span>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.99] disabled:opacity-75 text-white font-heading font-semibold text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 mt-1 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" id="btn-submit-forgot" type="submit">
+<span>Enviar enlace de recuperación</span>
+<span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</form>
+<!-- Anti-Enumeration & Clear Action Confirmation Notice (Highlighted upon submit) -->
+<div class="hidden mt-6 p-5 rounded-2xl bg-gradient-to-br from-[#f0f6ff] to-[#f8fbff] border-2 border-accent/25 shadow-sm flex flex-col gap-4 animate-in fade-in duration-300" id="anti-enumeration-box">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-accent text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl">mark_email_read</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+<h3 class="font-heading font-bold text-sm sm:text-base text-primary">¡Enlace generado y enviado exitosamente!</h3>
+</div>
+<p class="font-body text-xs text-neutral-muted mt-1.5 leading-relaxed">
+<strong>Política de seguridad Kenko EPS:</strong> Si tus datos corresponden a un afiliado activo en el sistema, hemos enviado un enlace seguro al correo registrado. Por privacidad, no confirmamos públicamente datos del usuario.
+                </p>
+</div>
+</div>
+<!-- Primary Direct Action: Jump to Step 2 with simulated token -->
+<div class="p-3.5 bg-white rounded-xl border border-accent/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-accent text-lg">touch_app</span>
+<div>
+<p class="text-xs font-heading font-bold text-primary">¿Deseas probar el flujo ahora?</p>
+<p class="text-[11px] text-neutral-muted">Simula el clic del enlace recibido en tu correo institucional.</p>
+</div>
+</div>
+<button class="w-full sm:w-auto py-2.5 px-4 rounded-lg bg-secondary hover:bg-secondary-dark text-primary font-heading font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" onclick="simulateReceivedTokenAndContinue()" type="button">
+<span>Continuar a Restablecer Clave</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Cooldown Counter and Re-send controls -->
+<div class="pt-3 border-t border-accent/15 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+<span class="flex items-center gap-1.5 text-neutral-muted font-medium" id="cooldown-wrapper">
+<span class="material-symbols-outlined text-sm text-accent">timer</span>
+<span>Reenviar enlace disponible en <strong class="text-primary font-bold" id="timer-counter">60s</strong></span>
+</span>
+<button class="inline-flex items-center gap-1 text-accent hover:text-accent-hover font-semibold transition-colors cursor-pointer text-xs" onclick="switchPhase('reset')" type="button">
+<span>Ir directamente a Paso 2</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Cooldown Alert -->
+<div class="hidden mt-4 p-3 rounded-lg bg-error-bg border border-error/20 text-xs text-error flex items-center gap-2" id="rate-limit-alert">
+<span class="material-symbols-outlined text-base">warning</span>
+<span>Demasiadas solicitudes. Espera un momento antes de reintentar.</span>
+</div>
+</div>
+<!-- ================= TAB 2: RESTABLECER CONTRASEÑA ================= -->
+<div aria-labelledby="tab-phase-2" class="hidden flex flex-col" id="view-phase-2" role="tabpanel">
+<div class="mb-5 flex justify-between items-start">
+<div>
+<h2 class="font-heading font-bold text-xl text-primary">Crea tu nueva contraseña</h2>
+<p class="font-body text-xs sm:text-sm text-neutral-muted mt-1">Ingresa tu nueva clave de acceso para actualizar las credenciales de tu cuenta de forma segura.</p>
+</div>
+</div>
+<!-- Token Detection & Test Control Banner -->
+<div class="mb-5 px-3.5 py-2.5 rounded-xl bg-surface-bg border border-[#18181b]/10 flex flex-wrap items-center justify-between gap-2 transition-all" id="token-status-wrapper">
+<div class="flex items-center gap-2 text-xs font-body text-neutral-muted">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" id="token-pulse-dot"></span>
+<span>Token verificado: <strong class="font-mono font-bold text-primary px-2 py-0.5 rounded bg-white border border-[#18181b]/10" id="token-display-badge">#tk_sec_849202</strong></span>
+</div>
+<button class="text-[11px] text-neutral-muted hover:text-error transition-colors flex items-center gap-1 cursor-pointer font-medium" id="btn-toggle-token" onclick="toggleErrorToken()" title="Simula token expirado o inválido según especificación" type="button">
+<span class="material-symbols-outlined text-xs">bug_report</span>
+<span id="btn-toggle-token-text">Simular error token (400)</span>
+</button>
+</div>
+<!-- Token Expired Alert (PASSWORD_RESET_INVALID 400) -->
+<div class="hidden mb-5 p-4 rounded-xl bg-error-bg border border-error/20 flex flex-col gap-2" id="token-error-banner">
+<div class="flex items-start gap-2.5 text-xs text-main-text">
+<span class="material-symbols-outlined text-error text-lg flex-shrink-0">error</span>
+<div>
+<p class="font-heading font-bold text-error">Enlace no válido o expirado (PASSWORD_RESET_INVALID 400)</p>
+<p class="text-neutral-muted mt-0.5">El enlace ha caducado o ya fue utilizado anteriormente. Por tu seguridad, debes solicitar un nuevo enlace.</p>
+</div>
+</div>
+<button class="self-start text-xs font-semibold text-error hover:underline flex items-center gap-1 mt-1 cursor-pointer" onclick="switchPhase('forgot')" type="button">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span>Volver al Paso 1: Solicitar nuevo enlace</span>
+</button>
+</div>
+<!-- Reset Form -->
+<form class="flex flex-col gap-4" id="reset-form" onsubmit="handleResetSubmit(event)">
+<!-- Nueva Contraseña -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="font-heading text-xs font-semibold text-main-text" for="new-password">Nueva contraseña</label>
+<span class="font-body text-[11px] text-neutral-muted">8 a 128 caracteres</span>
+</div>
+<div class="relative">
+<input class="w-full h-11 pl-3.5 pr-11 rounded-xl bg-surface-bg border border-[#18181b]/15 text-main-text font-body text-sm focus:bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/30 focus:outline-none transition-all duration-150" id="new-password" maxlength="128" minlength="8" oninput="evaluatePasswordPolicy(this.value)" placeholder="Define tu nueva clave" required="" type="password"/>
+<button aria-label="Mostrar u ocultar contraseña" class="absolute right-3 top-2.5 text-neutral-muted hover:text-main-text focus:outline-none cursor-pointer" onclick="toggleVisibility('new-password', 'eye-1')" type="button">
+<span class="material-symbols-outlined text-xl" id="eye-1">visibility</span>
+</button>
+</div>
+</div>
+<!-- Password Strength Meter -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center text-[11px] font-heading">
+<span class="text-neutral-muted font-medium">Nivel de seguridad:</span>
+<span class="font-bold text-neutral-muted" id="strength-label">Incompleta</span>
+</div>
+<div class="w-full grid grid-cols-4 gap-1.5 h-1.5 rounded-full overflow-hidden bg-neutral-subtle">
+<div class="h-full bg-neutral-200 transition-colors duration-200" id="bar-1"></div>
+<div class="h-full bg-neutral-200 transition-colors duration-200" id="bar-2"></div>
+<div class="h-full bg-neutral-200 transition-colors duration-200" id="bar-3"></div>
+<div class="h-full bg-neutral-200 transition-colors duration-200" id="bar-4"></div>
+</div>
+</div>
+<!-- Kenko EPS Security Rules Checklist -->
+<div class="p-3.5 rounded-xl bg-surface-bg border border-[#18181b]/10 flex flex-col gap-2 font-body text-xs">
+<div class="flex items-center gap-2 text-neutral-muted transition-colors duration-150" id="rule-length">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+<span>Mínimo 8 caracteres (máx. 128)</span>
+</div>
+<div class="flex items-center gap-2 text-neutral-muted transition-colors duration-150" id="rule-common">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+<span>No estar en lista negra (ej. colombia123, kenko1234)</span>
+</div>
+<div class="flex items-center gap-2 text-neutral-muted transition-colors duration-150" id="rule-identity">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+<span>No contiene tu número de documento ni nombre</span>
+</div>
+<div class="flex items-center gap-2 text-neutral-muted transition-colors duration-150" id="rule-mix">
+<span class="material-symbols-outlined text-sm">radio_button_unchecked</span>
+<span>Al menos un número o símbolo</span>
+</div>
+</div>
+<!-- Confirmar Contraseña -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center">
+<label class="font-heading text-xs font-semibold text-main-text" for="confirm-password">Confirmar nueva contraseña</label>
+<span class="font-body text-[11px] text-neutral-muted" id="match-label">Debe coincidir exactamente</span>
+</div>
+<div class="relative">
+<input class="w-full h-11 pl-3.5 pr-11 rounded-xl bg-surface-bg border border-[#18181b]/15 text-main-text font-body text-sm focus:bg-white focus:border-secondary focus:ring-2 focus:ring-secondary/30 focus:outline-none transition-all duration-150" id="confirm-password" maxlength="128" minlength="8" oninput="verifyMatch()" placeholder="Vuelve a escribir la contraseña" required="" type="password"/>
+<button aria-label="Mostrar u ocultar confirmación de contraseña" class="absolute right-3 top-2.5 text-neutral-muted hover:text-main-text focus:outline-none cursor-pointer" onclick="toggleVisibility('confirm-password', 'eye-2')" type="button">
+<span class="material-symbols-outlined text-xl" id="eye-2">visibility</span>
+</button>
+</div>
+</div>
+<!-- Save CTA Button -->
+<button class="w-full py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.99] text-white font-heading font-semibold text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 mt-2 focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" id="btn-save-pwd" type="submit">
+<span class="material-symbols-outlined text-base">check_circle</span>
+<span>Guardar nueva contraseña</span>
+</button>
+<!-- Back to step 1 link inside Phase 2 -->
+<div class="text-center mt-1">
+<button class="text-xs text-neutral-muted hover:text-primary transition-colors cursor-pointer inline-flex items-center gap-1" onclick="switchPhase('forgot')" type="button">
+<span>¿No recibiste el enlace? Solicitar otro</span>
+</button>
+</div>
+</form>
+<!-- Success Banner State -->
+<div class="hidden mt-2 p-6 rounded-2xl bg-gradient-to-b from-white to-[#f0f7fb] border border-accent/25 flex flex-col items-center text-center gap-3 animate-in fade-in" id="success-reset-box">
+<div class="w-14 h-14 rounded-full bg-secondary text-primary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-3xl font-bold">verified</span>
+</div>
+<div>
+<h3 class="font-heading font-bold text-xl text-primary">¡Contraseña actualizada con éxito!</h3>
+<p class="font-body text-xs sm:text-sm text-neutral-muted mt-1 max-w-sm">Ahora puedes ingresar a tu portal de Kenko EPS con tus nuevas credenciales de acceso seguras.</p>
+</div>
+<button class="mt-2 w-full py-3.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-heading font-semibold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary" onclick="simulateLoginRedirect()" type="button">
+<span>Iniciar sesión</span>
+<span class="material-symbols-outlined text-base">login</span>
+</button>
+</div>
+</div>
+<!-- Global return to login -->
+<div class="mt-6 pt-5 border-t border-[#18181b]/10 text-center">
+<a class="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-muted hover:text-primary transition-colors focus:outline-none focus:ring-1 focus:ring-secondary rounded px-2 py-1" href="#login" onclick="simulateLoginRedirect(); return false;">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span>Volver a iniciar sesión</span>
+</a>
+</div>
+</div>
+<!-- Contact & Institutional Support Line -->
+<div class="mt-6 text-center text-xs text-neutral-muted font-body flex flex-col sm:flex-row items-center justify-center gap-2">
+<span>¿Necesitas asistencia con tu cuenta?</span>
+<span class="hidden sm:inline">•</span>
+<span class="font-semibold text-primary">018000-KENKO (53656)</span>
+<span class="hidden sm:inline">•</span>
+<span>Bogotá: (601) 307 8000</span>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="py-4 text-center text-neutral-muted font-body text-xs bg-white border-t border-slate-200">
+<div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+<span class="text-neutral-muted text-xs">
+<strong class="text-primary font-semibold">Kenko EPS</strong> • Cumplimiento Ley 1581 de 2012 (Habeas Data) y Res. 1995 de 1999
+      </span>
+<span class="inline-flex items-center gap-1 text-xs text-neutral-muted">
+<span class="material-symbols-outlined text-sm text-accent">lock</span>
+<span>Cifrado TLS 1.3 de extremo a extremo</span>
+</span>
+</div>
+</footer>
+<!-- Interactive Scripts -->
+<script>
+    // 1. Document type pill selector
+    function selectDocType(type) {
+      const types = ['CC', 'TI', 'CE', 'PA'];
+      document.getElementById('selected-doc-type').value = type;
+      types.forEach(t => {
+        const pill = document.getElementById('pill-' + t);
+        if (t === type) {
+          pill.className = 'py-2 px-3 text-xs font-heading font-semibold rounded-lg border border-primary bg-primary text-white transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        } else {
+          pill.className = 'py-2 px-3 text-xs font-heading font-medium rounded-lg border border-[#18181b]/15 bg-surface-bg text-main-text hover:border-primary/40 transition-all text-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        }
+      });
+    }
+
+    // 2. Tab Navigation Switcher - fully interactive between phases
+    function switchPhase(phase) {
+      const tab1 = document.getElementById('tab-phase-1');
+      const tab2 = document.getElementById('tab-phase-2');
+      const view1 = document.getElementById('view-phase-1');
+      const view2 = document.getElementById('view-phase-2');
+
+      if (phase === 'forgot') {
+        tab1.className = 'py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-semibold transition-all duration-200 bg-primary text-white shadow-sm flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        tab1.setAttribute('aria-selected', 'true');
+        tab2.className = 'py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-medium transition-all duration-200 text-neutral-muted hover:text-primary flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        tab2.setAttribute('aria-selected', 'false');
+        view1.classList.remove('hidden');
+        view2.classList.add('hidden');
+      } else {
+        tab2.className = 'py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-semibold transition-all duration-200 bg-primary text-white shadow-sm flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        tab2.setAttribute('aria-selected', 'true');
+        tab1.className = 'py-2.5 px-3 sm:px-4 rounded-lg text-xs sm:text-sm font-heading font-medium transition-all duration-200 text-neutral-muted hover:text-primary flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary';
+        tab1.setAttribute('aria-selected', 'false');
+        view2.classList.remove('hidden');
+        view1.classList.add('hidden');
+      }
+    }
+
+    // 3. TAB 1: Submit handler with anti-enumeration response and live 60s cooldown
+    let cooldownTimer = null;
+    let cooldownSeconds = 60;
+
+    function handleForgotSubmit(e) {
+      e.preventDefault();
+      const docInput = document.getElementById('doc-number');
+      if (!docInput.value.trim()) {
+        docInput.value = '1020304050'; // Valor demo amigable si está vacío
+      }
+      
+      const btn = document.getElementById('btn-submit-forgot');
+      const box = document.getElementById('anti-enumeration-box');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span><span>Generando enlace seguro...</span>';
+      
+      setTimeout(() => {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Enlace Enviado al Correo</span><span class="material-symbols-outlined text-base">check</span>';
+        box.classList.remove('hidden');
+        startCooldown();
+        // Scroll slightly down to make the call to action immediately visible
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 500);
+    }
+
+    // Helper: Simulate receiving token and immediately move user to Phase 2
+    function simulateReceivedTokenAndContinue() {
+      // Inyectar token de prueba válido
+      const badge = document.getElementById('token-display-badge');
+      if (badge) {
+        badge.textContent = '#tk_sec_849202';
+      }
+      // Asegurarse de que el token no esté en modo inválido
+      if (isTokenInvalid) {
+        toggleErrorToken();
+      }
+      // Cambiar a la pestaña 2
+      switchPhase('reset');
+      
+      // Enfocar el campo de nueva contraseña
+      setTimeout(() => {
+        const pwdInput = document.getElementById('new-password');
+        if (pwdInput) {
+          pwdInput.focus();
+        }
+      }, 200);
+    }
+
+    function startCooldown() {
+      clearInterval(cooldownTimer);
+      cooldownSeconds = 60;
+      const btn = document.getElementById('btn-submit-forgot');
+      const wrapper = document.getElementById('cooldown-wrapper');
+
+      function renderCooldown() {
+        if (wrapper) {
+          wrapper.innerHTML = '<span class="material-symbols-outlined text-sm text-accent">timer</span><span>Reenviar enlace disponible en <strong class="text-primary font-bold">' + cooldownSeconds + 's</strong></span>';
+        }
+      }
+
+      renderCooldown();
+
+      cooldownTimer = setInterval(() => {
+        cooldownSeconds--;
+        if (cooldownSeconds > 0) {
+          renderCooldown();
+        } else {
+          clearInterval(cooldownTimer);
+          btn.disabled = false;
+          btn.innerHTML = '<span>Enviar enlace de recuperación</span><span class="material-symbols-outlined text-base">arrow_forward</span>';
+          if (wrapper) {
+            wrapper.innerHTML = '<button type="button" onclick="startCooldown()" class="text-accent hover:underline font-bold flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-sm">refresh</span> Reenviar enlace ahora</button>';
+          }
+        }
+      }, 1000);
+    }
+
+    // 4. TAB 2: Live Policy and Strength Evaluation
+    function evaluatePasswordPolicy(pwd) {
+      const docNumber = document.getElementById('doc-number') ? document.getElementById('doc-number').value.trim() : '';
+
+      // Rule 1: Min 8 chars, max 128
+      const hasMinLen = pwd.length >= 8 && pwd.length <= 128;
+      updateRule('rule-length', hasMinLen);
+
+      // Rule 2: Not common / predictable
+      const lower = pwd.toLowerCase();
+      const isCommon = lower.includes('colombia123') || lower.includes('kenko1234') || lower.includes('123456') || lower.includes('password');
+      const notCommon = !isCommon && pwd.length > 0;
+      updateRule('rule-common', notCommon && hasMinLen);
+
+      // Rule 3: No document or name
+      let containsDoc = false;
+      if (docNumber && docNumber.length >= 4 && pwd.includes(docNumber)) {
+        containsDoc = true;
+      }
+      const safeIdentity = !containsDoc && pwd.length > 0;
+      updateRule('rule-identity', safeIdentity);
+
+      // Rule 4: Mix of numbers or special characters
+      const hasMix = /[0-9]/.test(pwd) || /[^A-Za-z0-9]/.test(pwd);
+      updateRule('rule-mix', hasMix);
+
+      // Strength score calculation (0 - 4)
+      let score = 0;
+      if (hasMinLen) score++;
+      if (notCommon && hasMinLen) score++;
+      if (safeIdentity && pwd.length >= 8) score++;
+      if (hasMix) score++;
+
+      updateMeter(score, pwd.length === 0);
+      verifyMatch();
+    }
+
+    function updateRule(elementId, isValid) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const icon = el.querySelector('.material-symbols-outlined');
+      if (isValid) {
+        el.className = 'flex items-center gap-2 text-accent font-medium transition-colors duration-150';
+        if (icon) {
+          icon.textContent = 'check_circle';
+        }
+      } else {
+        el.className = 'flex items-center gap-2 text-neutral-muted transition-colors duration-150';
+        if (icon) {
+          icon.textContent = 'radio_button_unchecked';
+        }
+      }
+    }
+
+    function updateMeter(score, isEmpty) {
+      const b1 = document.getElementById('bar-1');
+      const b2 = document.getElementById('bar-2');
+      const b3 = document.getElementById('bar-3');
+      const b4 = document.getElementById('bar-4');
+      const label = document.getElementById('strength-label');
+      const bars = [b1, b2, b3, b4];
+
+      bars.forEach(b => b.className = 'h-full bg-neutral-200 transition-colors duration-200');
+
+      if (isEmpty) {
+        label.textContent = 'Incompleta';
+        label.className = 'font-bold text-neutral-muted';
+        return;
+      }
+
+      if (score <= 1) {
+        b1.className = 'h-full bg-error transition-colors duration-200';
+        label.textContent = 'Débil';
+        label.className = 'font-bold text-error';
+      } else if (score === 2) {
+        b1.className = b2.className = 'h-full bg-secondary transition-colors duration-200';
+        label.textContent = 'Regular';
+        label.className = 'font-bold text-secondary-dark';
+      } else if (score === 3) {
+        b1.className = b2.className = b3.className = 'h-full bg-accent transition-colors duration-200';
+        label.textContent = 'Buena';
+        label.className = 'font-bold text-accent';
+      } else {
+        bars.forEach(b => b.className = 'h-full bg-primary transition-colors duration-200');
+        label.textContent = 'Segura y Cumplida';
+        label.className = 'font-bold text-primary';
+      }
+    }
+
+    // 5. Password matching verification
+    function verifyMatch() {
+      const p1 = document.getElementById('new-password').value;
+      const p2 = document.getElementById('confirm-password').value;
+      const lbl = document.getElementById('match-label');
+      
+      if (!p2) {
+        lbl.textContent = 'Debe coincidir exactamente';
+        lbl.className = 'font-body text-[11px] text-neutral-muted';
+        return;
+      }
+      if (p1 === p2) {
+        lbl.textContent = 'Las contraseñas coinciden';
+        lbl.className = 'font-body text-[11px] text-accent font-semibold';
+      } else {
+        lbl.textContent = 'No coinciden aún';
+        lbl.className = 'font-body text-[11px] text-error font-semibold';
+      }
+    }
+
+    // 6. Eye visibility toggle
+    function toggleVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
+    // 7. Expired/Invalid Token simulation (PASSWORD_RESET_INVALID 400)
+    let isTokenInvalid = false;
+    function toggleErrorToken() {
+      isTokenInvalid = !isTokenInvalid;
+      const banner = document.getElementById('token-error-banner');
+      const form = document.getElementById('reset-form');
+      const btnText = document.getElementById('btn-toggle-token-text');
+      const statusWrapper = document.getElementById('token-status-wrapper');
+      const pulseDot = document.getElementById('token-pulse-dot');
+      const badge = document.getElementById('token-display-badge');
+
+      if (isTokenInvalid) {
+        banner.classList.remove('hidden');
+        form.classList.add('opacity-40', 'pointer-events-none');
+        btnText.textContent = 'Restablecer token válido';
+        statusWrapper.classList.add('border-error/40', 'bg-error-bg/30');
+        pulseDot.className = 'w-2.5 h-2.5 rounded-full bg-error';
+        badge.textContent = '#tk_expirado_400';
+        badge.className = 'font-mono font-bold text-error px-2 py-0.5 rounded bg-white border border-error/30';
+      } else {
+        banner.classList.add('hidden');
+        form.classList.remove('opacity-40', 'pointer-events-none');
+        btnText.textContent = 'Simular error token (400)';
+        statusWrapper.classList.remove('border-error/40', 'bg-error-bg/30');
+        pulseDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+        badge.textContent = '#tk_sec_849202';
+        badge.className = 'font-mono font-bold text-primary px-2 py-0.5 rounded bg-white border border-[#18181b]/10';
+      }
+    }
+
+    // 8. TAB 2: Submit handler
+    function handleResetSubmit(e) {
+      e.preventDefault();
+      if (isTokenInvalid) {
+        return;
+      }
+      const p1 = document.getElementById('new-password').value;
+      const p2 = document.getElementById('confirm-password').value;
+
+      if (p1 !== p2) {
+        alert('Las contraseñas no coinciden. Por favor verifícalas.');
+        return;
+      }
+
+      if (p1.length < 8) {
+        alert('La contraseña debe tener al menos 8 caracteres.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-pwd');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span><span>Guardando contraseña...</span>';
+
+      setTimeout(() => {
+        document.getElementById('reset-form').classList.add('hidden');
+        document.getElementById('success-reset-box').classList.remove('hidden');
+      }, 700);
+    }
+
+    function simulateLoginRedirect() {
+      alert('Redirigiendo a la pantalla de Inicio de Sesión de Kenko EPS...');
+    }
+  </script>
+</body></html>
