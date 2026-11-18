@@ -87,9 +87,9 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | --- | --- | --- |
 | `types.ts` | Tipos del contrato: `DOCUMENT_TYPES`, `LoginRequest`, `AuthTokenPair`, `AuthUser`, sobre `{ data }/{ error }`, `ApiErrorCode`, guardia `isApiFailure`. | `types.test.ts` |
 | `schemas.ts` | `normalizeDocumentNumber`, `loginSchema` (zod), `toLoginRequest`. **Server-safe** (lo importa el BFF). | `schemas.test.ts` |
-| `api.ts` | Cliente del BFF: `login`, `fetchMe`, `refreshSession`, `register`. Traduce errores a `AuthFailure` por `code` (nunca por `message`), incluye `register-conflict` (409 genérico). Client-safe. | `api.test.ts` |
+| `api.ts` | Cliente del BFF: `login`, `fetchMe`, `refreshSession`, `register`, `changePassword`, `changeEmail`. Traduce errores a `AuthFailure` por `code` (nunca por `message`), incluye `register-conflict` (409 genérico), `incorrect-password` (401 clave actual, sin cerrar sesión), `email-conflict` (409 genérico). Client-safe. | `api.test.ts` |
 | `store.ts` | Pinia `useAuthStore`: sesión en memoria, `logIn`, `restoreSession`, `refreshNow`, `logOut`, auto-refresh 60 s antes de vencer, getters `isAuthenticated`/`greeting`. | `store.test.ts` |
-| `rememberDocument.ts` | Persistencia opt-in del documento en `localStorage`, SSR-safe y tolerante a datos corruptos. | `rememberDocument.test.ts` |
+| `rememberDocument.ts` | **Eliminado** (decisión de producto: sin "recordar documento"; el login no toca `localStorage`). | — |
 | `components/DocumentTypeSelector.vue` | Radiogroup accesible de 4 tipos. | `.test.ts` |
 | `components/DocumentNumberField.vue` | Input de documento con ayuda "sin puntos" y error asociado. | `.test.ts` |
 | `components/PasswordField.vue` | Input de contraseña con mostrar/ocultar accesible. | `.test.ts` |
@@ -115,7 +115,7 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | Archivo | Responsabilidad |
 | --- | --- |
 | `app/pages/iniciar-sesion.vue` | Página `/iniciar-sesion`: tarjeta + aside de seguridad, saludo inline tras login, intenta `restoreSession()` al montar. Placeholders deshabilitados. |
-| `app/pages/registro.vue` | Página `/registro` (ruta pública): wizard 4 pasos + resumen en vivo + ayuda, modal de éxito con `maskedEmail` y enlace real a `/iniciar-sesion`. Borrador solo en memoria. |
+| `app/pages/registro.vue` | Página `/registro` (ruta pública): wizard 4 pasos + resumen en vivo, modal de éxito con `maskedEmail` y enlace real a `/iniciar-sesion`. Borrador solo en memoria. |
 | `app/layouts/auth.vue` | Layout de acceso: header institucional, slot, footer legal. |
 | `app/layouts/auth.test.ts` | Render SSR del layout (markup estático). |
 | `app/assets/css/main.css` | Tailwind + `@font-face` locales + variables y `@theme inline` según `colores-base.md`. |
@@ -142,11 +142,11 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | 4 | Cliente `api.ts` con errores UI por `code` (`validation`, `invalid-credentials`, `session-expired`, `rate-limited`, `network`, `unexpected`). | 8 tests |
 | 5 | Store Pinia: login → `/me`, logout local, saludo. | 4 tests |
 | 6 | 4 átomos accesibles + tests de componentes. | 9 tests |
-| 7 | `LoginForm`, `rememberDocument`, `layouts/auth.vue`, `pages/iniciar-sesion.vue`, placeholders deshabilitados, saludo inline sin redirect. | 43 tests totales + build |
+| 7 | `LoginForm`, `layouts/auth.vue`, `pages/iniciar-sesion.vue` (sin "recordar documento": eliminado a decisión de producto), tarjeta destacada de recuperación, placeholders deshabilitados, saludo inline sin redirect. | 43 tests totales + build |
 | 8 | Refresh silencioso: BFF `/refresh`, `refreshSession`, auto-renovación y `restoreSession`, corrección de validación de contraseña (error duplicado). | 51 tests + endpoints probados en dev |
 | R0–R8 | Registro: tipos + schemas por paso, BFF `/register`, cliente con `register-conflict`, `registerStore`, UI 4 pasos + stepper + resumen + modal éxito, página `/registro` (ruta pública en middleware). Decisiones: ciudad texto libre, checklist según contrato, layout auth reusado, borrador en memoria. | 115 tests + lint + build verde |
 
-**Estado de verificación actual:** `bunx vitest run` → **186/186**; alcance auth + BFF con lint limpio (el lint global falla solo en archivos ajenos); `bun run build` verde. E2E real contra backend 5500: registro `201`, login `200` + cookie, refresh `200`. Recuperación (F1–F6): tipos + schemas + BFF + cliente (`reset-invalid`) + formularios + `PasswordChecklist` + páginas + enlace en login. Logout: página `/sesion-cerrada` con mensaje condicional (`justLoggedOut`), `logOutEverywhere` navega allí, ruta pública en middleware; en vivo sin backend: página `200`, BFF `logout → 200 {data:{}}` idempotente (falta E2E con backend corriendo).
+**Estado de verificación actual:** `bunx vitest run` → **243/243**; alcance auth + BFF con lint limpio (el lint global falla solo en archivos ajenos); `bun run build` verde. E2E real contra backend 5500: registro `201`, login `200` + cookie, refresh `200`. Recuperación (F1–F6): tipos + schemas + BFF + cliente (`reset-invalid`) + formularios + `PasswordChecklist` + páginas + tarjeta destacada en login. Logout: página `/sesion-cerrada` con mensaje condicional (`justLoggedOut`), `logOutEverywhere` navega allí, ruta pública en middleware; en vivo sin backend: página `200`, BFF `logout → 200 {data:{}}` idempotente (falta E2E con backend corriendo). Cuenta (`accountSchemas`, BFF `password/change` + `email/change`, `refreshUser`): ver guía del equipo Auth; opt-in de notificaciones del registro eliminado (el cable nunca lo incluía).
 
 ---
 
@@ -251,7 +251,7 @@ bun run build
 ## 12. Mapa rápido de archivos creados/modificados
 
 **Creados**
-- `app/features/auth/{types,schemas,api,store,rememberDocument}.ts` + tests
+- `app/features/auth/{types,schemas,api,store,accountSchemas}.ts` + tests
 - `app/features/auth/components/{DocumentTypeSelector,DocumentNumberField,PasswordField,AuthAlert,LoginForm}.vue` + tests
 - `app/layouts/auth.vue` + `app/layouts/auth.test.ts`
 - `app/pages/iniciar-sesion.vue`
