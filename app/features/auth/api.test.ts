@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { AuthError, fetchMe, login, refreshSession, register } from "./api";
+import {
+  AuthError,
+  fetchMe,
+  login,
+  refreshSession,
+  register,
+  requestPasswordReset,
+  resetPassword,
+} from "./api";
 
 const valid = {
   documentType: "CC",
@@ -317,5 +325,116 @@ describe("register", () => {
     const thrown = await register({ ...validRegister }).catch((e) => e);
     expect(thrown.failure.kind).toBe("rate-limited");
     expect(thrown.failure.retryAfterSeconds).toBe(30);
+  });
+});
+
+describe("requestPasswordReset", () => {
+  it("valida en cliente sin llamar a la red", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("$fetch", fetch);
+    const thrown = await requestPasswordReset({
+      documentType: "CC",
+      documentNumber: "12",
+    }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("validation");
+    expect(thrown.failure.fields).toMatchObject({
+      documentNumber: expect.any(String),
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("éxito 200 con el mismo mensaje exista o no la cuenta", async () => {
+    const fetch = vi.fn().mockResolvedValue({ data: {} });
+    vi.stubGlobal("$fetch", fetch);
+    await expect(
+      requestPasswordReset({ documentType: "CC", documentNumber: "1020304050" }),
+    ).resolves.toBeUndefined();
+    expect(fetch).toHaveBeenCalledWith("/api/auth/password/forgot", {
+      method: "POST",
+      body: { documentType: "CC", documentNumber: "1020304050" },
+    });
+  });
+
+  it("429 respeta el enfriamiento con cuenta regresiva", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(
+          429,
+          {
+            error: {
+              code: "RATE_LIMITED",
+              message: "Demasiadas solicitudes.",
+              correlationId: "ref-40",
+            },
+          },
+          "60",
+        ),
+      ),
+    );
+    const thrown = await requestPasswordReset({
+      documentType: "CC",
+      documentNumber: "1020304050",
+    }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("rate-limited");
+    expect(thrown.failure.retryAfterSeconds).toBe(60);
+  });
+});
+
+describe("resetPassword", () => {
+  const validReset = {
+    token: "opaco-del-fragmento",
+    password: "Clave-nueva-1",
+    confirmPassword: "Clave-nueva-1",
+  } as const;
+
+  it("envía el token solo en el body y acepta 200 vacío", async () => {
+    const fetch = vi.fn().mockResolvedValue({ data: {} });
+    vi.stubGlobal("$fetch", fetch);
+    await expect(resetPassword({ ...validReset })).resolves.toBeUndefined();
+    const body = fetch.mock.calls[0]?.[1].body as Record<string, unknown>;
+    expect(body.token).toBe("opaco-del-fragmento");
+    const url = String(fetch.mock.calls[0]?.[0] ?? "");
+    expect(url).not.toContain("opaco-del-fragmento");
+  });
+
+  it("400 PASSWORD_RESET_INVALID pide uno nuevo", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(400, {
+          error: {
+            code: "PASSWORD_RESET_INVALID",
+            message: "El enlace no es válido o ha expirado.",
+            correlationId: "ref-41",
+          },
+        }),
+      ),
+    );
+    const thrown = await resetPassword({ ...validReset }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("reset-invalid");
+    expect(thrown.failure.message).toContain("Pide uno nuevo");
+    expect(thrown.failure.correlationId).toBe("ref-41");
+  });
+
+  it("400 VALIDATION_ERROR mapea details por campo", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(400, {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Revisa.",
+            correlationId: "ref-42",
+            details: [{ field: "password", message: "La nueva no puede ser igual." }],
+          },
+        }),
+      ),
+    );
+    const thrown = await resetPassword({ ...validReset }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("validation");
+    expect(thrown.failure.fields).toEqual({
+      password: "La nueva no puede ser igual.",
+    });
   });
 });

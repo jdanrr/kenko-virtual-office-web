@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 
 import { getQueryClient } from "../../core/query/client";
-import { AuthError, fetchMe, login, logoutSession, refreshSession } from "./api";
+import { failureFromUnknown, fetchMe, login, logoutSession, refreshSession } from "./api";
 import type { LoginFormValues } from "./schemas";
 import type { AuthUser } from "./types";
 import type { AuthFailure, LoginResult } from "./api";
@@ -167,12 +167,7 @@ export const useAuthStore = defineStore("auth", {
       clearRefreshTimer();
     },
     toFailure(error: unknown): AuthFailure {
-      return error instanceof AuthError
-        ? error.failure
-        : {
-            kind: "unexpected",
-            message: "Tuvimos un problema. Intenta de nuevo más tarde.",
-          };
+      return failureFromUnknown(error);
     },
   },
 });

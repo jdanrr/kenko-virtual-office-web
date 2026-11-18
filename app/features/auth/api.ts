@@ -5,6 +5,14 @@ import {
   type RegisterFormValues,
 } from "./registerSchemas";
 import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  toForgotRequest,
+  toResetRequest,
+  type ForgotPasswordFormValues,
+  type ResetPasswordFormValues,
+} from "./passwordRecoverySchemas";
+import {
   isApiFailure,
   type ApiFieldDetail,
   type AuthUser,
@@ -24,6 +32,7 @@ export type AuthFailureKind =
   | "validation"
   | "invalid-credentials"
   | "register-conflict"
+  | "reset-invalid"
   | "session-expired"
   | "rate-limited"
   | "network"
@@ -45,6 +54,19 @@ export class AuthError extends Error {
     this.name = "AuthError";
     this.failure = failure;
   }
+}
+
+/**
+ * Traduce cualquier error lanzado a `AuthFailure` sin lanzar.
+ * Misma semántica en formularios y stores: si no es `AuthError`,
+ * fue algo inesperado (red rota, cuerpo malformado).
+ */
+export function failureFromUnknown(error: unknown): AuthFailure {
+  if (error instanceof AuthError) return error.failure;
+  return {
+    kind: "unexpected",
+    message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+  };
 }
 
 export interface LoginResult {
@@ -111,7 +133,7 @@ function snapshot(error: unknown): UpstreamSnapshot {
 
 function toAuthError(
   error: unknown,
-  context: "login" | "session" | "register",
+  context: "login" | "session" | "register" | "recovery",
 ): AuthError {
   const { status, data, retryAfter } = snapshot(error);
   const failure = isApiFailure(data) ? data.error : undefined;
@@ -129,6 +151,14 @@ function toAuthError(
           kind: "validation",
           message: "Revisa los datos ingresados.",
           fields: fieldErrorsFromDetails(failure.details),
+          correlationId: failure.correlationId,
+        });
+      }
+      if (context === "recovery" && failure?.code === "PASSWORD_RESET_INVALID") {
+        return new AuthError({
+          kind: "reset-invalid",
+          message:
+            "Este enlace ya no sirve (se usó o venció). Pide uno nuevo.",
           correlationId: failure.correlationId,
         });
       }
@@ -353,5 +383,91 @@ export async function logoutSession(): Promise<void> {
     });
   } catch {
     // Intencionalmente silencioso: el estado local se limpia siempre.
+  }
+}
+
+function isEmptyData(payload: unknown): payload is { data: Record<string, never> } {
+  if (typeof payload !== "object" || payload === null || !("data" in payload)) {
+    return false;
+  }
+  const data = (payload as { data: unknown }).data;
+  return typeof data === "object" && data !== null && Object.keys(data).length === 0;
+}
+
+/**
+ * `POST /api/auth/password/forgot` (§3.5). Siempre responde igual exista o
+ * no la cuenta (anti-enumeración): la UI muestra un único mensaje.
+ */
+export async function requestPasswordReset(
+  values: ForgotPasswordFormValues,
+): Promise<void> {
+  const parsed = forgotPasswordSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new AuthError({
+      kind: "validation",
+      message: "Revisa los datos ingresados.",
+      fields: fieldsFromIssues(parsed.error.issues),
+    });
+  }
+  const payload = toForgotRequest(parsed.data);
+  if (!payload) {
+    throw new AuthError({
+      kind: "unexpected",
+      message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+    });
+  }
+  try {
+    const result = await clientFetch()<unknown>("/api/auth/password/forgot", {
+      method: "POST",
+      body: payload,
+    });
+    if (!isEmptyData(result)) {
+      throw new AuthError({
+        kind: "unexpected",
+        message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+      });
+    }
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw toAuthError(error, "recovery");
+  }
+}
+
+/**
+ * `POST /api/auth/password/reset` (§3.6). El `token` viaja solo en el body
+ * (nunca en la URL); aquí no se registra ni se transforma.
+ */
+export async function resetPassword(
+  values: ResetPasswordFormValues,
+): Promise<void> {
+  const parsed = resetPasswordSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new AuthError({
+      kind: "validation",
+      message: "Revisa los datos ingresados.",
+      fields: fieldsFromIssues(parsed.error.issues),
+    });
+  }
+  const payload = toResetRequest(parsed.data);
+  if (!payload) {
+    throw new AuthError({
+      kind: "unexpected",
+      message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+    });
+  }
+  try {
+    const result = await clientFetch()<unknown>("/api/auth/password/reset", {
+      method: "POST",
+      body: payload,
+    });
+    if (!isEmptyData(result)) {
+      throw new AuthError({
+        kind: "unexpected",
+        message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+      });
+    }
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw toAuthError(error, "recovery");
   }
 }

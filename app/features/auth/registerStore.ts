@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-import { AuthError, fieldsFromIssues, register } from "./api";
+import { failureFromUnknown, fieldsFromIssues, register } from "./api";
 import type { AuthFailure, FieldErrors } from "./api";
 import {
   contactStepSchema,
@@ -159,13 +159,7 @@ export const useRegisterStore = defineStore("register", {
         this.result = await register(merged as RegisterFormValues);
         return true;
       } catch (error) {
-        const failure =
-          error instanceof AuthError
-            ? error.failure
-            : {
-                kind: "unexpected",
-                message: "Tuvimos un problema. Intenta de nuevo más tarde.",
-              } as AuthFailure;
+        const failure = failureFromUnknown(error);
         this.lastFailure = failure;
         if (failure.kind === "validation" && failure.fields) {
           this.currentStep = firstStepWithErrors(failure.fields);
