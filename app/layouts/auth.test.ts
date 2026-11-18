@@ -12,12 +12,13 @@ async function render(slot = "Contenido login"): Promise<string> {
 }
 
 describe("AuthLayout", () => {
-  it("muestra marca, conexión segura, legales y el contenido", async () => {
+  it("muestra marca, legales y el contenido (sin píldora de conexión)", async () => {
     const html = await render();
     expect(html).toContain('src="/logos/kenko-logo.svg"');
     expect(html).toContain('alt="Kenko EPS"');
     expect(html).toContain("Portal Oficial");
-    expect(html).toContain("portal.kenkoeps.com.co");
+    expect(html).not.toContain("portal.kenkoeps.com.co");
+    expect(html).not.toContain("Conexión cifrada");
     expect(html).toContain("Vigilado Supersalud");
     expect(html).toContain("Ley Estatutaria 1581 de 2012");
     expect(html).toContain("Contenido login");

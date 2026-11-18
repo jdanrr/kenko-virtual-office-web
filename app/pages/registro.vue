@@ -88,29 +88,6 @@ const summaryContact = computed(() => {
             :holder="summaryHolder"
             :contact="summaryContact"
           />
-          <aside
-            aria-label="Ayuda para el registro"
-            class="bg-primary text-on-primary rounded-2xl shadow-sm p-6 flex flex-col gap-4"
-          >
-            <h2 class="font-display font-bold text-lg">¿Necesitas ayuda?</h2>
-            <p class="text-xs sm:text-sm opacity-90">
-              Nuestros asesores de afiliación en salud te orientan en cualquier
-              punto de tu registro.
-            </p>
-            <a
-              class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10 min-h-[48px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary"
-              href="tel:018000915500"
-            >
-              <span class="font-medium text-xs sm:text-sm">Línea Gratuita Nacional</span>
-              <span class="font-bold text-secondary text-sm">01 8000 915 500</span>
-            </a>
-            <div
-              class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10 min-h-[48px]"
-            >
-              <span class="font-medium text-xs sm:text-sm">Bogotá D.C.</span>
-              <span class="font-bold text-secondary text-sm">(601) 307 8000</span>
-            </div>
-          </aside>
         </div>
       </div>
     </div>

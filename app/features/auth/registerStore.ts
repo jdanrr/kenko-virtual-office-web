@@ -29,7 +29,7 @@ const STEP_FIELDS: Record<RegisterStep, string[]> = {
   1: ["documentType", "documentNumber"],
   2: ["firstName", "lastName", "birthDate", "gender"],
   3: ["email", "phone", "addressLine", "city"],
-  4: ["password", "confirmPassword", "ley1581", "notifications"],
+  4: ["password", "confirmPassword", "ley1581"],
 };
 
 const STEP_SCHEMAS = {

@@ -23,25 +23,6 @@
             Portal Oficial
           </span>
         </div>
-        <div
-          class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-700"
-        >
-          <svg
-            class="w-4 h-4 text-primary"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <rect x="4" y="10" width="16" height="10" rx="2" />
-            <path d="M8 10V7a4 4 0 018 0v3" stroke-linecap="round" />
-          </svg>
-          <span>
-            Conexión cifrada SSL/TLS •
-            <strong class="text-primary font-mono">portal.kenkoeps.com.co</strong>
-          </span>
-        </div>
       </div>
     </header>
 

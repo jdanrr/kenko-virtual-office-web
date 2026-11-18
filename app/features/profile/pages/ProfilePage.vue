@@ -32,6 +32,8 @@ import ProfileEmailModal from "../components/ProfileEmailModal.vue";
 import ProfilePasswordModal from "../components/ProfilePasswordModal.vue";
 import ProfilePersonalCard from "../components/ProfilePersonalCard.vue";
 import ProfileSecurityCard from "../components/ProfileSecurityCard.vue";
+import ProfileStatePanel from "../components/ProfileStatePanel.vue";
+import { useRetryCooldown } from "../useRetryCooldown";
 
 const auth = useAuthStore();
 const getAccessToken = () => auth.accessToken;
@@ -82,6 +84,9 @@ const passwordServerError = ref<{ title: string; message: string; correlationId?
 const { remaining: passwordCountdown } = useRateLimitCountdown(() => passwordFailure.value);
 
 let successTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Pausa de 5 s entre reintentos (evita saturar el microservicio). */
+const { remaining: retryCooldown, start: startRetryCooldown } = useRetryCooldown(5);
 
 const profile = computed<Profile | null>(() => profileQuery.data.value ?? null);
 const queryError = computed(() => toProfilePageError(profileQuery.error.value));
@@ -223,7 +228,9 @@ async function save(): Promise<void> {
 }
 
 async function retry(): Promise<void> {
+  if (retryCooldown.value > 0 || profileQuery.isFetching.value) return;
   submitError.value = null;
+  startRetryCooldown();
   await profileQuery.refetch();
 }
 
@@ -520,42 +527,28 @@ useHead({
           />
 
           <!-- 404 SQS: perfil en creación -->
-          <div
+          <ProfileStatePanel
             v-else-if="isNotFound"
-            class="bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-8 text-center flex flex-col items-center gap-4"
-          >
-            <h2 class="font-display text-xl font-bold text-primary">Tu perfil se está creando</h2>
-            <p class="font-body text-sm text-zinc-600 max-w-lg">
-              {{ queryError?.message }} Si acabas de registrarte, espera unos
-              segundos y reintenta.
-            </p>
-            <button
-              class="inline-flex items-center justify-center gap-2 px-6 min-h-[48px] rounded-xl bg-primary text-on-primary font-display text-sm font-bold focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
-              type="button"
-              @click="retry"
-            >
-              Reintentar consulta
-            </button>
-          </div>
+            variant="not-found"
+            title="Tu perfil se está creando"
+            :message="`${queryError?.message ?? ''} Si acabas de registrarte, espera unos segundos y reintenta.`"
+            :correlation-id="queryError?.correlationId"
+            :pending="profileQuery.isFetching.value"
+            :cooldown-seconds="retryCooldown"
+            @retry="retry"
+          />
 
           <!-- Otros errores de lectura -->
-          <div v-else-if="queryError" class="flex flex-col gap-3">
-            <ProfileAlert
-              variant="error"
-              title="No pudimos cargar tu perfil"
-              :message="queryError.message"
-              :correlation-id="queryError.correlationId"
-            />
-            <div>
-              <button
-                class="inline-flex items-center justify-center gap-2 px-6 min-h-[48px] rounded-xl bg-primary text-on-primary font-display text-sm font-bold focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer"
-                type="button"
-                @click="retry"
-              >
-                Reintentar
-              </button>
-            </div>
-          </div>
+          <ProfileStatePanel
+            v-else-if="queryError"
+            variant="error"
+            title="No pudimos cargar tu perfil"
+            :message="queryError.message"
+            :correlation-id="queryError.correlationId"
+            :pending="profileQuery.isFetching.value"
+            :cooldown-seconds="retryCooldown"
+            @retry="retry"
+          />
 
           <!-- Contenido -->
           <template v-else-if="profile">

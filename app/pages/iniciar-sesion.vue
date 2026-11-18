@@ -232,35 +232,6 @@ watch(
                 Gratis
               </span>
             </a>
-            <button
-              class="flex items-center justify-between p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 min-h-[48px] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-secondary text-left"
-              type="button"
-              disabled
-              title="Disponible próximamente"
-            >
-              <span>
-                <span class="font-display text-sm text-content block font-bold">
-                  Chat Asistido en Línea
-                </span>
-                <span class="font-body text-[11px] text-zinc-500">
-                  Orientación con asistente virtual
-                </span>
-              </span>
-              <svg
-                class="w-5 h-5 text-zinc-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 12h14M13 6l6 6-6 6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
           </div>
         </aside>
       </div>

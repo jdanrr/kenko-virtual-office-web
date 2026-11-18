@@ -11,7 +11,6 @@ const props = defineProps<{
   password: string;
   confirmPassword: string;
   ley1581: boolean;
-  notifications: boolean;
   errors?: Partial<
     Record<"password" | "confirmPassword" | "ley1581", string>
   >;
@@ -22,7 +21,6 @@ const emit = defineEmits<{
   "update:password": [value: string];
   "update:confirmPassword": [value: string];
   "update:ley1581": [value: boolean];
-  "update:notifications": [value: boolean];
 }>();
 </script>
 
@@ -90,24 +88,6 @@ const emit = defineEmits<{
       >
         {{ props.errors.ley1581 }}
       </p>
-    </div>
-
-    <div class="flex items-start gap-3">
-      <input
-        id="register-notifications"
-        class="w-5 h-5 rounded text-primary border-zinc-300 focus:ring-secondary cursor-pointer mt-0.5"
-        type="checkbox"
-        name="notifications"
-        :checked="props.notifications"
-        :disabled="props.disabled"
-        @change="emit('update:notifications', ($event.target as HTMLInputElement).checked)"
-      >
-      <label
-        for="register-notifications"
-        class="font-body text-xs sm:text-sm text-zinc-600 cursor-pointer select-none"
-      >
-        Deseo recibir recordatorios de citas y autorizaciones por SMS y WhatsApp. (Opcional)
-      </label>
     </div>
   </div>
 </template>

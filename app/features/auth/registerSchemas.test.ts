@@ -179,10 +179,9 @@ describe("registerSchema + toRegisterRequest", () => {
     expect(toRegisterRequest({ ...valid, city: "" })).toBeNull();
   });
 
-  it("el formato de cable valida sin consentimientos UI (lo que recibe el BFF)", () => {
-    const { ley1581, notifications, ...wire } = valid;
+  it("el formato de cable valida sin el consentimiento UI (lo que recibe el BFF)", () => {
+    const { ley1581, ...wire } = valid;
     void ley1581;
-    void notifications;
     const parsed = registerPayloadSchema.safeParse(wire);
     expect(parsed.success).toBe(true);
     if (!parsed.success) return;

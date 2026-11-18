@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 
 import { useAuthStore } from "../store";
 import { normalizeDocumentNumber } from "../schemas";
 import type { DocumentType } from "../types";
-import {
-  clearRememberedDocument,
-  loadRememberedDocument,
-  saveRememberedDocument,
-} from "../rememberDocument";
 import { useRateLimitCountdown } from "../useRateLimitCountdown";
 import AuthAlert from "./AuthAlert.vue";
 import DocumentNumberField from "./DocumentNumberField.vue";
 import DocumentTypeSelector from "./DocumentTypeSelector.vue";
 import PasswordField from "./PasswordField.vue";
 
-/** Formulario de login: integra átomos + store + recordar documento + 429. */
+/** Formulario de login: integra átomos + store + 429. */
 const store = useAuthStore();
 
 const documentType = ref<DocumentType>("CC");
 const documentNumber = ref("");
 const password = ref("");
-const remember = ref(false);
 
 const busy = computed(() => store.status === "authenticating");
 const fields = computed(() =>
@@ -30,15 +24,6 @@ const fields = computed(() =>
 
 /** Cuenta regresiva visible del 429 (el store guarda los segundos totales). */
 const { remaining } = useRateLimitCountdown(() => store.lastFailure);
-
-onMounted(() => {
-  const saved = loadRememberedDocument();
-  if (saved) {
-    documentType.value = saved.documentType;
-    documentNumber.value = saved.documentNumber;
-    remember.value = true;
-  }
-});
 
 const alert = computed(() => {
   const failure = store.lastFailure;
@@ -60,17 +45,9 @@ const alert = computed(() => {
 });
 
 async function onSubmit(): Promise<void> {
-  if (remember.value) {
-    saveRememberedDocument({
-      documentType: documentType.value,
-      documentNumber: normalizeDocumentNumber(documentNumber.value),
-    });
-  } else {
-    clearRememberedDocument();
-  }
   await store.logIn({
     documentType: documentType.value,
-    documentNumber: documentNumber.value,
+    documentNumber: normalizeDocumentNumber(documentNumber.value),
     password: password.value,
   });
 }
@@ -89,32 +66,52 @@ async function onSubmit(): Promise<void> {
       :disabled="busy"
     />
     <PasswordField v-model="password" :error="fields.password" :disabled="busy" />
-    <div class="flex justify-end">
-      <NuxtLink
-        class="font-body text-xs text-accent font-bold hover:underline rounded py-1 px-1.5 min-h-[44px] inline-flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
-        to="/recuperar-contrasena"
-      >
-        ¿Olvidaste tu contraseña?
-      </NuxtLink>
-    </div>
 
-    <div
-      class="flex items-center gap-2.5 p-3 bg-zinc-50 border border-zinc-200/80 rounded-xl min-h-[48px]"
+    <NuxtLink
+      class="group flex items-center gap-3 p-4 rounded-xl bg-primary/5 border-2 border-primary/20 hover:border-primary hover:bg-primary/10 transition-all min-h-[64px] focus:outline-none focus:ring-2 focus:ring-secondary"
+      to="/recuperar-contrasena"
     >
-      <input
-        id="remember-document"
-        v-model="remember"
-        class="w-5 h-5 rounded text-primary border-zinc-300 focus:ring-secondary cursor-pointer"
-        type="checkbox"
-        :disabled="busy"
+      <span
+        aria-hidden="true"
+        class="w-11 h-11 rounded-xl bg-white border border-primary/20 text-primary flex items-center justify-center shrink-0"
       >
-      <label
-        for="remember-document"
-        class="font-body text-xs sm:text-sm text-zinc-700 cursor-pointer select-none"
+        <svg
+          class="w-6 h-6"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="10" cy="8" r="3.5" />
+          <path
+            d="M4 19c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5M18 8v6M15 11h6"
+            stroke-linecap="round"
+          />
+        </svg>
+      </span>
+      <span class="flex-1">
+        <span class="font-display text-base sm:text-lg font-bold text-primary block leading-snug">
+          ¿Olvidaste tu contraseña?
+        </span>
+        <span class="font-body text-xs sm:text-sm text-zinc-600">
+          Recupérala en un minuto solo con tu documento
+        </span>
+      </span>
+      <svg
+        class="w-5 h-5 text-primary shrink-0 transition-transform group-hover:translate-x-0.5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
       >
-        Recordar mi documento en este equipo de confianza
-      </label>
-    </div>
+        <path
+          d="M5 12h14M13 6l6 6-6 6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </NuxtLink>
 
     <AuthAlert
       v-if="alert"

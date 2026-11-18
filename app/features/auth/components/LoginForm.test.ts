@@ -53,7 +53,7 @@ describe("LoginForm", () => {
     expect(wrapper.text()).toContain("Escribe tu contraseña.");
   });
 
-  it("login exitoso guarda el documento si se marcó recordar", async () => {
+  it("login exitoso autentica sin guardar nada en localStorage", async () => {
     vi.stubGlobal(
       "$fetch",
       vi
@@ -64,38 +64,28 @@ describe("LoginForm", () => {
         }),
     );
     const wrapper = mount(LoginForm);
-    await wrapper.find("#remember-document").setValue(true);
-    await fillAndSubmit(wrapper);
-
-    expect(useAuthStore().isAuthenticated).toBe(true);
-    expect(localStorage.getItem("kenko.auth.rememberedDocument")).toBe(
-      JSON.stringify({ documentType: "CC", documentNumber: "12345678" }),
-    );
-  });
-
-  it("sin marcar recordar no guarda nada y limpia lo previo", async () => {
-    localStorage.setItem(
-      "kenko.auth.rememberedDocument",
-      JSON.stringify({ documentType: "TI", documentNumber: "999" }),
-    );
-    vi.stubGlobal(
-      "$fetch",
-      vi
-        .fn()
-        .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
-        .mockResolvedValueOnce({
-          data: { userId: "u1", firstName: "María", email: "m@x.co" },
-        }),
-    );
-    const wrapper = mount(LoginForm);
-    await flushPromises();
-    expect(wrapper.find('input[name="documentNumber"]').element.value).toBe("999");
-
-    await wrapper.find("#remember-document").setValue(false);
     await fillAndSubmit(wrapper);
 
     expect(useAuthStore().isAuthenticated).toBe(true);
     expect(localStorage.getItem("kenko.auth.rememberedDocument")).toBeNull();
+  });
+
+  it("ofrece recuperar la contraseña con enlace visible a /recuperar-contrasena", async () => {
+    vi.stubGlobal("$fetch", vi.fn());
+    const wrapper = mount(LoginForm, {
+      global: {
+        stubs: {
+          NuxtLink: {
+            template: '<a :href="to"><slot /></a>',
+            props: ["to"],
+          },
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("¿Olvidaste tu contraseña?");
+    expect(wrapper.text()).toContain("Recupérala en un minuto");
+    expect(wrapper.find('a[href="/recuperar-contrasena"]').exists()).toBe(true);
   });
 
   it("429 muestra cuenta regresiva que descuenta cada segundo", async () => {

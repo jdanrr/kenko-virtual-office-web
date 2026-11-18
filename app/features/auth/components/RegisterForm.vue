@@ -30,7 +30,6 @@ const security = reactive({
   password: "",
   confirmPassword: "",
   ley1581: false,
-  notifications: true,
 });
 
 const busy = computed(() => store.submitting);
@@ -178,7 +177,6 @@ defineExpose({ goToStep });
         v-model:password="security.password"
         v-model:confirm-password="security.confirmPassword"
         v-model:ley1581="security.ley1581"
-        v-model:notifications="security.notifications"
         :errors="fields"
         :disabled="busy"
       />
@@ -192,61 +190,79 @@ defineExpose({ goToStep });
         :correlation-id="alert.correlationId"
       />
 
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 mt-4 border-t border-zinc-200">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
+      <div class="flex flex-col gap-4 pt-5 mt-4 border-t border-zinc-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             v-if="store.currentStep > 1"
-            class="w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-xl bg-zinc-100 text-content font-display font-semibold text-sm hover:bg-zinc-200 transition-colors items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-70"
+            class="w-full min-h-[56px] px-6 py-3 rounded-xl border-2 border-primary/40 hover:border-primary text-primary font-display font-bold text-base transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-70"
             type="button"
             :disabled="busy"
             @click="store.prev()"
           >
+            <svg
+              class="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                d="M19 12H5M11 18l-6-6 6-6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             Volver al paso anterior
           </button>
+          <button
+            class="w-full min-h-[56px] px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-lg font-extrabold tracking-tight shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-secondary disabled:opacity-70"
+            :class="{ 'sm:col-span-2': store.currentStep === 1 }"
+            type="submit"
+            :disabled="busy"
+            :aria-busy="busy"
+          >
+            <svg
+              v-if="busy"
+              class="w-5 h-5 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-90"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              />
+            </svg>
+            <span>
+              {{
+                busy
+                  ? "Creando tu cuenta…"
+                  : store.currentStep === 4
+                    ? "Crear mi cuenta"
+                    : "Continuar"
+              }}
+            </span>
+          </button>
+        </div>
+        <p class="text-center font-body text-sm text-zinc-500">
+          ¿Ya tienes cuenta?
           <NuxtLink
-            class="w-full sm:w-auto text-center font-display font-semibold text-sm text-accent hover:underline px-3 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary rounded"
+            class="font-bold text-accent hover:underline rounded px-1 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary"
             to="/iniciar-sesion"
           >
-            ¿Ya tienes cuenta? Iniciar sesión
+            Inicia sesión
           </NuxtLink>
-        </div>
-        <button
-          class="w-full sm:w-auto min-h-[48px] px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-base font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-secondary disabled:opacity-70"
-          type="submit"
-          :disabled="busy"
-          :aria-busy="busy"
-        >
-          <svg
-            v-if="busy"
-            class="w-5 h-5 animate-spin"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            />
-            <path
-              class="opacity-90"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            />
-          </svg>
-          <span>
-            {{
-              busy
-                ? "Creando tu cuenta…"
-                : store.currentStep === 4
-                  ? "Crear mi cuenta"
-                  : "Continuar"
-            }}
-          </span>
-        </button>
+        </p>
       </div>
     </form>
   </div>

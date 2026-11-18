@@ -167,7 +167,6 @@ const consentSchema = z.object({
   ley1581: z.literal(true, {
     error: "Debes aceptar el tratamiento de tus datos para continuar.",
   }),
-  notifications: z.boolean().default(true),
 });
 
 export const securityStepSchema = z.intersection(passwordFieldsSchema, consentSchema);
@@ -183,7 +182,7 @@ export type RegisterFormValues = z.input<typeof registerSchema>;
 
 /**
  * Formato de cable: los 12 campos que viajan al BFF/microservicio.
- * Sin consentimientos de la UI (`ley1581`, `notifications`); con
+ * Sin el consentimiento de la UI (`ley1581`); con
  * `confirmPassword` (el backend la exige idéntica). Zod descarta
  * las claves desconocidas, así que acepta los valores del wizard tal cual.
  */
