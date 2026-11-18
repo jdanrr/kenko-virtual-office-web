@@ -10,8 +10,15 @@ import { useAuthStore } from "~/features/auth/store";
  * pantallas): hoy el login deja al usuario donde está. Las rutas
  * `/recuperar-contrasena` aún no tiene página (muestra 404) y `/reset`
  * la genera el backend en el enlace del correo (no renombrar).
+ * `/sesion-cerrada` es pública: se muestra justo después de cerrar sesión.
  */
-const PUBLIC_PATHS = ["/iniciar-sesion", "/registro", "/recuperar-contrasena", "/reset"];
+const PUBLIC_PATHS = [
+  "/iniciar-sesion",
+  "/registro",
+  "/recuperar-contrasena",
+  "/reset",
+  "/sesion-cerrada",
+];
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return;

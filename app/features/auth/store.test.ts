@@ -269,7 +269,7 @@ describe("useAuthStore", () => {
     });
     expect(store.status).toBe("anonymous");
     expect(store.accessToken).toBeNull();
-    expect(navigateToMock).toHaveBeenCalledWith("/iniciar-sesion");
+    expect(navigateToMock).toHaveBeenCalledWith("/sesion-cerrada");
   });
 
   it("un segundo login reemplaza por completo la sesión anterior", async () => {
@@ -319,5 +319,69 @@ describe("useAuthStore", () => {
     }
     expect(sessionStorage.length).toBe(0);
     expect(document.cookie).not.toContain("jwt");
+  });
+
+  it("justLoggedOut solo se marca en logout voluntario y se apaga con sesión nueva", async () => {
+    vi.stubGlobal("navigateTo", vi.fn().mockResolvedValue(undefined));
+    vi.stubGlobal(
+      "$fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+        .mockResolvedValueOnce({
+          data: { userId: "u1", firstName: "María", email: "m@x.co" },
+        })
+        .mockResolvedValueOnce({ data: {} })
+        .mockResolvedValueOnce({ data: { accessToken: "jwt2", expiresIn: 900 } })
+        .mockResolvedValueOnce({
+          data: { userId: "u1", firstName: "María", email: "m@x.co" },
+        }),
+    );
+
+    const store = useAuthStore();
+    expect(store.justLoggedOut).toBe(false);
+
+    await store.logIn({ ...valid });
+    expect(store.justLoggedOut).toBe(false);
+
+    await store.logOutEverywhere();
+    expect(store.justLoggedOut).toBe(true);
+
+    // Una sesión nueva (otro login) apaga el aviso.
+    await store.logIn({ ...valid });
+    expect(store.isAuthenticated).toBe(true);
+    expect(store.justLoggedOut).toBe(false);
+  });
+
+  it("un login fallido tras cerrar sesión apaga el aviso", async () => {
+    vi.stubGlobal("navigateTo", vi.fn().mockResolvedValue(undefined));
+    vi.stubGlobal(
+      "$fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+        .mockResolvedValueOnce({
+          data: { userId: "u1", firstName: "María", email: "m@x.co" },
+        })
+        .mockResolvedValueOnce({ data: {} })
+        .mockRejectedValueOnce(
+          fail(401, {
+            error: {
+              code: "UNAUTHORIZED",
+              message: "Credenciales inválidas.",
+              correlationId: "ref-60",
+            },
+          }),
+        ),
+    );
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    await store.logOutEverywhere();
+    expect(store.justLoggedOut).toBe(true);
+
+    await store.logIn({ ...valid, password: "otra" });
+    expect(store.status).toBe("anonymous");
+    expect(store.justLoggedOut).toBe(false);
   });
 });

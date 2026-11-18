@@ -38,6 +38,12 @@ interface AuthState {
   expiresAt: number | null;
   /** `true` cuando el arranque terminó (haya sesión o no). Lo usa el guarda. */
   bootstrapped: boolean;
+  /**
+   * `true` solo si la última transición fue un logout voluntario.
+   * La página `/sesion-cerrada` lo usa para mostrar la confirmación;
+   * cualquier sesión nueva (`applySession`) lo apaga.
+   */
+  justLoggedOut: boolean;
 }
 
 function clearRefreshTimer(): void {
@@ -56,6 +62,7 @@ export const useAuthStore = defineStore("auth", {
     lastLoginAt: null,
     expiresAt: null,
     bootstrapped: false,
+    justLoggedOut: false,
   }),
   getters: {
     isAuthenticated: (state): boolean =>
@@ -118,21 +125,25 @@ export const useAuthStore = defineStore("auth", {
     },
     /**
      * Limpieza local idempotente (contrato §3.4: ante cualquier fallo de red,
-     * igualmente limpiar el estado). El logout remoto llega en otro paso.
+     * igualmente limpiar el estado). Apaga `justLoggedOut`: solo los
+     * logouts voluntarios (`logOut`/`logOutEverywhere`) lo encienden después.
      */
     logOut(): void {
       this.clearSession();
+      this.justLoggedOut = true;
     },
     /**
      * Cierre completo (§3.4): avisa al servidor (revoca TODAS las sesiones),
-     * limpia el estado, vacía la caché de TanStack Query y redirige al login.
+     * limpia el estado, vacía la caché de TanStack Query y muestra la
+     * confirmación "Saliste de tu cuenta".
      * Nunca lanza: `logoutSession` es idempotente por contrato.
      */
     async logOutEverywhere(): Promise<void> {
       await logoutSession();
       this.clearSession();
+      this.justLoggedOut = true;
       getQueryClient().clear();
-      await navigateTo("/iniciar-sesion");
+      await navigateTo("/sesion-cerrada");
     },
     async applySession(result: LoginResult): Promise<void> {
       const user = await fetchMe(result.accessToken);
@@ -142,6 +153,7 @@ export const useAuthStore = defineStore("auth", {
       this.lastLoginAt = Date.now();
       this.expiresAt = this.lastLoginAt + result.expiresIn * 1000;
       this.status = "authenticated";
+      this.justLoggedOut = false;
       this.scheduleRefresh(result.expiresIn);
     },
     clearSession(failure: AuthFailure | null = null): void {
@@ -152,6 +164,7 @@ export const useAuthStore = defineStore("auth", {
       this.expiresAt = null;
       this.status = "anonymous";
       this.lastFailure = failure;
+      this.justLoggedOut = false;
     },
     scheduleRefresh(expiresInSeconds: number): void {
       const delayMs = Math.max(
