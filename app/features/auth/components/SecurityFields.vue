@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
-
-import { isBlacklistedPassword } from "../registerSchemas";
+import PasswordChecklist from "./PasswordChecklist.vue";
 import PasswordField from "./PasswordField.vue";
 
 /**
@@ -26,22 +24,6 @@ const emit = defineEmits<{
   "update:ley1581": [value: boolean];
   "update:notifications": [value: boolean];
 }>();
-
-const lengthOk = computed(
-  () => props.password.length >= 8 && props.password.length <= 128,
-);
-const commonOk = computed(
-  () => props.password.length > 0 && !isBlacklistedPassword(props.password),
-);
-const matchOk = computed(
-  () => props.confirmPassword.length > 0 && props.password === props.confirmPassword,
-);
-
-const CHECKS = computed(() => [
-  { ok: lengthOk.value, label: "Mínimo 8 caracteres (máximo 128)" },
-  { ok: commonOk.value, label: "No es una contraseña común o bloqueada" },
-  { ok: matchOk.value, label: "Las contraseñas coinciden" },
-]);
 </script>
 
 <template>
@@ -71,36 +53,10 @@ const CHECKS = computed(() => [
       </div>
     </div>
 
-    <ul aria-label="Requisitos de la contraseña" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-      <li
-        v-for="check in CHECKS"
-        :key="check.label"
-        class="flex items-center gap-1.5 text-xs"
-        :class="check.ok ? 'text-primary font-medium' : 'text-zinc-600'"
-      >
-        <svg
-          class="w-4 h-4 flex-shrink-0"
-          :class="check.ok ? 'text-primary' : 'text-zinc-400'"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            v-if="check.ok"
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z"
-            clip-rule="evenodd"
-          />
-          <path
-            v-else
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        {{ check.label }}
-      </li>
-    </ul>
+    <PasswordChecklist
+      :password="props.password"
+      :confirm-password="props.confirmPassword"
+    />
 
     <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
       <div class="flex items-start gap-3">
