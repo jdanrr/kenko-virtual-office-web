@@ -109,7 +109,7 @@ watch(
               <div class="flex-grow border-t border-zinc-200" />
             </div>
             <NuxtLink
-              class="w-full min-h-[48px] px-4 py-2.5 rounded-xl border-2 border-primary/20 hover:border-primary text-primary font-display text-sm font-bold transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-secondary mt-1"
+              class="w-full min-h-[48px] px-4 py-2.5 rounded-xl border-2 border-primary/20 hover:border-primary text-primary font-display text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary mt-1"
               to="/registro"
             >
               <svg
