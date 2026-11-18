@@ -4,8 +4,10 @@ import {
   DOCUMENT_TYPES,
   GENDERS,
   isApiFailure,
+  type ForgotPasswordRequest,
   type RegisterRequest,
   type RegisterSuccess,
+  type ResetPasswordRequest,
 } from "./types";
 
 describe("DOCUMENT_TYPES", () => {
@@ -46,6 +48,26 @@ describe("register shapes", () => {
     };
     expect(success.maskedEmail).toContain("***");
     expect(success.maskedEmail).not.toContain("maria");
+  });
+});
+
+describe("password recovery shapes", () => {
+  it("ForgotPasswordRequest usa documento normalizado (§3.5)", () => {
+    const request: ForgotPasswordRequest = {
+      documentType: "TI",
+      documentNumber: "ABC123",
+    };
+    expect(request.documentNumber).toBe("ABC123");
+  });
+
+  it("ResetPasswordRequest lleva el token opaco solo en body (§3.6)", () => {
+    const request: ResetPasswordRequest = {
+      token: "opaco-del-fragmento",
+      password: "Clave-nueva-1",
+      confirmPassword: "Clave-nueva-1",
+    };
+    expect(request.confirmPassword).toBe(request.password);
+    expect(request.token.length).toBeGreaterThan(0);
   });
 });
 

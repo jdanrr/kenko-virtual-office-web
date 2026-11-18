@@ -78,6 +78,31 @@ export interface RegisterSuccess {
   maskedEmail: string;
 }
 
+/**
+ * §3.5 `POST /auth/password/forgot` — cuerpo ya normalizado.
+ * Respuesta siempre `200 { data: {} }` exista o no la cuenta
+ * (anti-enumeración: el mensaje UI es idéntico en ambos casos).
+ */
+export interface ForgotPasswordRequest {
+  documentType: DocumentType;
+  /** Mayúsculas, sin espacios/puntos/guiones, `^[A-Z0-9]{4,20}$`. */
+  documentNumber: string;
+}
+
+/**
+ * §3.6 `POST /auth/password/reset` — cuerpo ya normalizado.
+ * `token` opaco: llega en el fragmento del enlace (`#token=…`), nunca en
+ * la URL al llamar a la API; aquí viaja solo en el BODY.
+ */
+export interface ResetPasswordRequest {
+  /** Opaco, no vacío. Nunca loguearlo ni ponerlo en una URL. */
+  token: string;
+  /** Misma política 8–128 + lista negra (§3.1). Distinta a la actual. */
+  password: string;
+  /** Idéntica a `password`. */
+  confirmPassword: string;
+}
+
 /** §1.2 sobre de respuesta en éxito: `{ data }`. */
 export interface ApiSuccess<T> {
   data: T;

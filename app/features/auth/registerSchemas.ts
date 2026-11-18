@@ -149,7 +149,8 @@ const passwordSchema = z
     "Esa contraseña es muy común. Elige otra más difícil de adivinar.",
   );
 
-const passwordFieldsSchema = z
+/** Par contraseña + confirmación (política §3.1, reutilizable en reset §3.6). */
+export const passwordFieldsSchema = z
   .object({
     password: passwordSchema,
     confirmPassword: z.string({ error: "Repite la contraseña para confirmarla." }),
