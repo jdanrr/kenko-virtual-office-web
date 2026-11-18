@@ -41,13 +41,13 @@ const emit = defineEmits<{
       </div>
       <div class="flex flex-col gap-3">
         <NuxtLink
-          class="w-full min-h-[48px] px-6 py-3 rounded-xl bg-primary text-on-primary hover:bg-primary/90 font-display font-bold text-sm shadow flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-secondary"
+          class="w-full min-h-[48px] px-6 py-3 rounded-xl bg-primary text-on-primary hover:bg-primary/90 font-display font-bold text-sm shadow flex items-center justify-center gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary"
           to="/iniciar-sesion"
         >
           Ir a Iniciar Sesión
         </NuxtLink>
         <button
-          class="w-full py-2.5 font-display text-sm text-zinc-600 hover:text-content font-medium rounded focus:outline-none focus:ring-2 focus:ring-secondary"
+          class="w-full py-2.5 font-display text-sm text-zinc-600 hover:text-content font-medium rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary"
           type="button"
           @click="emit('close')"
         >

@@ -90,14 +90,12 @@ async function onSubmit(): Promise<void> {
     />
     <PasswordField v-model="password" :error="fields.password" :disabled="busy" />
     <div class="flex justify-end">
-      <button
-        class="font-body text-xs text-accent font-bold hover:underline rounded py-1 px-1.5 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
-        type="button"
-        disabled
-        title="Disponible próximamente"
+      <NuxtLink
+        class="font-body text-xs text-accent font-bold hover:underline rounded py-1 px-1.5 min-h-[44px] inline-flex items-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+        to="/recuperar-contrasena"
       >
         ¿Olvidaste tu contraseña?
-      </button>
+      </NuxtLink>
     </div>
 
     <div
@@ -128,7 +126,7 @@ async function onSubmit(): Promise<void> {
 
     <div class="flex flex-col gap-2.5 pt-1">
       <button
-        class="w-full min-h-[50px] rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-base font-bold shadow-sm transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-secondary disabled:opacity-70"
+        class="w-full min-h-[50px] rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-base font-bold shadow-sm transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
         type="submit"
         :disabled="busy"
         :aria-busy="busy"

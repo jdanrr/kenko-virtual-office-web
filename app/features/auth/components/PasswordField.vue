@@ -72,7 +72,7 @@ function onInput(event: Event): void {
         @input="onInput"
       >
       <button
-        class="absolute right-2 p-2 rounded-lg text-zinc-500 hover:text-content hover:bg-zinc-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-secondary"
+        class="absolute right-2 p-2 rounded-lg text-zinc-500 hover:text-content hover:bg-zinc-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-secondary"
         type="button"
         :aria-pressed="visible"
         :aria-label="visible ? 'Ocultar contraseña' : 'Mostrar contraseña'"

@@ -196,7 +196,7 @@ defineExpose({ goToStep });
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <button
             v-if="store.currentStep > 1"
-            class="w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-xl bg-zinc-100 text-content font-display font-semibold text-sm hover:bg-zinc-200 transition-colors items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-70"
+            class="w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-xl bg-zinc-100 text-content font-display font-semibold text-sm hover:bg-zinc-200 transition-colors items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-70"
             type="button"
             :disabled="busy"
             @click="store.prev()"
@@ -204,14 +204,14 @@ defineExpose({ goToStep });
             Volver al paso anterior
           </button>
           <NuxtLink
-            class="w-full sm:w-auto text-center font-display font-semibold text-sm text-accent hover:underline px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary rounded"
+            class="w-full sm:w-auto text-center font-display font-semibold text-sm text-accent hover:underline px-3 py-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary rounded"
             to="/iniciar-sesion"
           >
             ¿Ya tienes cuenta? Iniciar sesión
           </NuxtLink>
         </div>
         <button
-          class="w-full sm:w-auto min-h-[48px] px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-base font-bold shadow-sm transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-secondary disabled:opacity-70"
+          class="w-full sm:w-auto min-h-[48px] px-8 py-3 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-display text-base font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-secondary disabled:opacity-70"
           type="submit"
           :disabled="busy"
           :aria-busy="busy"

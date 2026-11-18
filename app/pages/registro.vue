@@ -98,7 +98,7 @@ const summaryContact = computed(() => {
               punto de tu registro.
             </p>
             <a
-              class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10 min-h-[48px] focus:outline-none focus:ring-2 focus:ring-secondary"
+              class="flex items-center justify-between p-2.5 rounded-xl bg-white/10 border border-white/10 min-h-[48px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-secondary"
               href="tel:018000915500"
             >
               <span class="font-medium text-xs sm:text-sm">Línea Gratuita Nacional</span>

@@ -28,7 +28,7 @@ const STEPS: Array<{ n: RegisterStep; stage: string; label: string }> = [
     <ol class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <li v-for="step in STEPS" :key="step.n">
         <button
-          class="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left min-h-[48px] focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-60"
+          class="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left min-h-[48px] cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-60"
           :class="
             step.n === props.currentStep
               ? 'bg-primary text-on-primary shadow-sm'
