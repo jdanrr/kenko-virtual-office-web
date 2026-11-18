@@ -69,7 +69,7 @@ async function logout(): Promise<void> {
 }
 
 function goToProfile(): void {
-  // TODO: navegar a la vista de perfil cuando exista.
+  void navigateTo("/mi-perfil");
 }
 
 // Citas reales del usuario (requiere sesión; el guarda la garantiza).
