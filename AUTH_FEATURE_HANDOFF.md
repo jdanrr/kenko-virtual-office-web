@@ -146,7 +146,7 @@ Implementar el login según el diseño y el contrato, **adaptando** el HTML de r
 | 8 | Refresh silencioso: BFF `/refresh`, `refreshSession`, auto-renovación y `restoreSession`, corrección de validación de contraseña (error duplicado). | 51 tests + endpoints probados en dev |
 | R0–R8 | Registro: tipos + schemas por paso, BFF `/register`, cliente con `register-conflict`, `registerStore`, UI 4 pasos + stepper + resumen + modal éxito, página `/registro` (ruta pública en middleware). Decisiones: ciudad texto libre, checklist según contrato, layout auth reusado, borrador en memoria. | 115 tests + lint + build verde |
 
-**Estado de verificación actual:** `bunx vitest run` → **117/117**; `bunx eslint app/ server/ vitest.config.ts` → limpio; `bun run build` verde. E2E real contra backend 5500: registro `201`, login `200` + cookie, **refresh `200`** (tras quitar `Content-Type` sin body en el proxy; el backend intentaba parsear JSON vacío y daba 500). Auditoría 2026-11-16: `registerPayloadSchema` compartido, `fieldsFromIssues` y `useRateLimitCountdown` unificados, fallbacks al puerto 5500.
+**Estado de verificación actual:** `bunx vitest run` → **185/185**; alcance auth + BFF con lint limpio (el lint global falla solo en archivos de appointments/home-page ajenos); `bun run build` verde con `/recuperar-contrasena`, `/reset` y BFF `password/*`. E2E real contra backend 5500 (verificado F4): registro `201`, login `200` + cookie, refresh `200`. Recuperación (F1–F6): tipos + schemas + BFF + cliente (`reset-invalid`) + `ForgotForm`/`ResetForm` + `PasswordChecklist` compartido + páginas + enlace en login.
 
 ---
 
