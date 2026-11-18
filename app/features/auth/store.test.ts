@@ -83,8 +83,52 @@ describe("useAuthStore", () => {
     expect(store.lastFailure?.kind).toBe("invalid-credentials");
   });
 
-  it("logOut limpia todo el estado local", async () => {
+  it("refreshUser actualiza el usuario con /me sin tocar el token", async () => {
     vi.stubGlobal(
+      "$fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+        .mockResolvedValueOnce({
+          data: { userId: "u1", firstName: "María", email: "m@x.co" },
+        })
+        .mockResolvedValueOnce({
+          data: { userId: "u1", firstName: "María", email: "nuevo@x.co" },
+        }),
+    );
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    await store.refreshUser();
+
+    expect(store.accessToken).toBe("jwt");
+    expect(store.isAuthenticated).toBe(true);
+    expect(store.user?.email).toBe("nuevo@x.co");
+  });
+
+  it("refreshUser ante fallo conserva el último usuario conocido", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u1", firstName: "María", email: "m@x.co" },
+      })
+      .mockRejectedValueOnce(
+        fail(500, {
+          error: { code: "INTERNAL_ERROR", message: "x", correlationId: "r" },
+        }),
+      );
+    vi.stubGlobal("$fetch", fetch);
+
+    const store = useAuthStore();
+    await store.logIn({ ...valid });
+    await store.refreshUser();
+
+    expect(store.isAuthenticated).toBe(true);
+    expect(store.user?.email).toBe("m@x.co");
+  });
+
+  it("logOut limpia todo el estado local", async () => {    vi.stubGlobal(
       "$fetch",
       vi
         .fn()

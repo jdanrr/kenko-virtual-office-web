@@ -108,9 +108,22 @@ export const useAuthStore = defineStore("auth", {
       });
       return restoringPromise;
     },
+    /**
+     * Relee `GET /auth/me` con el token vigente (p. ej. tras `email/change`,
+     * que ya es visible ahí aunque Profile lo reciba después por SQS).
+     * No toca tokens ni expira la sesión: ante un fallo conserva el último
+     * usuario conocido.
+     */
+    async refreshUser(): Promise<void> {
+      if (this.status !== "authenticated" || !this.accessToken) return;
+      try {
+        this.user = await fetchMe(this.accessToken);
+      } catch {
+        // Intencionalmente silencioso: la página muestra su propio error.
+      }
+    },
     /** Renovación en segundo plano (§3.3). No muestra pantalla propia. */
-    async refreshNow(): Promise<void> {
-      if (this.status !== "authenticated") return;
+    async refreshNow(): Promise<void> {      if (this.status !== "authenticated") return;
       try {
         await this.applySession(await refreshSession());
       } catch (error) {

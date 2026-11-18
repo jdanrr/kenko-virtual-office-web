@@ -13,6 +13,14 @@ import {
   type ResetPasswordFormValues,
 } from "./passwordRecoverySchemas";
 import {
+  changeEmailSchema,
+  changePasswordFormSchema,
+  toChangeEmailRequest,
+  toChangePasswordRequest,
+  type ChangeEmailFormValues,
+  type ChangePasswordFormValues,
+} from "./accountSchemas";
+import {
   isApiFailure,
   type ApiFieldDetail,
   type AuthUser,
@@ -31,7 +39,9 @@ export type FieldErrors = Record<string, string>;
 export type AuthFailureKind =
   | "validation"
   | "invalid-credentials"
+  | "incorrect-password"
   | "register-conflict"
+  | "email-conflict"
   | "reset-invalid"
   | "session-expired"
   | "rate-limited"
@@ -133,7 +143,7 @@ function snapshot(error: unknown): UpstreamSnapshot {
 
 function toAuthError(
   error: unknown,
-  context: "login" | "session" | "register" | "recovery",
+  context: "login" | "session" | "register" | "recovery" | "account",
 ): AuthError {
   const { status, data, retryAfter } = snapshot(error);
   const failure = isApiFailure(data) ? data.error : undefined;
@@ -164,6 +174,19 @@ function toAuthError(
       }
       break;
     case 401:
+      // Excepción documentada a "nunca por message": el backend usa el
+      // mismo `code` UNAUTHORIZED para JWT malo y para clave actual mala;
+      // solo el mensaje los distingue (guía del equipo Auth §4).
+      if (
+        context === "account" &&
+        failure?.message === "Contraseña actual incorrecta."
+      ) {
+        return new AuthError({
+          kind: "incorrect-password",
+          message: "La contraseña actual no es correcta. Revísala e intenta de nuevo.",
+          correlationId: failure?.correlationId,
+        });
+      }
       return context === "login"
         ? new AuthError({
             kind: "invalid-credentials",
@@ -181,6 +204,14 @@ function toAuthError(
           kind: "register-conflict",
           message:
             "No pudimos crear tu cuenta con estos datos. Revisa tu documento y correo o intenta recuperar tu contraseña.",
+          correlationId: failure.correlationId,
+        });
+      }
+      if (context === "account" && failure?.code === "UPDATE_CONFLICT") {
+        return new AuthError({
+          kind: "email-conflict",
+          message:
+            "Ese correo no está disponible. Prueba con otro.",
           correlationId: failure.correlationId,
         });
       }
@@ -469,5 +500,103 @@ export async function resetPassword(
   } catch (error) {
     if (error instanceof AuthError) throw error;
     throw toAuthError(error, "recovery");
+  }
+}
+
+/** `POST /api/auth/password/change` — respuesta `200 { data: { changed } }`. */
+export interface ChangeEmailResult {
+  changed: boolean;
+}
+
+function isEmailChanged(payload: unknown): payload is { data: ChangeEmailResult } {
+  if (typeof payload !== "object" || payload === null || !("data" in payload)) {
+    return false;
+  }
+  const data = (payload as { data: unknown }).data;
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    typeof (data as { changed?: unknown }).changed === "boolean"
+  );
+}
+
+/**
+ * `POST /api/auth/password/change` (guía equipo Auth §A).
+ * Valida en cliente (incluye confirmación solo UI) y delega al BFF.
+ * `401 "Contraseña actual incorrecta."` marca el campo sin cerrar sesión;
+ * `401 "Credenciales inválidas."` es sesión vencida (a login).
+ */
+export async function changePassword(values: ChangePasswordFormValues): Promise<void> {
+  const parsed = changePasswordFormSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new AuthError({
+      kind: "validation",
+      message: "Revisa los datos ingresados.",
+      fields: fieldsFromIssues(parsed.error.issues),
+    });
+  }
+  const payload = toChangePasswordRequest(parsed.data);
+  if (!payload) {
+    throw new AuthError({
+      kind: "unexpected",
+      message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+    });
+  }
+  try {
+    const result = await clientFetch()<unknown>("/api/auth/password/change", {
+      method: "POST",
+      body: payload,
+    });
+    if (!isEmptyData(result)) {
+      throw new AuthError({
+        kind: "unexpected",
+        message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+      });
+    }
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw toAuthError(error, "account");
+  }
+}
+
+/**
+ * `POST /api/auth/email/change` (guía equipo Auth §B).
+ * Devuelve `{ changed }`: `false` = ya era ese correo (idempotente, sin
+ * evento ni aviso de "revisa tu correo"); `true` = aplicado y visible en
+ * `GET /me` de inmediato (Profile lo recibe después por SQS).
+ */
+export async function changeEmail(
+  values: ChangeEmailFormValues,
+): Promise<ChangeEmailResult> {
+  const parsed = changeEmailSchema.safeParse(values);
+  if (!parsed.success) {
+    throw new AuthError({
+      kind: "validation",
+      message: "Revisa los datos ingresados.",
+      fields: fieldsFromIssues(parsed.error.issues),
+    });
+  }
+  const payload = toChangeEmailRequest(parsed.data);
+  if (!payload) {
+    throw new AuthError({
+      kind: "unexpected",
+      message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+    });
+  }
+  try {
+    const result = await clientFetch()<unknown>("/api/auth/email/change", {
+      method: "POST",
+      body: payload,
+    });
+    if (!isEmailChanged(result)) {
+      throw new AuthError({
+        kind: "unexpected",
+        message: "Tuvimos un problema. Intenta de nuevo más tarde.",
+      });
+    }
+    return result.data;
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    throw toAuthError(error, "account");
   }
 }

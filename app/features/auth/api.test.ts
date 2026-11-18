@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   AuthError,
+  changeEmail,
+  changePassword,
   fetchMe,
   login,
   refreshSession,
@@ -436,5 +438,151 @@ describe("resetPassword", () => {
     expect(thrown.failure.fields).toEqual({
       password: "La nueva no puede ser igual.",
     });
+  });
+});
+
+describe("changePassword", () => {
+  const validChange = {
+    currentPassword: "vieja-2026",
+    newPassword: "nueva-clave-2026!",
+    confirmNewPassword: "nueva-clave-2026!",
+  } as const;
+
+  it("valida en cliente sin llamar a la red (confirmación incluida)", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("$fetch", fetch);
+    const thrown = await changePassword({
+      ...validChange,
+      confirmNewPassword: "otra-2026!",
+    }).catch((e) => e);
+    expect(thrown).toBeInstanceOf(AuthError);
+    expect(thrown.failure.kind).toBe("validation");
+    expect(thrown.failure.fields).toMatchObject({
+      confirmNewPassword: expect.any(String),
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("envía solo actual+nueva al BFF (sin confirmación) y acepta 200 vacío", async () => {
+    const fetch = vi.fn().mockResolvedValue({ data: {} });
+    vi.stubGlobal("$fetch", fetch);
+    await expect(changePassword({ ...validChange })).resolves.toBeUndefined();
+    expect(fetch.mock.calls[0]?.[0]).toBe("/api/auth/password/change");
+    expect(fetch.mock.calls[0]?.[1].body).toEqual({
+      currentPassword: "vieja-2026",
+      newPassword: "nueva-clave-2026!",
+    });
+  });
+
+  it("401 clave actual mala marca el campo sin cerrar sesión", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(401, {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Contraseña actual incorrecta.",
+            correlationId: "ref-51",
+          },
+        }),
+      ),
+    );
+    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("incorrect-password");
+    expect(thrown.failure.correlationId).toBe("ref-51");
+  });
+
+  it("401 JWT malo es sesión vencida (a login)", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(401, {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Credenciales inválidas.",
+            correlationId: "ref-52",
+          },
+        }),
+      ),
+    );
+    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("session-expired");
+  });
+
+  it("429 expone Retry-After para el countdown", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(
+          429,
+          {
+            error: {
+              code: "RATE_LIMITED",
+              message: "Demasiadas solicitudes.",
+              correlationId: "ref-53",
+            },
+          },
+          "45",
+        ),
+      ),
+    );
+    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("rate-limited");
+    expect(thrown.failure.retryAfterSeconds).toBe(45);
+  });
+});
+
+describe("changeEmail", () => {
+  const validEmail = {
+    newEmail: "nuevo@example.com",
+    currentPassword: "clave-2026",
+  } as const;
+
+  it("normaliza el correo y devuelve `changed`", async () => {
+    const fetch = vi.fn().mockResolvedValue({ data: { changed: true } });
+    vi.stubGlobal("$fetch", fetch);
+    await expect(
+      changeEmail({ newEmail: "  NUEVO@Ejemplo.COM ", currentPassword: "clave-2026" }),
+    ).resolves.toEqual({ changed: true });
+    expect(fetch.mock.calls[0]?.[1].body).toEqual({
+      newEmail: "nuevo@ejemplo.com",
+      currentPassword: "clave-2026",
+    });
+  });
+
+  it("409 UPDATE_CONFLICT es correo no disponible (sin decir si existe)", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(409, {
+          error: {
+            code: "UPDATE_CONFLICT",
+            message: "No se pudo completar el cambio.",
+            correlationId: "ref-61",
+          },
+        }),
+      ),
+    );
+    const thrown = await changeEmail({ ...validEmail }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("email-conflict");
+    expect(thrown.failure.message).toContain("no está disponible");
+    expect(thrown.failure.correlationId).toBe("ref-61");
+  });
+
+  it("401 clave actual mala no cierra sesión", async () => {
+    vi.stubGlobal(
+      "$fetch",
+      vi.fn().mockRejectedValue(
+        fail(401, {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Contraseña actual incorrecta.",
+            correlationId: "ref-62",
+          },
+        }),
+      ),
+    );
+    const thrown = await changeEmail({ ...validEmail }).catch((e) => e);
+    expect(thrown.failure.kind).toBe("incorrect-password");
   });
 });

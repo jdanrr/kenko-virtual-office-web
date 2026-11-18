@@ -103,6 +103,25 @@ export interface ResetPasswordRequest {
   confirmPassword: string;
 }
 
+/**
+ * `POST /auth/password/change` — cuerpo ya normalizado.
+ * Sin confirmación: se valida solo en la UI, al cable no viaja.
+ */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  /** Misma política 8–128 + lista negra (§3.1). Distinta a la actual. */
+  newPassword: string;
+}
+
+/**
+ * `POST /auth/email/change` — cuerpo ya normalizado.
+ * `newEmail` con `trim` + minúsculas (igual que el backend).
+ */
+export interface ChangeEmailRequest {
+  newEmail: string;
+  currentPassword: string;
+}
+
 /** §1.2 sobre de respuesta en éxito: `{ data }`. */
 export interface ApiSuccess<T> {
   data: T;

@@ -149,6 +149,9 @@ const passwordSchema = z
     "Esa contraseña es muy común. Elige otra más difícil de adivinar.",
   );
 
+/** Política de contraseña §3.1 (reutilizable: register, change, reset). */
+export { passwordSchema };
+
 /** Par contraseña + confirmación (política §3.1, reutilizable en reset §3.6). */
 export const passwordFieldsSchema = z
   .object({
