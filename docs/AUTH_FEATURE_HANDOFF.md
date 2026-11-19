@@ -190,7 +190,9 @@ bun run build
 
 - `.env` local (ignorado por git) debe tener:
   - `NUXT_APP_SECRET` (≥32 caracteres; `openssl rand -base64 32`). **En esta versión de `nuxt-auth-utils` ya no se usa `NUXT_SESSION_PASSWORD`.**
-  - `NUXT_PUBLIC_API_AUTH_BASE=http://localhost:8001`.
+  - `NUXT_PUBLIC_API_AUTH_BASE=http://52.203.252.87:3000` (desplegado AWS;
+    solo usa `http://localhost:5500` si levantas el microservicio en local,
+    ver `.env.production.example`).
 - `.env.example` ya fue actualizado con `NUXT_APP_SECRET`.
 - Sin el microservicio levantado la UI se ve completa, pero un login válido mostrará error de conexión.
 
