@@ -19,6 +19,12 @@ export default defineEventHandler(async (event) => {
   const cookie = forwardCookie(getRequestHeader(event, "cookie"), AUTH_REFRESH_COOKIE);
 
   const upstreamBase = upstreamAuthBase();
+  // Idempotente: sin base configurada igual se limpia el estado local.
+  if (!upstreamBase) {
+    setResponseStatus(event, 200);
+    setResponseHeader(event, "x-correlation-id", correlationId);
+    return { data: {} };
+  }
 
   if (cookie) {
     try {

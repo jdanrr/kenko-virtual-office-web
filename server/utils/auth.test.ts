@@ -106,15 +106,15 @@ describe("upstreamAuthBase", () => {
     else process.env[KEY] = previous;
   });
 
-  it("usa el valor por defecto sin barra final", () => {
+  it("devuelve vacío sin variable (cada ruta responde 500, logout 200)", () => {
     Reflect.deleteProperty(process.env, KEY);
-    expect(upstreamAuthBase()).toBe("http://localhost:5500");
+    expect(upstreamAuthBase()).toBe("");
   });
 
   it("quita barras finales y espacios (evita //auth/... → 404)", () => {
-    process.env[KEY] = "http://localhost:5500/";
-    expect(upstreamAuthBase()).toBe("http://localhost:5500");
-    process.env[KEY] = "  http://localhost:5500///  ";
-    expect(upstreamAuthBase()).toBe("http://localhost:5500");
+    process.env[KEY] = "http://52.203.252.87:3000/";
+    expect(upstreamAuthBase()).toBe("http://52.203.252.87:3000");
+    process.env[KEY] = "  http://52.203.252.87:3000///  ";
+    expect(upstreamAuthBase()).toBe("http://52.203.252.87:3000");
   });
 });

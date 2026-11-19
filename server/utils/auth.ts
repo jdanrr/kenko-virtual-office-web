@@ -17,11 +17,14 @@ export const AUTH_REFRESH_COOKIE = "kenko_refresh";
 
 /**
  * Base del microservicio Auth sin `/` final.
+ * Sin fallback: exige `NUXT_PUBLIC_API_AUTH_BASE` (`http://localhost:5500`
+ * en dev, `http://52.203.252.87:3000` en prod). Devuelve `""` si falta para
+ * que cada ruta responda 500 en vez de apuntar al mismo origen y dar 404.
  * Evita `//auth/...` (Hono es estricto y responde 404) cuando el `.env`
- * trae la base con barra final (p. ej. `http://localhost:5500/`).
+ * trae la base con barra final.
  */
 export function upstreamAuthBase(): string {
-  const raw = process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const raw = process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "";
   return raw.trim().replace(/\/+$/, "");
 }
 

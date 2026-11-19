@@ -37,6 +37,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const upstreamBase = upstreamAuthBase();
+  if (!upstreamBase) {
+    const { status, body } = internalErrorEnvelope(correlationId);
+    setResponseStatus(event, status);
+    setResponseHeader(event, "x-correlation-id", correlationId);
+    return body;
+  }
 
   try {
     const response = await $fetch.raw(`${upstreamBase}/auth/refresh`, {

@@ -58,6 +58,12 @@ export default defineEventHandler(async (event) => {
   }
 
   const upstreamBase = upstreamAuthBase();
+  if (!upstreamBase) {
+    const { status, body } = internalErrorEnvelope(correlationId);
+    setResponseStatus(event, status);
+    setResponseHeader(event, "x-correlation-id", correlationId);
+    return body;
+  }
 
   let upstream: { status: number; headers: Headers; data: unknown };
   try {

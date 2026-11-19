@@ -17,6 +17,7 @@ import {
   isDataEnvelope,
   newCorrelationId,
   toFieldDetails,
+  upstreamAuthBase,
   validationErrorEnvelope,
 } from "../../../utils/auth";
 
@@ -45,7 +46,13 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  const upstreamBase = process.env.NUXT_PUBLIC_API_AUTH_BASE ?? "http://localhost:5500";
+  const upstreamBase = upstreamAuthBase();
+  if (!upstreamBase) {
+    const { status, body } = internalErrorEnvelope(correlationId);
+    setResponseStatus(event, status);
+    setResponseHeader(event, "x-correlation-id", correlationId);
+    return body;
+  }
 
   let upstream: { status: number; headers: Headers; data: unknown };
   try {
