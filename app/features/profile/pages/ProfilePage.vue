@@ -95,6 +95,11 @@ const isLoading = computed(() => profileQuery.isPending.value);
 const savePending = computed(() => patchMutation.isPending.value);
 const needsLogin = computed(() => !getUserId() && !isLoading.value && !profile.value);
 
+/** Correo mostrado: Authentication (`/me`, inmediato), Profile como respaldo. */
+const displayEmail = computed(
+  () => auth.user?.email ?? profile.value?.email ?? "",
+);
+
 /** Iniciales del avatar (derivadas del nombre real, sin inventar nada). */
 const initials = computed(() => {
   const current = profile.value;
@@ -319,10 +324,9 @@ async function submitEmailChange(): Promise<void> {
       return;
     }
     await auth.refreshUser();
-    void profileQuery.refetch();
     emailModalOpen.value = false;
     successMessage.value =
-      "Correo actualizado. Ya visible en tu cuenta; se reflejará en Mi Perfil automáticamente.";
+      "Correo actualizado. Ya visible en tu cuenta y en Mi Perfil.";
     scheduleHideSuccess();
     void nextTick(() => accountCard.value?.focusAction());
   } catch (error) {
@@ -479,7 +483,7 @@ useHead({
                   {{ formatDocument(profile.document_type, profile.document_number) }}
                 </p>
                 <p class="font-body text-xs text-zinc-500">
-                  <span class="break-all">{{ profile.email }}</span>
+                  <span class="break-all">{{ displayEmail }}</span>
                 </p>
               </div>
             </div>
@@ -597,6 +601,7 @@ useHead({
               <ProfileAccountCard
                 ref="accountCard"
                 :profile="profile"
+                :email="displayEmail"
                 @change-email="openEmailModal"
               />
               <ProfileSecurityCard
@@ -612,7 +617,7 @@ useHead({
       <ProfileEmailModal
         :open="emailModalOpen"
         :pending="emailPending"
-        :current-email="profile?.email ?? ''"
+        :current-email="displayEmail"
         :new-email="emailNew"
         :current-password="emailPassword"
         :errors="emailErrors"

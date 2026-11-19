@@ -129,8 +129,7 @@ function onOverlay(event: MouseEvent): void {
         </div>
 
         <p class="font-body text-xs text-zinc-600 leading-relaxed rounded-xl bg-zinc-50 border border-zinc-200/60 p-3">
-          Se aplicará de inmediato en tu cuenta y se reflejará en Mi Perfil
-          automáticamente.
+          Se aplicará de inmediato en tu cuenta y se mostrará aquí al guardar.
         </p>
 
         <div class="flex items-center justify-end gap-2.5">

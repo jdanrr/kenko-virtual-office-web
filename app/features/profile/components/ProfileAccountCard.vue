@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import type { Profile } from "../types";
 
 /**
  * Tarjeta 3: cuenta y correo (solo lectura + delegación a Authentication).
- * El email NUNCA se edita aquí (PATCH con `email` da 400): el cambio se
- * procesa en Authentication y llega por SQS (eventualmente consistente).
+ * El email NUNCA se edita aquí (PATCH con `email` da 400).
+ * El correo MOSTRADO viene de Authentication (`/me`, inmediato); si no
+ * llega, se usa el de Profile como respaldo.
  */
-const props = defineProps<{ profile: Profile }>();
+const props = defineProps<{ profile: Profile; email?: string }>();
+
+const shownEmail = computed(() => props.email ?? props.profile.email);
 
 const emit = defineEmits<{
   "change-email": [];
@@ -48,13 +51,11 @@ defineExpose({ focusAction });
 
     <div class="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
       <p class="font-body text-xs text-zinc-500 font-medium">Correo electrónico actual</p>
-      <p class="font-display text-base font-bold text-content mt-0.5 break-all">{{ props.profile.email }}</p>
+      <p class="font-display text-base font-bold text-content mt-0.5 break-all">{{ shownEmail }}</p>
     </div>
 
     <p class="font-body text-xs text-zinc-600 leading-relaxed rounded-xl bg-zinc-50 border border-zinc-200/60 p-3">
-      El cambio de correo se procesa en Authentication y se reflejará aquí
-      automáticamente. Deberás verificar el nuevo correo con el enlace que
-      recibirás.
+      El cambio de correo se procesa en Authentication y se muestra aquí de inmediato.
     </p>
 
     <button
