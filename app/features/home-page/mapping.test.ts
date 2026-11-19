@@ -102,7 +102,7 @@ describe("toAuthorizationViews", () => {
     const [view] = toAuthorizationViews([authz]);
     expect(view?.id).toBe("9f6c9f73-9200-4e60-a1b6-9c126f6c4819");
     expect(view?.shortId).toBe("9F6C9F73");
-    expect(view?.code).toBe("BLOOD_TEST");
+    expect(view?.code).toBe("Examen de sangre");
     expect(view?.title).toBe("Examen de sangre");
     expect(view?.status).toBe("aprobada");
     expect(view?.dateLabel).toBe("12 Mar 2026");

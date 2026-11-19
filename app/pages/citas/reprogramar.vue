@@ -221,8 +221,8 @@ onMounted(async () => {
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <NuxtLink to="/citas" class="text-sm font-bold text-primary hover:underline">← Volver a agendar</NuxtLink>
-          <NuxtLink to="/home-page" class="text-sm text-slate-600 hover:underline">Inicio</NuxtLink>
+          <NuxtLink to="/citas" class="text-sm font-bold text-primary hover:underline cursor-pointer">← Volver a agendar</NuxtLink>
+          <NuxtLink to="/home-page" class="text-sm text-slate-600 hover:underline cursor-pointer">Inicio</NuxtLink>
         </div>
       </div>
     </header>
@@ -260,7 +260,7 @@ onMounted(async () => {
         </div>
         <div v-else class="text-sm bg-white/10 border border-white/20 rounded-lg p-3">
           No encontré la cita <span class="font-mono">{{ oldId || "(sin ?oldId=)" }}</span> entre tus citas actuales.
-          Ve a <NuxtLink to="/citas" class="underline font-bold">Agendar</NuxtLink>, abre el panel lateral y pulsa Reagendar sobre la cita correcta.
+          Ve a <NuxtLink to="/citas" class="underline font-bold cursor-pointer">Agendar</NuxtLink>, abre el panel lateral y pulsa Reagendar sobre la cita correcta.
         </div>
         <div v-if="oldIsBlocked" role="alert" class="mt-4 bg-amber-50 text-amber-900 border-2 border-amber-300 rounded-xl p-4 flex items-start gap-3">
           <Icon name="ph:warning-circle" class="text-2xl text-amber-800 shrink-0" />
@@ -310,9 +310,9 @@ onMounted(async () => {
           </div>
 
           <div class="flex items-center justify-between mt-5">
-            <button type="button" :disabled="filters.page <= 1 || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page--; search()">← Anterior</button>
+            <button type="button" :disabled="filters.page <= 1 || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer bg-white" @click="filters.page--; search()">← Anterior</button>
             <span class="text-xs text-slate-600">Página {{ filters.page }} de {{ totalPages }}</span>
-            <button type="button" :disabled="filters.page >= totalPages || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page++; search()">Siguiente →</button>
+            <button type="button" :disabled="filters.page >= totalPages || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer bg-white" @click="filters.page++; search()">Siguiente →</button>
           </div>
         </div>
 

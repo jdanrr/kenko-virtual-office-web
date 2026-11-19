@@ -68,7 +68,7 @@ const emit = defineEmits<{
             type="button"
             :disabled="isBlockedBy24hRule(a)"
             :title="isBlockedBy24hRule(a) ? BLOCKED_24H_MESSAGE : 'Elegir otra fecha para esta cita'"
-            class="flex-1 py-1.5 px-2 text-[11px] font-bold rounded-lg bg-white border border-amber-300 text-slate-700 hover:bg-amber-50 transition flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex-1 py-1.5 px-2 text-[11px] font-bold rounded-lg bg-white border border-amber-300 text-slate-700 hover:bg-amber-50 transition cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
             @click="emit('reschedule', a)"
           >
             <Icon name="ph:arrows-clockwise" class="text-slate-700" />
@@ -78,7 +78,7 @@ const emit = defineEmits<{
             type="button"
             :disabled="isBlockedBy24hRule(a)"
             :title="isBlockedBy24hRule(a) ? BLOCKED_24H_MESSAGE : 'Cancelar cita'"
-            class="py-1.5 px-2 text-[11px] font-bold rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-rose-700 hover:border-rose-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            class="py-1.5 px-2 text-[11px] font-bold rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-rose-700 hover:border-rose-200 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             @click="emit('cancel', a)"
           >
             <Icon name="ph:x-circle" class="text-slate-600" />
@@ -89,7 +89,7 @@ const emit = defineEmits<{
 
     <NuxtLink
       to="/citas"
-      class="text-[11px] text-accent hover:underline text-center"
+      class="text-[11px] text-accent hover:underline text-center cursor-pointer"
     >
       Ir a agendar una cita
     </NuxtLink>

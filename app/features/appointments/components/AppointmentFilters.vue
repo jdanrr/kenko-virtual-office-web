@@ -145,7 +145,7 @@ const dayParts: { id: DayPart; label: string }[] = [
             v-for="d in dayParts"
             :key="d.id"
             type="button"
-            class="px-3 py-1.5 rounded-lg border text-xs font-bold transition"
+            class="px-3 py-1.5 rounded-lg border text-xs font-bold transition cursor-pointer"
             :class="modelValue.dayPart === d.id ? 'bg-primary text-on-primary border-primary' : 'bg-white border-slate-200 text-slate-600 hover:border-primary/40'"
             @click="patch({ dayPart: d.id })"
           >
@@ -161,7 +161,7 @@ const dayParts: { id: DayPart; label: string }[] = [
         v-for="q in quickRanges"
         :key="q.id"
         type="button"
-        class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition"
+        class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition cursor-pointer"
         @click="applyQuick(q.id)"
       >
         {{ q.label }}
@@ -171,7 +171,7 @@ const dayParts: { id: DayPart; label: string }[] = [
     <div class="flex flex-col sm:flex-row gap-3 mt-5">
       <button
         type="button"
-        class="px-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition"
+        class="px-4 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
         @click="emit('clear')"
       >
         Limpiar filtros
@@ -179,7 +179,7 @@ const dayParts: { id: DayPart; label: string }[] = [
       <button
         type="button"
         :disabled="pending"
-        class="flex-1 px-4 py-2.5 rounded-xl bg-secondary hover:bg-amber-400 text-slate-900 text-sm font-bold transition disabled:opacity-50 flex items-center justify-center gap-2"
+        class="flex-1 px-4 py-2.5 rounded-xl bg-secondary hover:bg-amber-400 text-slate-900 text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
         @click="emit('search')"
       >
         <Icon v-if="pending" name="ph:circle-notch" class="animate-spin" />
