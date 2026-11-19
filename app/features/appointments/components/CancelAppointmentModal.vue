@@ -35,7 +35,7 @@ const isBlocked = computed(() => (props.appointment ? isBlockedBy24hRule(props.a
           <button
             type="button"
             aria-label="Cerrar modal"
-            class="absolute top-5 right-5 text-slate-600 hover:text-slate-900 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            class="absolute top-5 right-5 text-slate-600 hover:text-slate-900 p-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
             @click="emit('close')"
           >
             <Icon name="ph:x" class="text-xl" />
@@ -90,7 +90,7 @@ const isBlocked = computed(() => (props.appointment ? isBlockedBy24hRule(props.a
             <button
               type="button"
               :disabled="pending"
-              class="w-full sm:flex-1 py-3 px-4 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all disabled:opacity-50"
+              class="w-full sm:flex-1 py-3 px-4 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               @click="emit('close')"
             >
               {{ isBlocked ? "Entendido, volver" : "No, conservar cita" }}
@@ -99,7 +99,7 @@ const isBlocked = computed(() => (props.appointment ? isBlockedBy24hRule(props.a
               type="button"
               :disabled="pending || isBlocked"
               :title="isBlocked ? BLOCKED_24H_MESSAGE : 'Confirmar cancelación'"
-              class="w-full sm:flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="w-full sm:flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
               @click="emit('confirm')"
             >
               <Icon v-if="pending" name="ph:circle-notch" class="animate-spin" />

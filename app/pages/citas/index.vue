@@ -209,7 +209,7 @@ onMounted(async () => {
             <p class="text-[10px] uppercase tracking-wider text-slate-500">Portal paciente</p>
           </div>
         </div>
-        <NuxtLink to="/home-page" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+        <NuxtLink to="/home-page" class="text-sm font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
           <Icon name="ph:arrow-left" class="text-slate-700" />
           Volver al inicio
         </NuxtLink>
@@ -282,7 +282,7 @@ onMounted(async () => {
             <button
               type="button"
               :disabled="filters.page <= 1 || searching"
-              class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold disabled:opacity-40 bg-white"
+              class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer bg-white"
               @click="filters.page--; search()"
             >
               ← Anterior
@@ -291,7 +291,7 @@ onMounted(async () => {
             <button
               type="button"
               :disabled="filters.page >= totalPages || searching"
-              class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold disabled:opacity-40 bg-white"
+              class="px-4 py-2 rounded-lg border border-slate-200 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer bg-white"
               @click="filters.page++; search()"
             >
               Siguiente →
