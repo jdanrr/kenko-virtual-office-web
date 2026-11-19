@@ -50,7 +50,7 @@ const emit = defineEmits<{ action: [appointment: AppointmentResponse] }>();
     <button
       type="button"
       :disabled="pending"
-      class="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-sm font-bold transition disabled:opacity-50 flex items-center justify-center gap-2"
+      class="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-on-primary text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
       @click="emit('action', appointment)"
     >
       <Icon v-if="pending" name="ph:circle-notch" class="animate-spin" />
