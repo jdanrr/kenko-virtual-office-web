@@ -85,6 +85,13 @@ const APPOINTMENT_TYPE_TITLES_PROFILE: Record<string, string> = {
   PSICOLOGIA: "Psicología",
 };
 
+/** Etiqueta corta en español para el código crudo (nunca mostrar el enum). */
+const AUTHORIZATION_TYPE_LABELS: Record<AuthorizationTypeRaw, string> = {
+  BLOOD_TEST: "Examen de sangre",
+  XRAY: "Radiografía",
+  DENTAL_CLEANING: "Limpieza dental",
+};
+
 function appointmentTypeLabel(raw: string): string {
   return (
     APPOINTMENT_TYPE_TITLES_PROFILE[raw] ??
@@ -126,7 +133,7 @@ export function toAuthorizationViews(
     const views: AuthorizationView = {
       id: item.authorizationId,
       shortId: item.authorizationId.slice(0, 8).toUpperCase(),
-      code: item.type,
+      code: AUTHORIZATION_TYPE_LABELS[item.type] ?? item.type,
       title: item.typeLabel,
       description: `${appointmentTypeLabel(item.appointment.appointmentType)} • ${appointmentDate}`,
       status: AUTHORIZATION_STATUS_MAP[item.status],
