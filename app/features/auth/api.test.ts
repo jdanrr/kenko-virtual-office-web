@@ -451,10 +451,13 @@ describe("changePassword", () => {
   it("valida en cliente sin llamar a la red (confirmación incluida)", async () => {
     const fetch = vi.fn();
     vi.stubGlobal("$fetch", fetch);
-    const thrown = await changePassword({
-      ...validChange,
-      confirmNewPassword: "otra-2026!",
-    }).catch((e) => e);
+    const thrown = await changePassword(
+      {
+        ...validChange,
+        confirmNewPassword: "otra-2026!",
+      },
+      "jwt",
+    ).catch((e) => e);
     expect(thrown).toBeInstanceOf(AuthError);
     expect(thrown.failure.kind).toBe("validation");
     expect(thrown.failure.fields).toMatchObject({
@@ -463,14 +466,17 @@ describe("changePassword", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("envía solo actual+nueva al BFF (sin confirmación) y acepta 200 vacío", async () => {
+  it("envía actual+nueva+Bearer al BFF (sin confirmación) y acepta 200 vacío", async () => {
     const fetch = vi.fn().mockResolvedValue({ data: {} });
     vi.stubGlobal("$fetch", fetch);
-    await expect(changePassword({ ...validChange })).resolves.toBeUndefined();
+    await expect(changePassword({ ...validChange }, "jwt")).resolves.toBeUndefined();
     expect(fetch.mock.calls[0]?.[0]).toBe("/api/auth/password/change");
     expect(fetch.mock.calls[0]?.[1].body).toEqual({
       currentPassword: "vieja-2026",
       newPassword: "nueva-clave-2026!",
+    });
+    expect(fetch.mock.calls[0]?.[1].headers).toEqual({
+      authorization: "Bearer jwt",
     });
   });
 
@@ -487,7 +493,7 @@ describe("changePassword", () => {
         }),
       ),
     );
-    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    const thrown = await changePassword({ ...validChange }, "jwt").catch((e) => e);
     expect(thrown.failure.kind).toBe("incorrect-password");
     expect(thrown.failure.correlationId).toBe("ref-51");
   });
@@ -505,7 +511,7 @@ describe("changePassword", () => {
         }),
       ),
     );
-    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    const thrown = await changePassword({ ...validChange }, "jwt").catch((e) => e);
     expect(thrown.failure.kind).toBe("session-expired");
   });
 
@@ -526,7 +532,7 @@ describe("changePassword", () => {
         ),
       ),
     );
-    const thrown = await changePassword({ ...validChange }).catch((e) => e);
+    const thrown = await changePassword({ ...validChange }, "jwt").catch((e) => e);
     expect(thrown.failure.kind).toBe("rate-limited");
     expect(thrown.failure.retryAfterSeconds).toBe(45);
   });
@@ -542,11 +548,17 @@ describe("changeEmail", () => {
     const fetch = vi.fn().mockResolvedValue({ data: { changed: true } });
     vi.stubGlobal("$fetch", fetch);
     await expect(
-      changeEmail({ newEmail: "  NUEVO@Ejemplo.COM ", currentPassword: "clave-2026" }),
+      changeEmail(
+        { newEmail: "  NUEVO@Ejemplo.COM ", currentPassword: "clave-2026" },
+        "jwt",
+      ),
     ).resolves.toEqual({ changed: true });
     expect(fetch.mock.calls[0]?.[1].body).toEqual({
       newEmail: "nuevo@ejemplo.com",
       currentPassword: "clave-2026",
+    });
+    expect(fetch.mock.calls[0]?.[1].headers).toEqual({
+      authorization: "Bearer jwt",
     });
   });
 
@@ -563,7 +575,7 @@ describe("changeEmail", () => {
         }),
       ),
     );
-    const thrown = await changeEmail({ ...validEmail }).catch((e) => e);
+    const thrown = await changeEmail({ ...validEmail }, "jwt").catch((e) => e);
     expect(thrown.failure.kind).toBe("email-conflict");
     expect(thrown.failure.message).toContain("no está disponible");
     expect(thrown.failure.correlationId).toBe("ref-61");
@@ -582,7 +594,7 @@ describe("changeEmail", () => {
         }),
       ),
     );
-    const thrown = await changeEmail({ ...validEmail }).catch((e) => e);
+    const thrown = await changeEmail({ ...validEmail }, "jwt").catch((e) => e);
     expect(thrown.failure.kind).toBe("incorrect-password");
   });
 });

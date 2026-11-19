@@ -294,12 +294,23 @@ async function submitEmailChange(): Promise<void> {
   emailServerError.value = null;
   emailFailure.value = null;
   if (emailPending.value) return;
+  const token = auth.accessToken;
+  if (!token) {
+    await handleSessionExpired({
+      kind: "session-expired",
+      message: "Tu sesión terminó. Vuelve a entrar.",
+    });
+    return;
+  }
   emailPending.value = true;
   try {
-    const result = await changeEmail({
-      newEmail: emailNew.value,
-      currentPassword: emailPassword.value,
-    });
+    const result = await changeEmail(
+      {
+        newEmail: emailNew.value,
+        currentPassword: emailPassword.value,
+      },
+      token,
+    );
     if (!result.changed) {
       emailModalOpen.value = false;
       successMessage.value = "Ese ya es tu correo registrado. No hubo cambios.";
@@ -350,13 +361,24 @@ async function submitPasswordChange(): Promise<void> {
   passwordServerError.value = null;
   passwordFailure.value = null;
   if (passwordPending.value) return;
+  const token = auth.accessToken;
+  if (!token) {
+    await handleSessionExpired({
+      kind: "session-expired",
+      message: "Tu sesión terminó. Vuelve a entrar.",
+    });
+    return;
+  }
   passwordPending.value = true;
   try {
-    await changePassword({
-      currentPassword: passwordCurrent.value,
-      newPassword: passwordNext.value,
-      confirmNewPassword: passwordConfirm.value,
-    });
+    await changePassword(
+      {
+        currentPassword: passwordCurrent.value,
+        newPassword: passwordNext.value,
+        confirmNewPassword: passwordConfirm.value,
+      },
+      token,
+    );
     // Rotación silenciosa: la familia actual sobrevive, las demás murieron.
     void auth.refreshNow();
     passwordModalOpen.value = false;

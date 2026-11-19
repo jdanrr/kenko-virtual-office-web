@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   changeEmailSchema,
   changePasswordFormSchema,
+  changePasswordPayloadSchema,
   toChangeEmailRequest,
   toChangePasswordRequest,
 } from "./accountSchemas";
@@ -74,6 +75,28 @@ describe("toChangePasswordRequest", () => {
         confirmNewPassword: "nueva-clave-2026!",
       }),
     ).toBeNull();
+  });
+});
+
+describe("changePasswordPayloadSchema (lo que valida el BFF)", () => {
+  it("acepta el cable sin confirmación", () => {
+    const parsed = changePasswordPayloadSchema.safeParse({
+      currentPassword: "vieja-2026",
+      newPassword: "nueva-clave-2026!",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rechaza cable incompleto sin pedir confirmación", () => {
+    const parsed = changePasswordPayloadSchema.safeParse({
+      currentPassword: "vieja-2026",
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((i) => i.path.includes("confirmNewPassword"))).toBe(
+        false,
+      );
+    }
   });
 });
 

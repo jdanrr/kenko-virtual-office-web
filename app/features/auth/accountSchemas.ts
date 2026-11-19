@@ -20,7 +20,8 @@ const currentPasswordField = z
   .min(1, "Escribe tu contraseña actual.")
   .max(128, "La contraseña actual no puede tener más de 128 caracteres.");
 
-const changePasswordPayloadSchema = z.object({
+/** Formato de cable (sin la confirmación de la UI; lo valida el BFF). */
+export const changePasswordPayloadSchema = z.object({
   currentPassword: currentPasswordField,
   /** Misma política §3.1 (8–128 + lista negra, reutilizada, no duplicada). */
   newPassword: passwordSchema,

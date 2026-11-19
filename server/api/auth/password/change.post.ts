@@ -2,7 +2,8 @@
  * BFF `POST /api/auth/password/change` → `POST /auth/password/change` (§A).
  *
  * - Exige `Authorization: Bearer` (sin él: 401 genérico, la UI va a login).
- * - Revalida con `changePasswordFormSchema` (nunca confía en el cliente);
+ * - Revalida con `changePasswordPayloadSchema` (formato de cable, sin la
+ *   confirmación de la UI) y nunca confía en el cliente;
  *   al microservicio viajan solo `currentPassword` + `newPassword`
  *   (la confirmación es solo UI y jamás se registra en logs).
  * - `401 "Contraseña actual incorrecta."` se propaga tal cual para marcar
@@ -10,10 +11,8 @@
  *   cliente rota con `refresh` en silencio).
  */
 import { isApiFailure } from "../../../../app/features/auth/types";
-import {
-  changePasswordFormSchema,
-  toChangePasswordRequest,
-} from "../../../../app/features/auth/accountSchemas";
+import type { ChangePasswordRequest } from "../../../../app/features/auth/types";
+import { changePasswordPayloadSchema } from "../../../../app/features/auth/accountSchemas";
 import {
   internalErrorEnvelope,
   isDataEnvelope,
@@ -36,7 +35,7 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  const parsed = changePasswordFormSchema.safeParse(
+  const parsed = changePasswordPayloadSchema.safeParse(
     await readBody(event).catch(() => undefined),
   );
   if (!parsed.success) {
@@ -49,13 +48,8 @@ export default defineEventHandler(async (event) => {
     return body;
   }
 
-  const payload = toChangePasswordRequest(parsed.data);
-  if (!payload) {
-    const { status, body } = internalErrorEnvelope(correlationId);
-    setResponseStatus(event, status);
-    setResponseHeader(event, "x-correlation-id", correlationId);
-    return body;
-  }
+  // El cable ya viene sin confirmación (la UI la valida y la descarta).
+  const payload: ChangePasswordRequest = parsed.data;
 
   const upstreamBase = upstreamAuthBase();
 

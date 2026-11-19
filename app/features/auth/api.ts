@@ -523,10 +523,15 @@ function isEmailChanged(payload: unknown): payload is { data: ChangeEmailResult 
 /**
  * `POST /api/auth/password/change` (guía equipo Auth §A).
  * Valida en cliente (incluye confirmación solo UI) y delega al BFF.
+ * El `accessToken` viaja en `Authorization: Bearer` (el BFF lo exige
+ * y lo reenvía al microservicio; sin él responde 401 sin llamarlo).
  * `401 "Contraseña actual incorrecta."` marca el campo sin cerrar sesión;
  * `401 "Credenciales inválidas."` es sesión vencida (a login).
  */
-export async function changePassword(values: ChangePasswordFormValues): Promise<void> {
+export async function changePassword(
+  values: ChangePasswordFormValues,
+  accessToken: string,
+): Promise<void> {
   const parsed = changePasswordFormSchema.safeParse(values);
   if (!parsed.success) {
     throw new AuthError({
@@ -546,6 +551,7 @@ export async function changePassword(values: ChangePasswordFormValues): Promise<
     const result = await clientFetch()<unknown>("/api/auth/password/change", {
       method: "POST",
       body: payload,
+      headers: { authorization: `Bearer ${accessToken}` },
     });
     if (!isEmptyData(result)) {
       throw new AuthError({
@@ -561,12 +567,14 @@ export async function changePassword(values: ChangePasswordFormValues): Promise<
 
 /**
  * `POST /api/auth/email/change` (guía equipo Auth §B).
+ * El `accessToken` viaja en `Authorization: Bearer` (el BFF lo exige).
  * Devuelve `{ changed }`: `false` = ya era ese correo (idempotente, sin
  * evento ni aviso de "revisa tu correo"); `true` = aplicado y visible en
  * `GET /me` de inmediato (Profile lo recibe después por SQS).
  */
 export async function changeEmail(
   values: ChangeEmailFormValues,
+  accessToken: string,
 ): Promise<ChangeEmailResult> {
   const parsed = changeEmailSchema.safeParse(values);
   if (!parsed.success) {
@@ -587,6 +595,7 @@ export async function changeEmail(
     const result = await clientFetch()<unknown>("/api/auth/email/change", {
       method: "POST",
       body: payload,
+      headers: { authorization: `Bearer ${accessToken}` },
     });
     if (!isEmailChanged(result)) {
       throw new AuthError({
