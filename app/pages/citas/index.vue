@@ -22,10 +22,12 @@ import type {
   Physician,
 } from "~/features/appointments/types";
 import {
+  isBlockedBy24hRule,
   matchesDayPart,
   toUserMessage,
   viewFiltersToParams,
 } from "~/features/appointments/citasView";
+import { BLOCKED_24H_MESSAGE } from "~/features/appointments/citasView";
 import type { CitasViewFilters } from "~/features/appointments/citasView";
 import { getServiceBases } from "~/core/config/services";
 import { useAuthStore } from "~/features/auth";
@@ -164,6 +166,11 @@ function askCancel(a: AppointmentResponse) {
 }
 async function confirmCancel() {
   if (!toCancel.value) return;
+  // Chequeo previo: evita el 422 del back y avisa con el mismo estilo de la página.
+  if (isBlockedBy24hRule(toCancel.value)) {
+    actionError.value = BLOCKED_24H_MESSAGE;
+    return;
+  }
   cancelPending.value = true;
   try {
     await cancelAppointment(client, toCancel.value.appointmentId);
@@ -194,8 +201,8 @@ onMounted(async () => {
     <header class="w-full bg-white border-b border-slate-200 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary">
-            <Icon name="ph:heart-pulse" class="text-xl" />
+          <div class="bg-white p-1 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
+            <img alt="Logo Kenko EPS" class="h-9 w-auto object-contain" src="/logos/kenko-logo.svg" />
           </div>
           <div>
             <p class="font-bold text-primary font-display leading-tight">Kenko EPS</p>
@@ -203,7 +210,7 @@ onMounted(async () => {
           </div>
         </div>
         <NuxtLink to="/home-page" class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
-          <Icon name="ph:arrow-left" />
+          <Icon name="ph:arrow-left" class="text-slate-700" />
           Volver al inicio
         </NuxtLink>
       </div>
@@ -246,7 +253,7 @@ onMounted(async () => {
           <div class="flex items-center justify-between mb-3">
             <h2 class="font-bold text-slate-900 font-display">
               Turnos disponibles
-              <span class="text-xs font-normal text-slate-500">({{ total }} en total · página {{ filters.page }} de {{ totalPages }})</span>
+              <span class="text-xs font-normal text-slate-600">({{ total }} en total · página {{ filters.page }} de {{ totalPages }})</span>
             </h2>
           </div>
 
@@ -256,9 +263,9 @@ onMounted(async () => {
           </div>
 
           <div v-else-if="filteredItems.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
-            <Icon name="ph:calendar-x" class="text-4xl text-slate-300 mx-auto" />
+            <Icon name="ph:calendar-x" class="text-4xl text-slate-500 mx-auto" />
             <p class="font-bold text-slate-900 mt-3">Sin resultados con esos filtros</p>
-            <p class="text-sm text-slate-500 mt-1">Prueba con otra fecha, otra sede o limpia los filtros. La franja horaria se aplica aquí mismo.</p>
+            <p class="text-sm text-slate-600 mt-1">Prueba con otra fecha, otra sede o limpia los filtros. La franja horaria se aplica aquí mismo.</p>
           </div>
 
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,7 +287,7 @@ onMounted(async () => {
             >
               ← Anterior
             </button>
-            <span class="text-xs text-slate-500">Página {{ filters.page }} de {{ totalPages }}</span>
+            <span class="text-xs text-slate-600">Página {{ filters.page }} de {{ totalPages }}</span>
             <button
               type="button"
               :disabled="filters.page >= totalPages || searching"

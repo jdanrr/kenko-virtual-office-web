@@ -50,6 +50,28 @@ export function formatAppointmentDate(
   return `${a.date} · ${short(a.startTime)} - ${short(a.endTime)}`;
 }
 
+/** Horas que faltan para la cita (fecha + hora de Bogotá). Negativo = ya pasó. */
+export function hoursUntilAppointment(
+  a: Pick<AppointmentResponse, "date" | "startTime">,
+  now: Date = new Date(),
+): number {
+  const time = a.startTime.length === 5 ? `${a.startTime}:00` : a.startTime;
+  const start = new Date(`${a.date}T${time}`);
+  if (Number.isNaN(start.getTime())) return Number.POSITIVE_INFINITY;
+  return (start.getTime() - now.getTime()) / 3_600_000;
+}
+
+/** El back exige 24h de aviso para cancelar/reprogramar. */
+export function isBlockedBy24hRule(
+  a: Pick<AppointmentResponse, "date" | "startTime">,
+  now: Date = new Date(),
+): boolean {
+  return hoursUntilAppointment(a, now) < 24;
+}
+
+export const BLOCKED_24H_MESSAGE =
+  "No puedes cancelar/reprogramar citas con menos de 24 horas de anticipación, comunícate al WhatsApp de Kenko para más opciones.";
+
 /** Vista -> query del back (sin dayPart, que es local). */
 export function viewFiltersToParams(f: CitasViewFilters): AvailableAppointmentsParams {
   return {

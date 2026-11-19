@@ -72,7 +72,7 @@ const dayParts: { id: DayPart; label: string }[] = [
         <Icon name="ph:funnel" />
         Parámetros de búsqueda
       </h2>
-      <span class="text-[11px] text-slate-500">Máxima anticipación: 90 días naturales</span>
+      <span class="text-[11px] font-semibold text-slate-600">Máxima anticipación: 90 días naturales</span>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -156,7 +156,7 @@ const dayParts: { id: DayPart; label: string }[] = [
     </div>
 
     <div class="flex flex-wrap gap-2 mt-4">
-      <span class="text-xs text-slate-500 self-center">Búsqueda rápida:</span>
+      <span class="text-xs font-semibold text-slate-600 self-center">Búsqueda rápida:</span>
       <button
         v-for="q in quickRanges"
         :key="q.id"

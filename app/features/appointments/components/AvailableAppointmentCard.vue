@@ -21,7 +21,7 @@ const emit = defineEmits<{ action: [appointment: AppointmentResponse] }>();
   >
     <div class="flex items-start justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <div class="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
           <Icon name="ph:calendar-plus" class="text-2xl" />
         </div>
         <div>
@@ -36,13 +36,13 @@ const emit = defineEmits<{ action: [appointment: AppointmentResponse] }>();
       </span>
     </div>
 
-    <div class="text-xs text-slate-600 space-y-1">
+    <div class="text-xs text-slate-700 space-y-1">
       <p class="flex items-center gap-1.5">
-        <Icon name="ph:calendar-blank" class="text-slate-400" />
+        <Icon name="ph:calendar-blank" class="text-slate-600" />
         <span class="font-medium">{{ formatAppointmentDate(appointment) }} ({{ appointment.weekday }})</span>
       </p>
       <p class="flex items-center gap-1.5">
-        <Icon name="ph:map-pin" class="text-slate-400" />
+        <Icon name="ph:map-pin" class="text-slate-600" />
         <span>{{ appointment.medicalCenter.name }} · {{ appointment.medicalCenter.location }}</span>
       </p>
     </div>

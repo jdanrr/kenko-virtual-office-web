@@ -1,15 +1,19 @@
 <script setup lang="ts">
 // Pop-up rojo de confirmación para cancelar. Basado en stitch-referencia/popup-cancelar.html.
+import { computed } from "vue";
 import type { AppointmentResponse } from "../types";
-import { appointmentTitle, formatAppointmentDate } from "../citasView";
+import { appointmentTitle, formatAppointmentDate, isBlockedBy24hRule } from "../citasView";
+import { BLOCKED_24H_MESSAGE } from "../citasView";
 
 interface Props {
   appointment: AppointmentResponse | null;
   pending?: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 const emit = defineEmits<{ close: []; confirm: [] }>();
+
+const isBlocked = computed(() => (props.appointment ? isBlockedBy24hRule(props.appointment) : false));
 </script>
 
 <template>
@@ -31,7 +35,7 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
           <button
             type="button"
             aria-label="Cerrar modal"
-            class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+            class="absolute top-5 right-5 text-slate-600 hover:text-slate-900 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             @click="emit('close')"
           >
             <Icon name="ph:x" class="text-xl" />
@@ -57,21 +61,29 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
 
           <div v-if="appointment" class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 space-y-2.5">
             <div class="flex items-center justify-between pb-2 border-b border-slate-200">
-              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Detalle de la cita</span>
-              <span class="text-[11px] font-mono font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+              <span class="text-xs font-semibold text-slate-600 uppercase tracking-wide">Detalle de la cita</span>
+              <span class="text-[11px] font-mono font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
                 Ref: {{ appointment.appointmentId.slice(0, 8).toUpperCase() }}
               </span>
             </div>
             <p class="text-[13px] font-bold text-slate-900 leading-snug">
               {{ appointmentTitle(appointment) }}
             </p>
-            <p class="text-xs text-slate-600">{{ appointment.physician.name }}</p>
+            <p class="text-xs text-slate-700">{{ appointment.physician.name }}</p>
             <p class="text-xs text-slate-700 font-medium">
               {{ formatAppointmentDate(appointment) }}
             </p>
             <p class="text-xs text-slate-700">
               {{ appointment.medicalCenter.name }} · {{ appointment.medicalCenter.location }}
             </p>
+          </div>
+
+          <div v-if="isBlocked" role="alert" class="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-5 flex items-start gap-3">
+            <Icon name="ph:warning-circle" class="text-2xl text-amber-800 shrink-0" />
+            <div>
+              <p class="text-sm font-bold text-amber-900">No se puede cancelar esta cita</p>
+              <p class="text-xs text-amber-800 mt-1">{{ BLOCKED_24H_MESSAGE }}</p>
+            </div>
           </div>
 
           <div class="flex flex-col-reverse sm:flex-row items-center gap-3">
@@ -81,12 +93,13 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
               class="w-full sm:flex-1 py-3 px-4 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all disabled:opacity-50"
               @click="emit('close')"
             >
-              No, conservar cita
+              {{ isBlocked ? "Entendido, volver" : "No, conservar cita" }}
             </button>
             <button
               type="button"
-              :disabled="pending"
-              class="w-full sm:flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+              :disabled="pending || isBlocked"
+              :title="isBlocked ? BLOCKED_24H_MESSAGE : 'Confirmar cancelación'"
+              class="w-full sm:flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               @click="emit('confirm')"
             >
               <Icon v-if="pending" name="ph:circle-notch" class="animate-spin" />
@@ -95,8 +108,8 @@ const emit = defineEmits<{ close: []; confirm: [] }>();
           </div>
         </div>
 
-        <div class="bg-slate-50 px-6 py-2.5 border-t border-slate-200 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-          <Icon name="ph:lock" />
+        <div class="bg-slate-50 px-6 py-2.5 border-t border-slate-200 flex items-center justify-center gap-1.5 text-[11px] text-slate-600">
+          <Icon name="ph:lock" class="text-slate-600" />
           <span>Transacción oficial protegida por Kenko EPS</span>
         </div>
       </div>

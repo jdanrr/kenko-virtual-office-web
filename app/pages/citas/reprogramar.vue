@@ -23,10 +23,12 @@ import type {
 import {
   appointmentTitle,
   formatAppointmentDate,
+  isBlockedBy24hRule,
   matchesDayPart,
   toUserMessage,
   viewFiltersToParams,
 } from "~/features/appointments/citasView";
+import { BLOCKED_24H_MESSAGE } from "~/features/appointments/citasView";
 import type { CitasViewFilters } from "~/features/appointments/citasView";
 import { getServiceBases } from "~/core/config/services";
 import { useAuthStore } from "~/features/auth";
@@ -75,6 +77,7 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined;
 const oldAppointment = computed(
   () => mine.value.find((a) => a.appointmentId === oldId.value) ?? null,
 );
+const oldIsBlocked = computed(() => (oldAppointment.value ? isBlockedBy24hRule(oldAppointment.value) : false));
 const filteredItems = computed(() =>
   items.value.filter((a) => matchesDayPart(a.startTime, filters.value.dayPart)),
 );
@@ -136,6 +139,11 @@ async function usarEsteTurno(nueva: AppointmentResponse) {
     actionError.value = "Falta la cita actual (?oldId=). Vuelve a Mis citas y pulsa Reagendar.";
     return;
   }
+  // Chequeo previo: evita el 422 del back y avisa con el mismo estilo de la página.
+  if (oldAppointment.value && isBlockedBy24hRule(oldAppointment.value)) {
+    actionError.value = BLOCKED_24H_MESSAGE;
+    return;
+  }
   reschedulingId.value = nueva.appointmentId;
   actionError.value = null;
   try {
@@ -154,6 +162,11 @@ async function usarEsteTurno(nueva: AppointmentResponse) {
 const toCancel = ref<AppointmentResponse | null>(null);
 async function confirmCancel() {
   if (!toCancel.value) return;
+  // Chequeo previo: evita el 422 del back y avisa con el mismo estilo de la página.
+  if (isBlockedBy24hRule(toCancel.value)) {
+    actionError.value = BLOCKED_24H_MESSAGE;
+    return;
+  }
   cancelPending.value = true;
   try {
     await cancelAppointment(client, toCancel.value.appointmentId);
@@ -199,8 +212,8 @@ onMounted(async () => {
     <header class="w-full bg-white border-b border-slate-200 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary">
-            <Icon name="ph:arrows-clockwise" class="text-xl" />
+          <div class="bg-white p-1 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
+            <img alt="Logo Kenko EPS" class="h-9 w-auto object-contain" src="/logos/kenko-logo.svg" />
           </div>
           <div>
             <p class="font-bold text-primary font-display leading-tight">Kenko EPS</p>
@@ -209,7 +222,7 @@ onMounted(async () => {
         </div>
         <div class="flex items-center gap-4">
           <NuxtLink to="/citas" class="text-sm font-bold text-primary hover:underline">← Volver a agendar</NuxtLink>
-          <NuxtLink to="/home-page" class="text-sm text-slate-500 hover:underline">Inicio</NuxtLink>
+          <NuxtLink to="/home-page" class="text-sm text-slate-600 hover:underline">Inicio</NuxtLink>
         </div>
       </div>
     </header>
@@ -249,6 +262,13 @@ onMounted(async () => {
           No encontré la cita <span class="font-mono">{{ oldId || "(sin ?oldId=)" }}</span> entre tus citas actuales.
           Ve a <NuxtLink to="/citas" class="underline font-bold">Agendar</NuxtLink>, abre el panel lateral y pulsa Reagendar sobre la cita correcta.
         </div>
+        <div v-if="oldIsBlocked" role="alert" class="mt-4 bg-amber-50 text-amber-900 border-2 border-amber-300 rounded-xl p-4 flex items-start gap-3">
+          <Icon name="ph:warning-circle" class="text-2xl text-amber-800 shrink-0" />
+          <div>
+            <p class="text-sm font-bold">Esta cita ya no se puede reprogramar</p>
+            <p class="text-xs mt-1">{{ BLOCKED_24H_MESSAGE }}</p>
+          </div>
+        </div>
       </section>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -266,7 +286,7 @@ onMounted(async () => {
           <p v-if="searchError" role="alert" class="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4">{{ searchError }}</p>
 
           <h2 class="font-bold text-slate-900 font-display mb-3">
-            Nuevo turno <span class="text-xs font-normal text-slate-500">({{ total }} opciones · debe ser del mismo tipo: {{ oldAppointment?.type ?? "—" }})</span>
+            Nuevo turno <span class="text-xs font-normal text-slate-600">({{ total }} opciones · debe ser del mismo tipo: {{ oldAppointment?.type ?? "—" }})</span>
           </h2>
 
           <div v-if="searching" class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse" role="status">
@@ -275,7 +295,7 @@ onMounted(async () => {
           </div>
           <div v-else-if="filteredItems.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
             <p class="font-bold text-slate-900">Sin turnos libres con esos filtros</p>
-            <p class="text-sm text-slate-500 mt-1">Cambia la fecha o la sede. Recuerda: mismo tipo de cita y con más de 24h de aviso.</p>
+            <p class="text-sm text-slate-600 mt-1">Cambia la fecha o la sede. Recuerda: mismo tipo de cita y con más de 24h de aviso.</p>
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AvailableAppointmentCard
@@ -291,7 +311,7 @@ onMounted(async () => {
 
           <div class="flex items-center justify-between mt-5">
             <button type="button" :disabled="filters.page <= 1 || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page--; search()">← Anterior</button>
-            <span class="text-xs text-slate-500">Página {{ filters.page }} de {{ totalPages }}</span>
+            <span class="text-xs text-slate-600">Página {{ filters.page }} de {{ totalPages }}</span>
             <button type="button" :disabled="filters.page >= totalPages || searching" class="px-4 py-2 rounded-lg border text-sm font-bold disabled:opacity-40 bg-white" @click="filters.page++; search()">Siguiente →</button>
           </div>
         </div>
