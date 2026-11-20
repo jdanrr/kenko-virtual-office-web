@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Tarjeta de sede con mapa decorativo (maqueta sin lógica).
-// TODO(appointments): cablear "Cómo llegar" y "Urgencias Kenko" a su destino real.
+const mapsUrl =
+  "https://www.google.com/maps/search/?api=1&query=Cra.+11+%23+94-05,+Chapinero+Norte,+Bogot%C3%A1";
 </script>
 
 <template>
@@ -112,21 +113,16 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-2 mt-4 pt-2 border-t border-slate-100">
-      <button
+    <div class="mt-4 pt-2 border-t border-slate-100">
+      <a
+        :href="mapsUrl"
+        target="_blank"
+        rel="noopener"
         class="w-full py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-        type="button"
       >
         <Icon name="ph:navigation-arrow" class="text-sm" aria-hidden="true" />
         Cómo llegar
-      </button>
-      <button
-        class="w-full py-2 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition border border-rose-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
-        type="button"
-      >
-        <Icon name="ph:first-aid" class="text-sm" aria-hidden="true" />
-        Urgencias Kenko
-      </button>
+      </a>
     </div>
   </section>
 </template>
