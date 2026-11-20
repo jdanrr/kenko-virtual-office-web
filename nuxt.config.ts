@@ -27,7 +27,7 @@ export default defineNuxtConfig({
       apiProfileBase: "",
       apiAppointmentsBase: "",
       // Fallback del proxy legacy. Lee NUXT_PUBLIC_API_CITAS_BASE.
-      apiCitasBase: "http://3.224.127.142:8002",
+      apiCitasBase: "http://kenko-dev-appointments-2074844472.us-east-1.elb.amazonaws.com:8002",
     },
   },
 

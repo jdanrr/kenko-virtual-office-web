@@ -1,5 +1,5 @@
 // Tipos del microservicio Appointments (FastAPI).
-// Fuente: info del equipo backend (base http://3.224.127.142:8002/api/v1, AWS dev).
+// Fuente: equipo backend, ALB estable http://kenko-dev-appointments-2074844472.us-east-1.elb.amazonaws.com:8002/api/v1 (AWS dev).
 // Respuestas en camelCase, sin sobre `{ data }` (listas y objetos crudos).
 // Nombres en inglés; comentarios en español.
 
