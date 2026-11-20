@@ -89,94 +89,131 @@ onBeforeUnmount(() => {
 
 <template>
   <header
-    class="w-full bg-white border-b border-amber-200/80 sticky top-0 z-50 shadow-sm"
+    class="w-full bg-white border-b border-content/10 shadow-[0_1px_2px_rgba(24,24,27,0.06)] sticky top-0 z-50"
   >
-    <!-- Franja superior institucional -->
-    <div
-      class="bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border-b border-amber-300/70 px-4 py-2 sm:px-8"
-    >
+    <!-- Nivel institucional: línea primaria, sin ruido -->
+    <div class="h-1 w-full bg-primary" aria-hidden="true" />
+    <div class="px-4 sm:px-8">
       <div
-        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2"
+        class="max-w-7xl mx-auto flex items-center justify-between gap-5 md:gap-8 min-h-[72px] py-2"
       >
         <!-- Marca -->
-        <div class="flex items-center gap-3">
-          <div
-            class="bg-white p-1 rounded-lg shadow-sm border border-amber-300/60 flex items-center justify-center"
+        <div class="flex items-center gap-3 shrink-0">
+          <img
+            alt="Logo Kenko EPS"
+            class="h-12 w-auto object-contain shrink-0"
+            src="/logos/kenko-logo.svg"
           >
-            <img
-              alt="Logo Kenko EPS"
-              class="h-9 w-auto object-contain"
-              src="/logos/kenko-logo.svg"
-            >
-          </div>
+          <span class="font-display font-black text-xl tracking-tight text-primary leading-none">
+            KENKO EPS
+          </span>
+          <span
+            class="hidden lg:inline-flex font-body text-xs font-semibold bg-secondary text-on-secondary px-2.5 py-0.5 rounded-full shrink-0"
+          >
+            Portal oficial
+          </span>
         </div>
 
-        <!-- Saludo -->
-        <div class="text-center">
+        <!-- Separador entre marca y saludo -->
+        <div aria-hidden="true" class="hidden sm:block w-px h-8 bg-content/10 shrink-0" />
+
+        <!-- Saludo + contexto -->
+        <div class="flex-1 min-w-0 text-left">
           <div
             v-if="isPending"
             role="status"
-            class="h-7 w-64 animate-pulse rounded bg-amber-200/70 mx-auto"
+            class="flex flex-col gap-1.5"
           >
+            <div class="h-6 w-48 max-w-full animate-pulse rounded bg-content/10" />
+            <div class="hidden sm:block h-3.5 w-32 animate-pulse rounded bg-content/10" />
             <span class="sr-only">Cargando saludo…</span>
           </div>
-          <h1
-            v-else
-            class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2 font-display"
-          >
-            <span v-if="patient">¡{{ welcomeWord }} {{ fullName }}!</span>
-            <span v-else>¡Bienvenida!</span>
-            <span aria-hidden="true" class="text-amber-600 text-base">✨</span>
-          </h1>
+          <div v-else>
+            <h1
+              class="text-[18px] md:text-xl font-extrabold text-content tracking-tight font-display truncate leading-tight"
+            >
+              <span v-if="patient">¡{{ welcomeWord }} {{ fullName }}!</span>
+              <span v-else>¡Bienvenida!</span>
+            </h1>
+            <p class="hidden sm:block font-body text-[13px] font-medium text-content/70 leading-tight truncate mt-0.5">
+              Portal del paciente
+            </p>
+          </div>
         </div>
 
-        <!-- Perfil del afiliado con menú -->
-        <div class="flex items-center gap-3">
+        <!-- Perfil del afiliado: chip único de 44px -->
+        <div class="flex items-center gap-3 shrink-0">
           <div
             v-if="isPending"
             role="status"
-            class="flex flex-col items-center gap-1"
+            class="flex items-center gap-2.5 rounded-full border border-content/10 py-1 pl-1 pr-3"
           >
-            <div class="w-10 h-10 rounded-full bg-amber-200/70 animate-pulse" />
+            <div class="w-9 h-9 rounded-full bg-content/10 animate-pulse" />
+            <div class="hidden min-[400px]:block h-3.5 w-28 animate-pulse rounded bg-content/10" />
             <span class="sr-only">Cargando perfil…</span>
           </div>
-          <div v-else-if="patient" class="relative flex flex-col items-center gap-0.5">
+          <div v-else-if="patient" class="relative">
             <button
               ref="menuButtonRef"
               type="button"
               :aria-expanded="isOpen"
               aria-haspopup="menu"
-              aria-label="Abrir menú de usuario"
-              title="Abrir menú de usuario"
-              class="w-10 h-10 rounded-full bg-kenko-primary text-white font-bold flex items-center justify-center shadow-sm border-2 border-amber-300 cursor-pointer transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+              :aria-label="patient ? `Abrir menú de usuario, ${fullName}` : 'Abrir menú de usuario'"
+              :title="patient ? `Abrir menú de usuario, ${fullName}` : 'Abrir menú de usuario'"
+              class="flex items-center gap-2.5 rounded-full border border-content/10 bg-white py-1 pl-1 pr-3 min-h-11 cursor-pointer transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
               @click="toggleMenu"
             >
-              <span aria-hidden="true">{{ patient.initials }}</span>
+              <span
+                aria-hidden="true"
+                class="w-9 h-9 rounded-full bg-primary text-on-primary text-sm font-bold flex items-center justify-center shadow-sm border-2 border-secondary shrink-0"
+              >{{ patient.initials }}</span>
+              <span class="hidden min-[400px]:block text-left leading-tight min-w-0">
+                <span class="block text-[13px] font-body font-semibold text-content truncate max-w-[160px]">
+                  {{ patient.email }}
+                </span>
+              </span>
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                class="text-content/60 transition-[transform] duration-150 shrink-0 motion-reduce:transition-none"
+                :class="isOpen ? 'rotate-180' : ''"
+              >
+                <path
+                  d="M4 6l4 4 4-4"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </button>
-            <span class="text-[10px] text-slate-500 font-mono leading-tight">
-              {{ patient.email }}
-            </span>
             <div
               v-if="isOpen"
               ref="menuRef"
               role="menu"
               aria-label="Menú de usuario"
-              class="absolute right-0 top-full mt-2 w-44 rounded-xl border border-slate-200 bg-white shadow-lg p-1 z-50"
+              class="absolute right-0 top-full mt-2 w-60 rounded-2xl border border-content/10 bg-white shadow-lg p-1.5 z-50 origin-top-right transition-[opacity,transform] duration-150 motion-reduce:transition-none"
             >
               <button
                 role="menuitem"
                 type="button"
-                class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 rounded-lg hover:bg-slate-100 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-500"
+                class="w-full flex items-center gap-2.5 text-left px-3 py-2.5 text-sm font-body font-semibold text-content rounded-xl hover:bg-background active:bg-content/5 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-secondary"
                 @click="onProfile"
               >
+                <Icon name="ph:user-circle" aria-hidden="true" class="text-xl text-primary shrink-0" />
                 Perfil
               </button>
+              <div aria-hidden="true" class="h-px bg-content/10 my-1 mx-2" />
               <button
                 role="menuitem"
                 type="button"
-                class="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 rounded-lg hover:bg-slate-100 transition cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-500"
+                class="w-full flex items-center gap-2.5 text-left px-3 py-2.5 text-sm font-body font-semibold text-rose-700 rounded-xl hover:bg-rose-50 active:bg-rose-100 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-secondary"
                 @click="onLogout"
               >
+                <Icon name="ph:sign-out" aria-hidden="true" class="text-xl shrink-0" />
                 Cerrar sesión
               </button>
             </div>
