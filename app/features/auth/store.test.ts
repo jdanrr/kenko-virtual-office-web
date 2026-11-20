@@ -168,6 +168,7 @@ describe("useAuthStore", () => {
     expect(store.lastFailure).toBeNull();
     expect(fetch).toHaveBeenNthCalledWith(1, "/api/auth/refresh", {
       method: "POST",
+      credentials: "include",
     });
   });
 
@@ -224,11 +225,15 @@ describe("useAuthStore", () => {
     expect(store.lastFailure?.message).toBe("Tu sesión terminó. Vuelve a entrar.");
   });
 
-  it("no renueva por temporizador (solo reactiva ante 401 + arranque)", async () => {
+  it("renueva por temporizador antes del vencimiento (proactiva ~13-14 min)", async () => {
     vi.useFakeTimers();
     const fetch = vi
       .fn()
       .mockResolvedValueOnce({ data: { accessToken: "jwt", expiresIn: 900 } })
+      .mockResolvedValueOnce({
+        data: { userId: "u1", firstName: "María", email: "m@x.co" },
+      })
+      .mockResolvedValueOnce({ data: { accessToken: "jwt2", expiresIn: 900 } })
       .mockResolvedValueOnce({
         data: { userId: "u1", firstName: "María", email: "m@x.co" },
       });
@@ -238,11 +243,15 @@ describe("useAuthStore", () => {
     await store.logIn({ ...valid });
     expect(store.accessToken).toBe("jwt");
 
-    // Pasa el vencimiento completo: no debe haber refresh automático.
-    await vi.advanceTimersByTimeAsync(900_000);
+    // A los 13-14 min (900s - 60s de margen) debe renovar sola.
+    await vi.advanceTimersByTimeAsync((900 - 60) * 1000);
 
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(store.accessToken).toBe("jwt");
+    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(fetch).toHaveBeenNthCalledWith(3, "/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+    expect(store.accessToken).toBe("jwt2");
     expect(store.isAuthenticated).toBe(true);
 
     store.logOut();
@@ -310,6 +319,7 @@ describe("useAuthStore", () => {
 
     expect(fetch).toHaveBeenNthCalledWith(3, "/api/auth/logout", {
       method: "POST",
+      credentials: "include",
     });
     expect(store.status).toBe("anonymous");
     expect(store.accessToken).toBeNull();

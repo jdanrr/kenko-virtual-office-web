@@ -186,11 +186,19 @@ export const useAuthStore = defineStore("auth", {
       );
       this.scheduleRefreshMs(delayMs);
     },
-    scheduleRefreshMs(_delayMs: number): void {
-      // Desactivado por decisión del equipo: la renovación es reactiva
-      // (ante 401 con un único refresh en vuelo) más el arranque.
-      // Se conserva el método para no romper la API del store.
+    scheduleRefreshMs(delayMs: number): void {
+      // Renovación proactiva (Auth: expiresIn 900s, renovar a los ~13-14 min).
+      // Se reprograma en cada applySession; refreshNow ante 401 cierra sesión
+      // (login fresco, sin reintentos: reintentar mata la familia).
       clearRefreshTimer();
+      // Solo navegador: en SSR no hay sesión en memoria que renovar.
+      // (typeof window en vez de import.meta.client para que sea testeable
+      // en vitest/happy-dom, donde import.meta.client es undefined.)
+      if (typeof window === "undefined") return;
+      if (!Number.isFinite(delayMs) || delayMs <= 0) return;
+      refreshTimer = setTimeout(() => {
+        void this.refreshNow();
+      }, delayMs);
     },
     toFailure(error: unknown): AuthFailure {
       return failureFromUnknown(error);

@@ -387,8 +387,11 @@ export function refreshSession(): Promise<LoginResult> {
 
 async function doRefresh(): Promise<LoginResult> {
   try {
+    // La cookie kenko_refresh viaja solo así (httpOnly, una sola fuente:
+    // sin body para que no gane un valor viejo sobre la cookie fresca).
     const result = await clientFetch()<unknown>("/api/auth/refresh", {
       method: "POST",
+      credentials: "include",
     });
     if (!isLoginResult(result)) {
       throw new AuthError({
@@ -411,6 +414,7 @@ export async function logoutSession(): Promise<void> {
   try {
     await clientFetch()<unknown>("/api/auth/logout", {
       method: "POST",
+      credentials: "include",
     });
   } catch {
     // Intencionalmente silencioso: el estado local se limpia siempre.

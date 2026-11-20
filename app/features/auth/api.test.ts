@@ -155,7 +155,10 @@ describe("refreshSession", () => {
       accessToken: "jwt2",
       expiresIn: 900,
     });
-    expect(fetch).toHaveBeenCalledWith("/api/auth/refresh", { method: "POST" });
+    expect(fetch).toHaveBeenCalledWith("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
   });
 
   it("401 se traduce a sesión terminada", async () => {
