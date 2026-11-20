@@ -1,5 +1,5 @@
 import { ofetch } from "ofetch";
-import type { FetchOptions } from "ofetch";
+import type { $Fetch, FetchOptions } from "ofetch";
 
 import { ApiError } from "./apiError";
 
@@ -39,9 +39,20 @@ export interface AuthHooks {
 
 let authHooks: AuthHooks | null = null;
 
+/**
+ * Vuelo único GLOBAL de refresh (no por cliente).
+ * Home-page crea varios ServiceClient (citas, profile, certificados...):
+ * si cada uno refresca por su cuenta con el mismo `kenko_refresh`,
+ * el backend lo ve como reúso y revoca la familia completa (§3.3).
+ * Compartir la promesa evita la tormenta de `POST /api/auth/refresh`.
+ */
+let sharedRefreshPromise: Promise<AccessTokenPair> | null = null;
+
 /** Conecta la sesión (feature) con el cliente (core). Solo llamar una vez. */
 export function setAuthHooks(hooks: AuthHooks | null): void {
   authHooks = hooks;
+  // Evita fugas entre tests / sesiones: un refresh viejo no debe reutilizarse.
+  sharedRefreshPromise = null;
 }
 
 export interface ServiceClientOptions {
@@ -52,7 +63,7 @@ export interface ServiceClientOptions {
   /** Rutas que nunca disparan refresh (defecto: login y refresh de auth). */
   noRefreshPaths?: string[];
   /** Inyección para pruebas (defecto: `ofetch`). */
-  fetchImpl?: <T>(path: string, options?: FetchOptions) => Promise<T>;
+  fetchImpl?: $Fetch;
 }
 
 interface UpstreamSnapshot {
@@ -212,8 +223,6 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
   } = options;
   const normalizedBase = normalizeBaseUrl(baseURL);
 
-  let refreshPromise: Promise<AccessTokenPair> | null = null;
-
   async function raw<T>(path: string, opts: ServiceRequestOptions = {}): Promise<T> {
     if (!normalizedBase) {
       throw new ApiError({
@@ -244,9 +253,9 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
   }
 
   async function refreshOnce(): Promise<AccessTokenPair> {
-    if (!refreshPromise) {
+    if (!sharedRefreshPromise) {
       const hooks = authHooks;
-      refreshPromise = (async () => {
+      sharedRefreshPromise = (async () => {
         if (!hooks) {
           throw new ApiError({
             status: 401,
@@ -256,10 +265,10 @@ export function createServiceClient(options: ServiceClientOptions): ServiceClien
         }
         return hooks.refreshAccessToken();
       })().finally(() => {
-        refreshPromise = null;
+        sharedRefreshPromise = null;
       });
     }
-    return refreshPromise;
+    return sharedRefreshPromise;
   }
 
   async function request<T>(path: string, opts: ServiceRequestOptions = {}): Promise<T> {
