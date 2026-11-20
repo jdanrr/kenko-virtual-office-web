@@ -78,7 +78,8 @@ Botones reagendar/cancelar/agendar: pendientes de flujos con pantallas.
 
 ## 3. Profile — `features/profile/` (contrato real del backend Go)
 
-Base: `http://127.0.0.1:8080` (`NUXT_PUBLIC_API_PROFILE_BASE`), sin prefijo.
+Base: `http://44.203.90.183:8080` (`NUXT_PUBLIC_API_PROFILE_BASE`), sin prefijo.
+IP efímera (2026-11-18): pedir la nueva al equipo backend si deja de responder.
 Auth: `Authorization: Bearer` (mismo JWT); **sin cookies y sin sobre
 `{ data }`** (respuestas crudas). Errores simples `{"error": "texto"}`
 (`401 unauthorized`, `404`, `502`, `500`).
