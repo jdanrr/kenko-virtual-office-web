@@ -78,10 +78,11 @@ const emit = defineEmits<{
             type="button"
             :disabled="isBlockedBy24hRule(a)"
             :title="isBlockedBy24hRule(a) ? BLOCKED_24H_MESSAGE : 'Cancelar cita'"
-            class="py-1.5 px-2 text-[11px] font-bold rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-rose-700 hover:border-rose-200 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex-1 py-1.5 px-2 text-[11px] font-bold rounded-lg bg-red-600 border border-red-600 text-white hover:bg-red-700 transition cursor-pointer flex items-center justify-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
             @click="emit('cancel', a)"
           >
-            <Icon name="ph:x-circle" class="text-slate-600" />
+            <Icon name="ph:x-circle" />
+            <span>Cancelar</span>
           </button>
         </div>
       </li>
