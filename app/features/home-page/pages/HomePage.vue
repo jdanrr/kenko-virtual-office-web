@@ -167,19 +167,9 @@ async function downloadPdf(authorizationId: string): Promise<void> {
   }
 }
 
-// Metadatos en español para la página de inicio.
-useSeoMeta({
-  title: "Portal del Paciente - Kenko EPS",
-  description:
-    "Portal del paciente Kenko EPS: citas médicas, sede, certificados y autorizaciones.",
-  ogTitle: "Portal del Paciente - Kenko EPS",
-  ogDescription:
-    "Portal del paciente Kenko EPS: citas médicas, sede, certificados y autorizaciones.",
-});
-
-useHead({
-  htmlAttrs: { lang: "es" },
-});
+// Metadatos en español para la página de inicio (viven en
+// app/pages/home-page.vue para que el SSR los incluya; esta vista solo se
+// renderiza en cliente vía <ClientOnly>).
 </script>
 
 <template>
