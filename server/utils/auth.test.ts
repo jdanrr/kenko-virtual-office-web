@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   AUTH_REFRESH_COOKIE,
   forwardCookie,
+  forwardedForHeaders,
   internalErrorEnvelope,
   isDataEnvelope,
   newCorrelationId,
@@ -94,6 +95,16 @@ describe("forwardCookie", () => {
     expect(forwardCookie("theme=dark", AUTH_REFRESH_COOKIE)).toBeNull();
     expect(forwardCookie(`${AUTH_REFRESH_COOKIE}=`, AUTH_REFRESH_COOKIE)).toBeNull();
     expect(forwardCookie("=abc", AUTH_REFRESH_COOKIE)).toBeNull();
+  });
+});
+
+describe("forwardedForHeaders", () => {
+  it("propaga X-Forwarded-For verbatim y nada si no hay", () => {
+    expect(forwardedForHeaders("203.0.113.7, 70.41.3.18")).toEqual({
+      "x-forwarded-for": "203.0.113.7, 70.41.3.18",
+    });
+    expect(forwardedForHeaders(undefined)).toEqual({});
+    expect(forwardedForHeaders("   ")).toEqual({});
   });
 });
 

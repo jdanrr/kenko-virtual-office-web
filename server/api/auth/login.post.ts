@@ -15,6 +15,7 @@ import { isApiFailure } from "../../../app/features/auth/types";
 import { loginSchema, toLoginRequest } from "../../../app/features/auth/schemas";
 import {
   AUTH_REFRESH_COOKIE,
+  forwardedForHeaders,
   internalErrorEnvelope,
   isDataEnvelope,
   newCorrelationId,
@@ -66,6 +67,7 @@ export default defineEventHandler(async (event) => {
       headers: {
         "content-type": "application/json",
         "x-correlation-id": correlationId,
+        ...forwardedForHeaders(getRequestHeader(event, "x-forwarded-for")),
       },
       ignoreResponseError: true,
     });

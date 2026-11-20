@@ -10,6 +10,7 @@ import type { ApiSuccess, AuthTokenPair } from "../../../app/features/auth/types
 import {
   AUTH_REFRESH_COOKIE,
   forwardCookie,
+  forwardedForHeaders,
   internalErrorEnvelope,
   isDataEnvelope,
   newCorrelationId,
@@ -51,7 +52,10 @@ export default defineEventHandler(async (event) => {
         // Sin `content-type`: no hay body. Enviar `application/json` con
         // cuerpo vacío hacía que el backend intentara parsear JSON y
         // respondiera 500. La cookie viaja en el header `cookie`.
+        // Una sola fuente (solo cookie, sin body): si mandan ambos gana el
+        // body y un valor viejo mataría la familia aunque la cookie esté bien.
         "x-correlation-id": correlationId,
+        ...forwardedForHeaders(getRequestHeader(event, "x-forwarded-for")),
         cookie,
       },
       ignoreResponseError: true,

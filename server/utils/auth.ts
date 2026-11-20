@@ -122,6 +122,19 @@ export function pickCookies(headers: Headers, name: string): string[] {
 }
 
 /**
+ * Reenvío de `X-Forwarded-For` al upstream (Auth limita por IP: refresh 20/15min,
+ * login 10/15min...). Sin esto todos los usuarios tras el BFF comparten bucket
+ * ("unknown"). Solo propaga el valor que ya trae la petición (proxy/CDN);
+ * si no hay, no se inventa nada.
+ */
+export function forwardedForHeaders(
+  incomingXff: string | undefined | null,
+): Record<string, string> {
+  const value = (incomingXff ?? "").trim();
+  return value ? { "x-forwarded-for": value } : {};
+}
+
+/**
  * Del header `cookie` entrante arma `name=value` para enviar solo la cookie
  * de refresh al microservicio (sin reenviar cookies ajenas a Auth).
  * Devuelve `null` si la cookie no está o viene vacía.

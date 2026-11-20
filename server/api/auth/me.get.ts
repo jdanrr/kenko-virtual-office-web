@@ -5,6 +5,7 @@
  * Sin `Bearer` responde 401 genérico (la UI vuelve al login en silencio).
  */
 import {
+  forwardedForHeaders,
   internalErrorEnvelope,
   isDataEnvelope,
   newCorrelationId,
@@ -34,7 +35,11 @@ export default defineEventHandler(async (event) => {
 
   try {
     const response = await $fetch.raw(`${upstreamBase}/auth/me`, {
-      headers: { authorization, "x-correlation-id": correlationId },
+      headers: {
+        authorization,
+        "x-correlation-id": correlationId,
+        ...forwardedForHeaders(getRequestHeader(event, "x-forwarded-for")),
+      },
       ignoreResponseError: true,
     });
     const upstreamCorrelation =
