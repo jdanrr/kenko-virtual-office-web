@@ -8,8 +8,7 @@ import { computed, ref } from "vue";
 import { getServiceBases } from "~/core/config/services";
 import { useAuthStore } from "~/features/auth";
 import type { AuthUser } from "~/features/auth";
-import { useMyAppointmentsQuery } from "../../appointments";
-import { cancelAppointment, createAppointmentsClient } from "../../appointments";
+import { cancelAppointment, createAppointmentsClient, useMyAppointmentsQuery } from "../../appointments";
 import type { AppointmentResponse } from "../../appointments";
 import {
   createProfileClient,
@@ -37,8 +36,7 @@ import {
   authorizationsMock,
   dashboardPatientMock,
 } from "~/features/home-page/mocks/dashboard.mock";
-import type { AppointmentsSummaryView, SessionPatientView } from "~/features/home-page/types";
-import type { AppointmentView } from "~/features/home-page/types";
+import type { AppointmentsSummaryView, AppointmentView, SessionPatientView } from "~/features/home-page/types";
 
 // Identidad real de la sesión (GET /auth/me vía el store).
 // El backend aún no expone apellido ni documento: los completará profile
