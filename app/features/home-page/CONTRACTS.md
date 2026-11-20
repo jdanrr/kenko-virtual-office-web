@@ -43,7 +43,7 @@ encabezado sin sesión.
 
 ## 2. Appointments — `features/appointments/` (contrato real del backend)
 
-Base: `http://localhost:8002/api/v1` (`NUXT_PUBLIC_API_APPOINTMENTS_BASE`).
+Base: `http://3.224.127.142:8002/api/v1` (AWS dev, `NUXT_PUBLIC_API_APPOINTMENTS_BASE`).
 Auth: `Authorization: Bearer` (mismo JWT); **sin cookies y sin sobre
 `{ data }`** (respuestas crudas en camelCase). Errores
 `{ error: { code, message, correlationId } }` en minúsculas (`unauthorized`,

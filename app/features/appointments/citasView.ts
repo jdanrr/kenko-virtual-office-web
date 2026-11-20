@@ -102,5 +102,5 @@ export function toUserMessage(err: unknown): string {
   }
   const data = (err as { data?: { error?: { message?: string } } })?.data;
   if (typeof data?.error?.message === "string" && data.error.message) return data.error.message;
-  return "No se pudo conectar con el servicio de citas. Revisa que el back esté prendido en :8002.";
+  return "No se pudo conectar con el servicio de citas. Revisa tu conexión o intenta de nuevo.";
 }

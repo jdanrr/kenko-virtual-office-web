@@ -27,7 +27,7 @@ export default defineNuxtConfig({
       apiProfileBase: "",
       apiAppointmentsBase: "",
       // Fallback del proxy legacy. Lee NUXT_PUBLIC_API_CITAS_BASE.
-      apiCitasBase: "http://localhost:8002",
+      apiCitasBase: "http://3.224.127.142:8002",
     },
   },
 
